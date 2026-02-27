@@ -2,10 +2,26 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const pool = require("./config/database");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
+
+// Routes
+const usersRoutes = require("./routes/usersRoute");
+
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+        credentials: true,
+    }),
+);
+
+app.use(express.json());
+
+// Use Routes
+app.use("/users", usersRoutes);
 
 app.get("/", async (req, res) => {
     try {
@@ -17,5 +33,5 @@ app.get("/", async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Server is running at http://localhost:${port}`);
 });
