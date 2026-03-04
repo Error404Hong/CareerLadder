@@ -15,8 +15,12 @@ export async function POST(req: NextRequest) {
             const clerkId = user.id || "";
             const role = 1;
 
-            await addNewUser(clerkId, role);
-            console.log("Created UserId: ", user.id);
+            try {
+                await addNewUser(clerkId, role);
+                console.log("User added successfully");
+            } catch (err) {
+                console.error("Failed to add user:", err);
+            }
         }
 
         return new Response("Webhook received", { status: 200 });
