@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { getUserById } from "@/app/api/user";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
     Dialog,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 
 export default function HomePage() {
+    const router = useRouter();
     const { user } = useUser();
     const [openDialog, setOpenDialog] = useState(false);
 
@@ -23,10 +25,11 @@ export default function HomePage() {
             const userData = await getUserById(user.id);
             console.log("data: ", userData.data);
 
-            localStorage.setItem("clerkid", userData.clerk_id);
+            localStorage.setItem("clerkid", user.id);
             localStorage.setItem("userid", userData.data.id)
             localStorage.setItem("role", userData.data.role);
-            localStorage.setItem("username", user.firstName || "Unknown");
+            localStorage.setItem("firstname", user.firstName || "Unknown");
+            localStorage.setItem("lastname", user.lastName || "Unknown");
             localStorage.setItem("profile_completion", userData.data.profile_completed);
 
             if (userData.data.profile_completed == '0') {
@@ -63,7 +66,7 @@ export default function HomePage() {
                         <button
                             onClick={() => {
                                 setOpenDialog(false);
-                                // navigate to profile completion page
+                                router.push(`/profile`)
                             }}
                             className="px-4 py-2 text-sm bg-(--color-navy) hover:bg-(--color-navy-mid) text-white rounded-lg transition-colors shadow-md shadow-blue-200 cursor-pointer"
                         >

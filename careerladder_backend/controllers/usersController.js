@@ -1,5 +1,6 @@
 const Users = require("../models/users");
 const sendResponse = require("../utils/responseHelper");
+const logger = require("../utils/logger");
 
 const addNewUser = async (req, res) => {
     try {
@@ -7,7 +8,7 @@ const addNewUser = async (req, res) => {
         const newUser = await Users.addNewUser(clerkid, role);
         return sendResponse(res, 200, "User Created Successfully", newUser);
     } catch (error) {
-        console.error("[CONTROLLER] Error Creating User:", error);
+        logger.error("[CONTROLLER] Error Creating User:", error);
         return sendResponse(res, 500, "Failed to Create User", {
             error: error.message,
         });
@@ -30,7 +31,7 @@ const getUser = async (req, res) => {
             return sendResponse(res, 200, "User Found", result);
         }
     } catch (error) {
-        console.error("[CONTROLLER] Error Getting User: ", error);
+        logger.error("[CONTROLLER] Error Getting User: ", error);
         return sendResponse(res, 500, "Failed to Get User", {
             error: error.message,
         });

@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { Pool } = require("pg");
+const logger = require("../utils/logger");
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -11,9 +12,9 @@ const pool = new Pool({
 
 pool.connect((err, client, release) => {
     if (err) {
-        console.error("❌ Error connecting to PostgreSQL:", err.message);
+        logger.error("Error connecting to PostgreSQL:", err.message);
     } else {
-        console.log("✅ PostgreSQL Connected Successfully");
+        logger.info("PostgreSQL Connected Successfully");
         release();
     }
 });

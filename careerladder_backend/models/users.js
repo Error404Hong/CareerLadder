@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const logger = require("../utils/logger");
 
 class Users {
     static async addNewUser(clerkid, role) {
@@ -16,7 +17,7 @@ class Users {
             const result = await pool.query(query, values);
             return result.rows[0] ? result.rows[0] : null;
         } catch (error) {
-            console.error("[MODEL] Error Inserting User: ", error);
+            logger.error("[MODEL] Error Inserting User: ", error);
             throw error;
         }
     }
@@ -29,7 +30,7 @@ class Users {
 
             return result.rows[0] ? result.rows[0] : null;
         } catch (error) {
-            console.error("[MODEL] Error Getting User: ", error);
+            logger.error("[MODEL] Error Getting User: ", error);
             throw error;
         }
     }
