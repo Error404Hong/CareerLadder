@@ -1,16 +1,19 @@
 "use client"
 
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import {
-    Globe, Pencil, Mail, MapPin,
-    Briefcase, GraduationCap, Code2, Languages,
-    FileText, ChevronDown, Plus, Trash2, Upload
-} from "lucide-react"
+import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload } from "lucide-react"
 
 import { useState, useEffect } from "react"
-import { getUserById } from "@/app/api/user"
 import { useUser } from "@clerk/nextjs"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { getUserById, getStudentProfile, modifyUserProfile } from "@/app/api/user"
+
+import ProfileForm, { formSchema, type ProfileFormValues, jobTypes } from "./forms/ProfileForm"
+import SummaryForm from "./forms/SummaryForm"
+
 
 const SectionHeader = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
     <div className="flex items-center justify-between w-full">
@@ -30,25 +33,98 @@ const SectionHeader = ({ icon, title }: { icon: React.ReactNode; title: string }
 )
 
 export default function Profile() {
-    const { user } = useUser();
-    const [fname, setFname] = useState("");
-    const [lname, setLname] = useState("");
+    const { user } = useUser()
+    const [cid, setCid] = useState("");
+    const [fname, setFname] = useState("")
+    const [lname, setLname] = useState("")
+    const [email, setEmail] = useState("")
+    const [major, setMajor] = useState("");
+    const [job_type, setJobtype] = useState("");
+    const [linkedinURL, setLinkedinURL] = useState("");
+    const [workStatus, setWorkStatus] = useState<boolean | undefined>(undefined);
+    const [location, setLocation] = useState("")
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [dialogType, setDialogType] = useState("")
+
+    const form = useForm<ProfileFormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            fname: "",
+            lname: "",
+            email: "",
+            major: "",
+            jobtype: "",
+            linkedin_url: "",
+            work_status: false,
+            location: ""
+        }
+    })
 
     useEffect(() => {
         const getUser = async () => {
-            if (!user) return;
+            if (!user) return
 
-            const userData = await getUserById(user.id);
-            console.log("data: ", userData.data);
+            const userData = await getUserById(user.id)
             if (userData) {
-                setFname(user.firstName || "Unknown");
-                setLname(user.lastName || "Unknown");
+                setCid(user.id || "");
+                setFname(user.firstName || "Unknown")
+                setLname(user.lastName || "Unknown")
+                setEmail(user.emailAddresses[0]?.emailAddress || "None")
 
+                const userProfile = await getStudentProfile(user.id);
+
+                if (userProfile) {
+                    setMajor(userProfile.data.major ?? "Not Specified Yet");
+                    setLocation(userProfile.data.location ?? "Not Specified Yet");
+                    setLinkedinURL(userProfile.data.linkedin_url ?? "No Link Provided Yet");
+                    setWorkStatus(userProfile.data.work_status ?? false);
+                    setJobtype(userProfile.data.job_preference ?? "");
+
+                    form.reset({
+                        fname: user.firstName || "Unknown",
+                        lname: user.lastName || "Unknown",
+                        email: user.emailAddresses[0]?.emailAddress || "None",
+                        major: userProfile.data.major ?? "Not Specified Yet",
+                        jobtype: userProfile.data.job_preference ?? "",
+                        linkedin_url: userProfile.data.linkedin_url ?? "No Link Provided Yet",
+                        work_status: userProfile.data.work_status ?? false,
+                        location: userProfile.data.location ?? "Not Specified Yet"
+                    })
+                }
             }
         }
 
-        getUser();
-    }, [user])
+        getUser()
+    }, [user, form])
+
+    const openDialog = (type: string) => {
+        setDialogType(type)
+        setDialogOpen(true)
+    }
+
+    const submitForm = async (values: ProfileFormValues) => {
+        console.log("Submitting", values)
+        if (dialogType === "profile") {
+            const updRes = await modifyUserProfile(values.linkedin_url, values.location, values.major, values.jobtype, values.work_status, cid);
+
+            if (updRes.success) {
+                // setFname(values.fname);
+                // setLname(values.lname);
+                // setEmail(values.email);
+                setLocation(values.location);
+                setLinkedinURL(values.linkedin_url);
+                setMajor(values.major);
+                setJobtype(values.jobtype);
+                setWorkStatus(values.work_status)
+                toast.success("Profile has been updated successfully")
+            } else {
+                console.log("Failed to update profile")
+            }
+        }
+        setDialogOpen(false)
+    }
+
+    const jobLabel = jobTypes.find(j => j.value === job_type)?.label || "Not specified";
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -61,34 +137,44 @@ export default function Profile() {
                             <div className="h-24 bg-linear-to-br from-[#0f172a] to-[#2563eb] relative" />
                             <div className="flex justify-center -mt-10 pb-1 relative z-10">
                                 <div className="w-20 h-20 rounded-2xl border-4 border-white bg-linear-to-br from-[#0f172a] to-[#2563eb] shadow-md flex items-center justify-center">
-                                    <span className="text-2xl font-bold text-white">A</span>
+                                    <span className="text-2xl font-bold text-white">
+                                        {fname?.charAt(0) || "?"}
+                                    </span>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="px-6 pb-6 pt-3 text-center">
-                            <h2 className="text-lg font-bold text-[#0f172a]"> {lname} {fname} </h2>
+                            <h2 className="text-lg font-bold text-[#0f172a]">{fname} {lname}</h2>
                             <p className="text-sm text-[#2563eb] font-medium mt-0.5">Computer Science Student</p>
                             <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs mt-2">
-                                <MapPin size={11} /><span>Kuala Lumpur, Malaysia</span>
+                                <MapPin size={11} /><span>{location}</span>
                             </div>
                             <div className="flex flex-wrap justify-center gap-1.5 mt-4">
-                                {["Open to Work", "Internship", "Full-time"].map(tag => (
-                                    <span key={tag} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">{tag}</span>
-                                ))}
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                    {workStatus ? "Open to Work" : "Unavailable"}
+                                </span>
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                    {jobLabel}
+                                </span>
                             </div>
                             <div className="h-px bg-slate-100 my-4" />
                             <div className="flex flex-col gap-2 text-left">
                                 <div className="flex items-center gap-2.5 text-xs text-slate-500">
                                     <Mail size={12} className="text-slate-300 shrink-0" />
-                                    <span>alex.johnson@student.um.edu.my</span>
+                                    <span>{email || "No email"}</span>
                                 </div>
                                 <div className="flex items-center gap-2.5 text-xs text-slate-500">
                                     <Globe size={12} className="text-slate-300 shrink-0" />
-                                    <span className="text-[#2563eb]">linkedin.com/in/alexjohnson</span>
+                                    <span className="text-[#2563eb]">
+                                        {form.getValues("linkedin_url") || "No LinkedIn URL"}
+                                    </span>
                                 </div>
                             </div>
                             <div className="h-px bg-slate-100 my-4" />
-                            <button className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-xl py-2.5 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
+                            <button
+                                className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-xl py-2.5 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors"
+                                onClick={() => openDialog("profile")}
+                            >
                                 <Pencil size={11} /> Edit Profile
                             </button>
                         </CardContent>
@@ -143,7 +229,11 @@ export default function Profile() {
                                 ].map(item => (
                                     <div key={item.label} className="flex items-center gap-2">
                                         <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ${item.done ? "bg-green-500" : "bg-slate-200"}`}>
-                                            {item.done && <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3 5.5L6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                                            {item.done && (
+                                                <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                                                    <path d="M1.5 4L3 5.5L6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            )}
                                         </div>
                                         <span className={`text-xs ${item.done ? "text-slate-600" : "text-slate-400"}`}>{item.label}</span>
                                     </div>
@@ -166,7 +256,10 @@ export default function Profile() {
                                     </span>
                                     <span className="font-semibold text-[#0f172a] text-sm">Profile Summary</span>
                                 </div>
-                                <button className="text-xs text-slate-400 hover:text-[#0f172a] transition-colors flex items-center gap-1">
+                                <button
+                                    className="text-xs text-slate-400 hover:text-[#0f172a] transition-colors flex items-center gap-1"
+                                    onClick={() => openDialog("summary")}
+                                >
                                     <Pencil size={11} /> Edit
                                 </button>
                             </div>
@@ -326,6 +419,40 @@ export default function Profile() {
 
                 </div>
             </div>
+
+            {/* ── Profile Form Dialog ── */}
+            {dialogType === "profile" && (
+                <ProfileForm
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            form.reset({
+                                fname,
+                                lname,
+                                email,
+                                major,
+                                jobtype: job_type,
+                                linkedin_url: linkedinURL,
+                                work_status: workStatus,
+                                location
+                            })
+                        }
+                        setDialogOpen(open)
+                    }}
+                    form={form}
+                    onSubmit={submitForm}
+                />
+            )}
+
+            {dialogType === "summary" && (
+                <SummaryForm
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        setDialogOpen(open)
+                    }}
+                />
+            )}
+
         </div>
     )
 }

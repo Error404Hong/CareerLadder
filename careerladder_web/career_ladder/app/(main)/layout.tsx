@@ -1,4 +1,5 @@
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import { Toaster } from "@/components/ui/sonner";
 
 export default function MainLayout({
   children,
@@ -36,6 +37,10 @@ export default function MainLayout({
         </SignedIn>
       </header>
       {children}
+      <Toaster
+        position="top-left"
+        richColors
+      />
     </>
   );
 }
