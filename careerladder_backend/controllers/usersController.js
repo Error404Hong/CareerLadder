@@ -13,6 +13,10 @@ const addNewUser = async (req, res) => {
 
         const profile = await Users.createStudentProfile(clerkid);
 
+        if (!profile) {
+            return sendResponse(res, 400, "Failed to create user");
+        }
+
         return sendResponse(res, 200, "User and Profile Created Successfully", {
             user: newUser,
             profile: profile,
@@ -36,7 +40,7 @@ const getUser = async (req, res) => {
         const result = await Users.getUser(clerkid);
 
         if (!result) {
-            return sendResponse(res, 404, "User Not Found");
+            return sendResponse(res, 400, "User Not Found");
         } else {
             return sendResponse(res, 200, "User Found", result);
         }
@@ -52,14 +56,14 @@ const getStudentProfile = async (req, res) => {
     const { clerkid } = req.params;
 
     if (!clerkid) {
-        return sendResponse("User (Clerk) ID is Required");
+        return sendResponse(res, 400, "User ID is Required");
     }
 
     try {
         const result = await Users.getStudentProfile(clerkid);
 
         if (!result) {
-            return sendResponse(res, 404, "Student Profile Not Found");
+            return sendResponse(res, 400, "Student Profile Not Found");
         } else {
             return sendResponse(res, 200, "Student Profile Found", result);
         }
@@ -109,4 +113,115 @@ const modifyUser = async (req, res) => {
     }
 };
 
-module.exports = { addNewUser, getUser, getStudentProfile, modifyUser };
+const modifyProfileSummary = async (req, res) => {
+    const { clerkid } = req.params;
+    const { summary } = req.body;
+
+    if (!clerkid) {
+        return sendResponse(res, 400, "User id is required");
+    }
+
+    try {
+        const result = await Users.modifyProfileSummary(summary, clerkid);
+
+        if (!result) {
+            return sendResponse(res, 404, "Failed to modify profile summary");
+        } else {
+            return sendResponse(res, 200, "Profile summary modified");
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error Modifying Profile Summary");
+        return sendResponse(res, 500, "Error Modifying Profile Summary", {
+            error: error.message,
+        });
+    }
+};
+
+const getStudentEducation = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) {
+        return sendResponse(res, 400, "User ID is Required");
+    }
+
+    try {
+        const result = await Users.getStudentEducation(clerkid);
+
+        if (!result) {
+            return sendResponse(res, 400, "Student Education Not Found");
+        } else {
+            return sendResponse(res, 200, "Student Education Found", result);
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error Getting Students Education: ", error);
+        return sendResponse(res, 500, "Failed to Get Student Education", {
+            error: error.message,
+        });
+    }
+};
+
+const addNewEducation = async (req, res) => {
+    const { clerkid } = req.params;
+
+    const { institution, field, start_year, end_year, is_current } = req.body;
+
+    if (!clerkid) {
+        return sendResponse(res, 400, "User ID is Required");
+    }
+
+    try {
+        const result = await Users.addNewEducation(
+            clerkid,
+            institution,
+            field,
+            start_year,
+            end_year,
+            is_current,
+        );
+
+        if (!result) {
+            return sendResponse(
+                res,
+                404,
+                "Failed to Add Student Education",
+                result,
+            );
+        } else {
+            return sendResponse(res, 200, "Student Education Added", result);
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error Adding New Education: ", error);
+        return sendResponse(res, 500, "Failed to Add New Education", {
+            error: error.message,
+        });
+    }
+};
+
+const deleteEducation = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return sendResponse(res, 400, "Education ID is Required");
+    }
+
+    try {
+        await Users.deleteEducation(id);
+        return sendResponse(res, 200, "Education Record Deleted Successfully");
+    } catch (error) {
+        logger.error("[CONTROLLER] Error Deleting Education Record: ", error);
+        return sendResponse(res, 500, "Failed to Delete Education Record", {
+            error: error.message,
+        });
+    }
+};
+
+module.exports = {
+    addNewUser,
+    getUser,
+    getStudentProfile,
+    modifyUser,
+    modifyProfileSummary,
+    getStudentEducation,
+    addNewEducation,
+    deleteEducation,
+};

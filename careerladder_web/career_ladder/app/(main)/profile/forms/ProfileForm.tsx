@@ -1,5 +1,6 @@
 "use client"
 
+import { Info } from "lucide-react"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogHeader } from "@/components/ui/dialog"
 import { Field, FieldGroup, FieldError } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
@@ -48,13 +49,18 @@ export default function ProfileForm({ open, onOpenChange, form, onSubmit }: Prop
                         <DialogDescription>Update your profile information</DialogDescription>
                     </DialogHeader>
 
+                    <div className="flex items-start gap-2 px-1 py-2.5 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-500">
+                        <Info size={13} className="shrink-0 mt-0.5" />
+                        <span>First name, last name, and email can only be modified from <span className="font-semibold">Manage Account</span>.</span>
+                    </div>
+
                     <FieldGroup className="gap-5">
                         <Field className="grid grid-cols-1 sm:grid-cols-2">
                             <Controller name="fname" control={form.control}
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
                                         <Label htmlFor="fname">First Name</Label>
-                                        <Input {...field} id="fname" aria-invalid={fieldState.invalid} />
+                                        <Input {...field} id="fname" aria-invalid={fieldState.invalid} disabled />
                                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                     </Field>
                                 )}
@@ -64,7 +70,7 @@ export default function ProfileForm({ open, onOpenChange, form, onSubmit }: Prop
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
                                         <Label htmlFor="lname">Last Name</Label>
-                                        <Input {...field} id="lname" aria-invalid={fieldState.invalid} />
+                                        <Input {...field} id="lname" aria-invalid={fieldState.invalid} disabled />
                                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                     </Field>
                                 )}
@@ -76,7 +82,7 @@ export default function ProfileForm({ open, onOpenChange, form, onSubmit }: Prop
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
                                         <Label htmlFor="email">Email</Label>
-                                        <Input {...field} id="email" aria-invalid={fieldState.invalid} />
+                                        <Input {...field} id="email" aria-invalid={fieldState.invalid} disabled />
                                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                     </Field>
                                 )}

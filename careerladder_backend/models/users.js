@@ -4,17 +4,11 @@ const logger = require("../utils/logger");
 class Users {
     static async addNewUser(clerkid, role) {
         try {
-            const now = new Date();
-            const current = now
-                .toISOString()
-                .replace("T", " ")
-                .replace("Z", "");
-
             const query = `INSERT INTO users(clerk_id, role, created_at, updated_at, profile_completed, status)
-                VALUES($1, $2, $3, $4, 0, 1)
+                VALUES($1, $2, NOW(), NOW(), 0, 1)
                 RETURNING *`;
 
-            const values = [clerkid, role, current, current];
+            const values = [clerkid, role];
             const result = await pool.query(query, values);
             return result.rows[0] ? result.rows[0] : null;
         } catch (error) {
@@ -83,6 +77,70 @@ class Users {
             return result.rows[0];
         } catch (error) {
             logger.error("[MODEL] Error Modifying User Profile: ", error);
+            throw error;
+        }
+    }
+
+    static async modifyProfileSummary(summary, clerk_id) {
+        try {
+            const query =
+                "UPDATE student_profiles SET profile_summary = $1 WHERE clerk_id = $2 RETURNING *";
+            const values = [summary, clerk_id];
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            logger.error("[MODEL] Error Modifying Profile Summary: ", error);
+            throw error;
+        }
+    }
+
+    static async getStudentEducation(clerk_id) {
+        try {
+            const query = "SELECT * FROM student_education WHERE clerk_id = $1";
+            const values = [clerk_id];
+            const result = await pool.query(query, values);
+            return result.rows;
+        } catch (error) {
+            logger.error("[MODEL] Error Getting Student Education: ", error);
+            throw error;
+        }
+    }
+
+    static async addNewEducation(
+        clerk_id,
+        institution,
+        field,
+        start_year,
+        end_year,
+        is_current,
+    ) {
+        try {
+            const query = `INSERT INTO student_education(clerk_id, institution, field, start_year, end_year, is_current, created_at, updated_at) 
+                VALUES($1, $2, $3, $4, $5, $6, NOW(), NOW())
+                RETURNING *`;
+            const values = [
+                clerk_id,
+                institution,
+                field,
+                start_year,
+                end_year,
+                is_current,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ? result.rows[0] : null;
+        } catch (error) {
+            logger.error("[MODEL] Error Adding New Education: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteEducation(education_id) {
+        try {
+            const query = "DELETE FROM student_education WHERE id = $1";
+            const values = [education_id];
+            await pool.query(query, values);
+        } catch (error) {
+            logger.error("[MODEL] Error Deleting Education Record: ", error);
             throw error;
         }
     }

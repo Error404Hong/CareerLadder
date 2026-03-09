@@ -68,3 +68,76 @@ export const modifyUserProfile = async (
         throw error;
     }
 };
+
+export const modifyProfileSummary = async (
+    summary: string,
+    clerkid: string,
+) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/modifyProfileSummary/${clerkid}`,
+            {
+                summary,
+            },
+        );
+
+        console.log("Profile Summary Modified: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error Modifying Profile Summary: ", error);
+        throw error;
+    }
+};
+
+export const getStudentEducation = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/users/getEducation/${clerkid}`,
+        );
+        console.log("Student Education: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error Getting Student Education: ", error);
+        throw error;
+    }
+};
+
+export const addNewEducation = async (
+    clerkid: string,
+    institution: string,
+    field: string,
+    start_year: string,
+    end_year: string,
+    is_current: boolean,
+) => {
+    try {
+        const response = await axiosInstance.post(
+            `/users/addEducation/${clerkid}`,
+            {
+                institution,
+                field,
+                start_year,
+                end_year: is_current ? null : end_year,
+                is_current,
+            },
+        );
+        console.log("Added Education: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error Add New Student Education: ", error);
+        throw error;
+    }
+};
+
+export const deleteEducation = async (educationid: number) => {
+    try {
+        const response = await axiosInstance.delete(
+            `/users/deleteEducation/${educationid}`,
+        );
+        console.log("Deleted Education: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error Deleting Education Record: ", error);
+        throw error;
+    }
+};

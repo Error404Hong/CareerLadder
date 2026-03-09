@@ -3,19 +3,21 @@
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload } from "lucide-react"
+import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info } from "lucide-react"
 
 import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { getUserById, getStudentProfile, modifyUserProfile } from "@/app/api/user"
+import { getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation, addNewEducation, deleteEducation } from "@/app/api/user"
 
+import { DeleteDialog } from "./delete/DeleteDialog"
 import ProfileForm, { formSchema, type ProfileFormValues, jobTypes } from "./forms/ProfileForm"
-import SummaryForm from "./forms/SummaryForm"
+import SummaryForm, { summaryFormSchema, type SummaryFormValues } from "./forms/SummaryForm"
+import EducationForm, { educationFormSchema, type EducationFormValues } from "./forms/EducationForm"
 
 
-const SectionHeader = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
+const SectionHeader = ({ icon, title, onAdd }: { icon: React.ReactNode; title: string; onAdd?: () => void }) => (
     <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-2.5">
             <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white shrink-0">
@@ -24,13 +26,35 @@ const SectionHeader = ({ icon, title }: { icon: React.ReactNode; title: string }
             <span className="font-semibold text-[#0f172a] text-sm">{title}</span>
         </div>
         <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-[11px] font-medium text-[#2563eb] bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
+            <div
+                className="flex items-center gap-1 text-[11px] font-medium text-[#2563eb] bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                onClick={(e) => {
+                    e.stopPropagation()
+                    onAdd?.()
+                }}
+            >
                 <Plus size={11} /> Add
             </div>
-            <ChevronDown size={15} className="text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180 cursor-pointer" />
+            <ChevronDown size={15} className="text-slate-500 transition-transform duration-200 group-data-[state=open]:rotate-180 cursor-pointer" />
         </div>
     </div>
 )
+
+type Education = {
+    id: number
+    clerk_id: string
+    institution: string
+    field: string
+    start_year: string
+    end_year: string | null
+    is_current: boolean
+}
+
+type DeleteTarget = {
+    id: number,
+    label: string,
+    type: "education" | "experience" | "skill" | "language"
+}
 
 export default function Profile() {
     const { user } = useUser()
@@ -42,9 +66,13 @@ export default function Profile() {
     const [job_type, setJobtype] = useState("");
     const [linkedinURL, setLinkedinURL] = useState("");
     const [workStatus, setWorkStatus] = useState<boolean | undefined>(undefined);
-    const [location, setLocation] = useState("")
-    const [dialogOpen, setDialogOpen] = useState(false)
-    const [dialogType, setDialogType] = useState("")
+    const [location, setLocation] = useState("");
+    const [summary, setSummary] = useState("");
+    const [education, setEducation] = useState<Education[]>([]);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [dialogType, setDialogType] = useState("");
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(formSchema),
@@ -60,6 +88,24 @@ export default function Profile() {
         }
     })
 
+    const summaryForm = useForm<SummaryFormValues>({
+        resolver: zodResolver(summaryFormSchema),
+        defaultValues: {
+            summary: ""
+        }
+    })
+
+    const educationForm = useForm<EducationFormValues>({
+        resolver: zodResolver(educationFormSchema),
+        defaultValues: {
+            institution: "",
+            field: "",
+            start_year: "",
+            end_year: "",
+            is_current: false,
+        }
+    })
+
     useEffect(() => {
         const getUser = async () => {
             if (!user) return
@@ -72,6 +118,7 @@ export default function Profile() {
                 setEmail(user.emailAddresses[0]?.emailAddress || "None")
 
                 const userProfile = await getStudentProfile(user.id);
+                const userEducation = await getStudentEducation(user.id);
 
                 if (userProfile) {
                     setMajor(userProfile.data.major ?? "Not Specified Yet");
@@ -79,6 +126,7 @@ export default function Profile() {
                     setLinkedinURL(userProfile.data.linkedin_url ?? "No Link Provided Yet");
                     setWorkStatus(userProfile.data.work_status ?? false);
                     setJobtype(userProfile.data.job_preference ?? "");
+                    setSummary(userProfile.data.profile_summary ?? "");
 
                     form.reset({
                         fname: user.firstName || "Unknown",
@@ -90,16 +138,28 @@ export default function Profile() {
                         work_status: userProfile.data.work_status ?? false,
                         location: userProfile.data.location ?? "Not Specified Yet"
                     })
+
+                    summaryForm.reset({
+                        summary: userProfile.data.profile_summary ?? ""
+                    })
+                }
+
+                if (userEducation) {
+                    setEducation(userEducation.data);
                 }
             }
         }
 
         getUser()
-    }, [user, form])
+    }, [user, form, summaryForm])
 
     const openDialog = (type: string) => {
         setDialogType(type)
         setDialogOpen(true)
+    }
+
+    const openDeleteDialog = () => {
+        setDeleteDialogOpen(true)
     }
 
     const submitForm = async (values: ProfileFormValues) => {
@@ -124,6 +184,81 @@ export default function Profile() {
         setDialogOpen(false)
     }
 
+    const submitSummaryForm = async (values: SummaryFormValues) => {
+        console.log("Submitting: ", values);
+
+        const updSummary = await modifyProfileSummary(values.summary, cid);
+
+        if (updSummary.success) {
+            setSummary(values.summary);
+            toast.success("Profile summary has been updated successfully");
+        } else {
+            toast.error("Failed to update profile summary")
+        }
+
+        setDialogOpen(false);
+    }
+
+    const submitEducationForm = async (values: EducationFormValues) => {
+        console.log("Submitting: ", values);
+        const sYear = Number(values.start_year);
+        const eYear = Number(values.end_year);
+
+        if (!values.is_current && !values.end_year) {
+            toast.error("Please provide an end year or check 'Currently studying here'")
+            return
+        }
+
+        if (!values.is_current && sYear > eYear) {
+            toast.error("Start year cannot be later than end year")
+            return
+        }
+
+        if (!values.is_current && sYear === eYear) {
+            toast.error("Start and end year cannot be the same")
+            return
+        }
+
+        const addEducation = await addNewEducation(
+            cid,
+            values.institution,
+            values.field,
+            values.start_year,
+            values.end_year ?? null,
+            values.is_current
+        )
+
+        if (addEducation.success) {
+            setEducation(prev => [...prev, addEducation.data])
+            toast.success("Education has been added successfully")
+            setDialogOpen(false)
+        } else {
+            toast.error("Failed to add new education. Please try again")
+        }
+    }
+
+    const deleteRecord = async (values: DeleteTarget) => {
+        if (!deleteTarget) {
+            toast.error("Something went wrong.");
+            return;
+        }
+
+        if (values.type === "education") {
+            const deleteEdu = await deleteEducation(values.id);
+
+            if (deleteEdu.success) {
+                setEducation(prev => prev.filter(e => e.id !== values.id))
+                toast.success("Deleted Successfully")
+            } else {
+                toast.error("Failed to delete the education record")
+            }
+        }
+
+        setDeleteDialogOpen(false)
+
+
+    }
+
     const jobLabel = jobTypes.find(j => j.value === job_type)?.label || "Not specified";
 
     return (
@@ -145,7 +280,7 @@ export default function Profile() {
                         </CardHeader>
                         <CardContent className="px-6 pb-6 pt-3 text-center">
                             <h2 className="text-lg font-bold text-[#0f172a]">{fname} {lname}</h2>
-                            <p className="text-sm text-[#2563eb] font-medium mt-0.5">Computer Science Student</p>
+                            <p className="text-sm text-[#2563eb] font-medium mt-0.5">{major} Student</p>
                             <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs mt-2">
                                 <MapPin size={11} /><span>{location}</span>
                             </div>
@@ -257,15 +392,21 @@ export default function Profile() {
                                     <span className="font-semibold text-[#0f172a] text-sm">Profile Summary</span>
                                 </div>
                                 <button
-                                    className="text-xs text-slate-400 hover:text-[#0f172a] transition-colors flex items-center gap-1"
+                                    className="flex items-center gap-1 text-[11px] font-medium text-[#2563eb] bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                                     onClick={() => openDialog("summary")}
                                 >
                                     <Pencil size={11} /> Edit
                                 </button>
                             </div>
-                            <p className="text-sm text-slate-500 leading-relaxed">
-                                Passionate computer science student with a strong foundation in full-stack development and a keen interest in AI/ML. Experienced in building responsive web applications using React, Node.js, and PostgreSQL. Seeking opportunities to apply technical skills in real-world industry settings and contribute meaningfully to innovative teams.
-                            </p>
+                            {summary ? (
+                                <p className="text-sm text-slate-500 leading-relaxed">{summary}</p>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                    <Info size={28} className="text-slate-200" />
+                                    <p className="text-sm text-slate-400 font-medium">No summary yet</p>
+                                    <p className="text-xs text-slate-300">Click Edit to add a profile summary</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -303,8 +444,8 @@ export default function Profile() {
                                                         <p className="text-xs text-slate-400 mt-0.5">{exp.period}</p>
                                                     </div>
                                                     <div className="flex gap-1.5">
-                                                        <button className="text-slate-200 hover:text-slate-400 transition-colors"><Pencil size={12} /></button>
-                                                        <button className="text-slate-200 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
+                                                        <button className="text-slate-500 hover:text-slate-400 transition-colors"><Pencil size={15} /></button>
+                                                        <button className="text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
                                                     </div>
                                                 </div>
                                                 <p className="text-xs text-slate-500 leading-relaxed mt-2">{exp.desc}</p>
@@ -320,43 +461,46 @@ export default function Profile() {
                     <Collapsible defaultOpen className="group">
                         <Card className="rounded-2xl border border-slate-100 shadow-sm">
                             <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<GraduationCap size={13} />} title="Education" />
+                                <SectionHeader icon={<GraduationCap size={13} />} title="Education" onAdd={() => openDialog("education")} />
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <CardContent className="px-6 flex flex-col gap-5">
-                                    {[
-                                        {
-                                            degree: "Bachelor of Computer Science",
-                                            field: "Software Engineering",
-                                            school: "Universiti Malaya",
-                                            period: "Sep 2021 — Present",
-                                        },
-                                        {
-                                            degree: "Foundation in Science",
-                                            field: "Physical Sciences",
-                                            school: "KPM Foundation Centre",
-                                            period: "Jan 2020 — Aug 2021",
-                                        },
-                                    ].map((edu, i, arr) => (
-                                        <div key={i} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
-                                            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <GraduationCap size={14} className="text-slate-400" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <p className="font-semibold text-[#0f172a] text-sm">{edu.degree}</p>
-                                                        <p className="text-xs text-[#2563eb] font-medium mt-0.5">{edu.school}</p>
-                                                        <p className="text-xs text-slate-400 mt-0.5">{edu.field} · {edu.period}</p>
-                                                    </div>
-                                                    <div className="flex gap-1.5">
-                                                        <button className="text-slate-200 hover:text-slate-400 transition-colors"><Pencil size={12} /></button>
-                                                        <button className="text-slate-200 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
+                                    {education.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                            <GraduationCap size={28} className="text-slate-200" />
+                                            <p className="text-sm text-slate-400 font-medium">No education added yet</p>
+                                            <p className="text-xs text-slate-300">Click Add to add your education history</p>
+                                        </div>
+                                    ) : (
+                                        education.map((edu, i, arr) => (
+                                            <div key={edu.id} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
+                                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                    <GraduationCap size={14} className="text-slate-400" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-start justify-between">
+                                                        <div>
+                                                            <p className="text-xs text-[#2563eb] font-medium mt-0.5">{edu.institution}</p>
+                                                            <p className="text-xs text-slate-400 mt-0.5">
+                                                                {edu.field} · {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex gap-1.5">
+                                                            <button className="text-slate-500 hover:text-slate-400 transition-colors"><Pencil size={15} /></button>
+                                                            <button className="text-slate-500 hover:text-red-400 transition-colors"
+                                                                onClick={() => {
+                                                                    openDeleteDialog()
+                                                                    setDeleteTarget({ id: edu.id, label: `${edu.institution} - ${edu.field}`, type: "education" })
+                                                                }}
+                                                            >
+                                                                <Trash2 size={15} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </CardContent>
                             </CollapsibleContent>
                         </Card>
@@ -448,11 +592,50 @@ export default function Profile() {
                 <SummaryForm
                     open={dialogOpen}
                     onOpenChange={(open) => {
+                        if (!open) {
+                            summaryForm.reset({
+                                summary
+                            })
+                        }
                         setDialogOpen(open)
                     }}
+                    form={summaryForm}
+                    onSubmit={submitSummaryForm}
                 />
             )}
 
+            {dialogType === "education" && (
+                <EducationForm
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            educationForm.reset({
+                                institution: "",
+                                field: "",
+                                start_year: "",
+                                end_year: "",
+                                is_current: false,
+                            })
+                        }
+                        setDialogOpen(open)
+                    }}
+                    form={educationForm}
+                    onSubmit={submitEducationForm}
+                />
+            )}
+
+            {/* DeleteDialog */}
+            {deleteDialogOpen && (
+                <DeleteDialog
+                    open={deleteDialogOpen}
+                    onOpenChange={(open) => {
+                        setDeleteDialogOpen(open)
+                    }}
+                    title={`Remove ${(deleteTarget?.type ?? "").charAt(0).toUpperCase() + (deleteTarget?.type ?? "").slice(1)}?`}
+                    description={`Are you sure you want to remove "${deleteTarget?.label}"? This action cannot be undone.`}
+                    onConfirm={() => deleteRecord(deleteTarget!)}
+                />
+            )}
         </div>
     )
 }
