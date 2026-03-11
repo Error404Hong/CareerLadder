@@ -215,6 +215,42 @@ const deleteEducation = async (req, res) => {
     }
 };
 
+const editEducation = async (req, res) => {
+    const { id } = req.params;
+    const { institution, field, start_year, end_year, is_current } = req.body;
+
+    if (!id) {
+        return sendResponse(res, 400, "Education ID is Required");
+    }
+
+    try {
+        const result = await Users.editEducation(
+            institution,
+            field,
+            start_year,
+            end_year,
+            is_current,
+            id,
+        );
+
+        if (!result) {
+            return sendResponse(res, 404, "Failed to Edit Education Record");
+        } else {
+            return sendResponse(
+                res,
+                200,
+                "Education Edited Successfully",
+                result,
+            );
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error Edit Education Record: ", error);
+        return sendResponse(res, 500, "Failed to Edit Education Record", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -224,4 +260,5 @@ module.exports = {
     getStudentEducation,
     addNewEducation,
     deleteEducation,
+    editEducation,
 };

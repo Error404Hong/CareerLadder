@@ -144,6 +144,33 @@ class Users {
             throw error;
         }
     }
+
+    static async editEducation(
+        institution,
+        field,
+        start_year,
+        end_year,
+        is_current,
+        educationid,
+    ) {
+        try {
+            const query = `UPDATE student_education SET institution = $1, field = $2, start_year = $3, end_year = $4, 
+            is_current = $5, updated_at = NOW() WHERE id = $6 RETURNING *`;
+            const values = [
+                institution,
+                field,
+                start_year,
+                end_year,
+                is_current,
+                educationid,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            logger.error("[MODEL] Error Modifying Education Record: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;

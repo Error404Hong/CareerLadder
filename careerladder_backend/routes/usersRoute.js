@@ -9,6 +9,7 @@ const {
     getStudentEducation,
     addNewEducation,
     deleteEducation,
+    editEducation,
 } = require("../controllers/usersController");
 
 router.post("/addNewUser", addNewUser);
@@ -19,5 +20,6 @@ router.put("/modifyProfileSummary/:clerkid", modifyProfileSummary);
 router.get("/getEducation/:clerkid", getStudentEducation);
 router.post("/addEducation/:clerkid", addNewEducation);
 router.delete("/deleteEducation/:id", deleteEducation);
+router.put("/editEducation/:id", editEducation);
 
 module.exports = router;

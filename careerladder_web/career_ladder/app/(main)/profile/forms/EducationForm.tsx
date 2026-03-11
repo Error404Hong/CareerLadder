@@ -25,16 +25,27 @@ type Props = {
     onOpenChange: (open: boolean) => void
     form: ReturnType<typeof useForm<EducationFormValues>>
     onSubmit: (values: EducationFormValues) => Promise<void>
+    mode?: "add" | "edit"
 }
 
-export default function EducationForm({ open, onOpenChange, form, onSubmit }: Props) {
+export default function EducationForm({ open, onOpenChange, form, onSubmit, mode = "add" }: Props) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <form id="education-form" onSubmit={form.handleSubmit(onSubmit)}>
                 <DialogContent className="sm:max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Add Education</DialogTitle>
-                        <DialogDescription>Provide details about your education to showcase your academic background.</DialogDescription>
+                        <DialogTitle>
+                            {mode === "edit"
+                                ? "Edit Education"
+                                : "Add Education"
+                            }
+                        </DialogTitle>
+                        <DialogDescription>
+                            {mode === "edit"
+                                ? "Update your education details."
+                                : "Provide details about your education to showcase your academic background."
+                            }
+                        </DialogDescription>
                     </DialogHeader>
 
                     <FieldGroup className="gap-5">
@@ -110,7 +121,10 @@ export default function EducationForm({ open, onOpenChange, form, onSubmit }: Pr
                             <Button variant="outline" className="cursor-pointer">Cancel</Button>
                         </DialogClose>
                         <Button type="submit" form="education-form" className="cursor-pointer bg-(--color-navy-mid)">
-                            Add Education
+                            {mode === "edit"
+                                ? "Update Education"
+                                : "Add Education"
+                            }
                         </Button>
                     </DialogFooter>
                 </DialogContent>

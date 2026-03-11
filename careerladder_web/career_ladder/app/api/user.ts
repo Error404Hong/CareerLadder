@@ -141,3 +141,31 @@ export const deleteEducation = async (educationid: number) => {
         throw error;
     }
 };
+
+export const editEducation = async (
+    institution: string,
+    field: string,
+    start_year: string,
+    end_year: string,
+    is_current: boolean,
+    educationid: number,
+) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/editEducation/${educationid}`,
+            {
+                institution,
+                field,
+                start_year,
+                end_year: is_current ? null : end_year,
+                is_current,
+            },
+        );
+
+        console.log("Edited Education: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error Editing Education Record: ", error);
+        throw error;
+    }
+};

@@ -9,12 +9,13 @@ import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation, addNewEducation, deleteEducation } from "@/app/api/user"
+import { getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation, addNewEducation, deleteEducation, editEducation } from "@/app/api/user"
 
 import { DeleteDialog } from "./delete/DeleteDialog"
 import ProfileForm, { formSchema, type ProfileFormValues, jobTypes } from "./forms/ProfileForm"
 import SummaryForm, { summaryFormSchema, type SummaryFormValues } from "./forms/SummaryForm"
 import EducationForm, { educationFormSchema, type EducationFormValues } from "./forms/EducationForm"
+import ExperienceForm, { experienceFormSchema, type ExperienceFormValues } from "./forms/ExperienceForm"
 
 
 const SectionHeader = ({ icon, title, onAdd }: { icon: React.ReactNode; title: string; onAdd?: () => void }) => (
@@ -50,10 +51,28 @@ type Education = {
     is_current: boolean
 }
 
+type Experience = {
+    id: number,
+    clerk_id: string,
+    jobtitle: string,
+    jobdescription: string,
+    company: string,
+    start_year: string
+    end_year: string | null
+    is_current: boolean,
+    location: string,
+    employment_type: string
+}
+
 type DeleteTarget = {
     id: number,
     label: string,
     type: "education" | "experience" | "skill" | "language"
+}
+
+type EditTarget = {
+    type: "education" | "experience"
+    data: Education | Experience
 }
 
 export default function Profile() {
@@ -73,6 +92,9 @@ export default function Profile() {
     const [dialogType, setDialogType] = useState("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+    const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editId, setEditId] = useState(0);
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(formSchema),
@@ -200,7 +222,6 @@ export default function Profile() {
     }
 
     const submitEducationForm = async (values: EducationFormValues) => {
-        console.log("Submitting: ", values);
         const sYear = Number(values.start_year);
         const eYear = Number(values.end_year);
 
@@ -219,22 +240,48 @@ export default function Profile() {
             return
         }
 
-        const addEducation = await addNewEducation(
-            cid,
-            values.institution,
-            values.field,
-            values.start_year,
-            values.end_year ?? null,
-            values.is_current
-        )
+        if (isEditMode) {
+            console.log("Editing: ", values);
 
-        if (addEducation.success) {
-            setEducation(prev => [...prev, addEducation.data])
-            toast.success("Education has been added successfully")
-            setDialogOpen(false)
+            const updEducation = await editEducation(
+                values.institution,
+                values.field,
+                values.start_year,
+                values.end_year ?? null,
+                values.is_current,
+                editId
+            )
+
+            if (updEducation.success) {
+                setEducation(prev => prev.map(e => e.id === editId ? updEducation.data : e))
+                toast.success("Education Record Updated Successfully");
+            } else {
+                toast.error("Failed to Edit Education Record. Please try again")
+            }
+
+            setIsEditMode(false);
         } else {
-            toast.error("Failed to add new education. Please try again")
+            console.log("Submitting: ", values);
+
+
+            const addEducation = await addNewEducation(
+                cid,
+                values.institution,
+                values.field,
+                values.start_year,
+                values.end_year ?? null,
+                values.is_current
+            )
+
+            if (addEducation.success) {
+                setEducation(prev => [...prev, addEducation.data])
+                toast.success("Education has been added successfully")
+            } else {
+                toast.error("Failed to add new education. Please try again")
+            }
         }
+
+        setDialogOpen(false)
     }
 
     const deleteRecord = async (values: DeleteTarget) => {
@@ -414,7 +461,7 @@ export default function Profile() {
                     <Collapsible defaultOpen className="group">
                         <Card className="rounded-2xl border border-slate-100 shadow-sm">
                             <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<Briefcase size={13} />} title="Work Experience" />
+                                <SectionHeader icon={<Briefcase size={13} />} title="Work Experience" onAdd={() => openDialog("experience")} />
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <CardContent className="px-6 flex flex-col gap-5">
@@ -486,7 +533,24 @@ export default function Profile() {
                                                             </p>
                                                         </div>
                                                         <div className="flex gap-1.5">
-                                                            <button className="text-slate-500 hover:text-slate-400 transition-colors"><Pencil size={15} /></button>
+                                                            <button className="text-slate-500 hover:text-slate-400 transition-colors"
+                                                                onClick={() => {
+                                                                    console.log("Editing: ", edu.institution, ": ", edu.field, ": ", edu.id);
+                                                                    setIsEditMode(true);
+                                                                    setEditTarget({ type: "education", data: edu });
+                                                                    setEditId(edu.id);
+                                                                    educationForm.reset({
+                                                                        institution: edu.institution,
+                                                                        field: edu.field,
+                                                                        start_year: edu.start_year,
+                                                                        end_year: edu.end_year ?? "",
+                                                                        is_current: edu.is_current,
+                                                                    })
+                                                                    openDialog("education");
+                                                                }}
+                                                            >
+                                                                <Pencil size={15} />
+                                                            </button>
                                                             <button className="text-slate-500 hover:text-red-400 transition-colors"
                                                                 onClick={() => {
                                                                     openDeleteDialog()
@@ -616,11 +680,25 @@ export default function Profile() {
                                 end_year: "",
                                 is_current: false,
                             })
+                            setEditTarget(null);
                         }
                         setDialogOpen(open)
                     }}
                     form={educationForm}
                     onSubmit={submitEducationForm}
+                    mode={editTarget ? "edit" : "add"}
+                />
+            )}
+
+            {dialogType === "experience" && (
+                <ExperienceForm
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        setDialogOpen(open)
+                    }}
+                    form={educationForm}
+                    onSubmit={submitEducationForm}
+                    mode={editTarget ? "edit" : "add"}
                 />
             )}
 
