@@ -169,3 +169,98 @@ export const editEducation = async (
         throw error;
     }
 };
+
+export const getStudentExperience = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/users/getExperience/${clerkid}`,
+        );
+
+        console.log("Student Experience: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error getting student experience: ", error);
+        throw error;
+    }
+};
+
+export const addNewExperience = async (
+    clerkid: string,
+    jobtitle: string,
+    company: string,
+    start_year: string,
+    end_year: string,
+    is_current: boolean,
+    jobdescription: string,
+    location: string,
+    employment_type: string,
+) => {
+    try {
+        const response = await axiosInstance.post(
+            `/users/addExperience/${clerkid}`,
+            {
+                jobtitle,
+                company,
+                start_year,
+                end_year,
+                is_current,
+                jobdescription,
+                location,
+                employment_type,
+            },
+        );
+
+        console.log("Added Experience: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding new student experience: ", error);
+        throw error;
+    }
+};
+
+export const deleteExperience = async (experienceid: number) => {
+    try {
+        const response = await axiosInstance.delete(
+            `/users/deleteExperience/${experienceid}`,
+        );
+        console.log("DELETED EXPERIENCE: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error Deleting Work Experience Record: ", error);
+        throw error;
+    }
+};
+
+export const editExperience = async (
+    jobtitle: string,
+    company: string,
+    start_year: string,
+    end_year: string,
+    is_current: boolean,
+    jobdescription: string,
+    location: string,
+    employment_type: string,
+    experience_id: number,
+) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/editExperience/${experience_id}`,
+            {
+                jobtitle,
+                company,
+                start_year,
+                end_year: is_current ? null : end_year,
+                is_current,
+                jobdescription,
+                location,
+                employment_type,
+            },
+        );
+
+        console.log("EDITED: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error editing work experience record");
+        throw error;
+    }
+};

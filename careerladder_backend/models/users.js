@@ -171,6 +171,95 @@ class Users {
             throw error;
         }
     }
+
+    static async getStudentExperience(clerk_id) {
+        try {
+            const query = `SELECT * FROM student_experience WHERE clerk_id = $1`;
+            const values = [clerk_id];
+            const result = await pool.query(query, values);
+            return result.rows;
+        } catch (error) {
+            logger.error("[MODEL] Error getting student experience: ", error);
+            throw error;
+        }
+    }
+
+    static async addNewExperience(
+        clerk_id,
+        jobtitle,
+        company,
+        start_year,
+        end_year,
+        is_current,
+        jobdescription,
+        location,
+        employment_type,
+    ) {
+        try {
+            const query = `INSERT INTO student_experience(clerk_id, jobtitle, company, start_year, end_year, is_current, job_description, 
+            location, employment_type, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING *`;
+            const values = [
+                clerk_id,
+                jobtitle,
+                company,
+                start_year,
+                end_year,
+                is_current,
+                jobdescription,
+                location,
+                employment_type,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ? result.rows[0] : null;
+        } catch (error) {
+            logger.error("[MODEL] Error Adding New Experience Record: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteExperience(experienceId) {
+        try {
+            const query = "DELETE FROM student_experience WHERE id = $1";
+            const values = [experienceId];
+            await pool.query(query, values);
+        } catch (error) {
+            logger.error("[MODEL] Error Deleting Experience Record: ", error);
+            throw error;
+        }
+    }
+
+    static async editExperience(
+        jobtitle,
+        company,
+        start_year,
+        end_year,
+        is_current,
+        jobdescription,
+        location,
+        employment_type,
+        experience_id,
+    ) {
+        try {
+            const query = `UPDATE student_experience SET jobtitle = $1, company = $2, start_year = $3, end_year = $4, is_current = $5, 
+            job_description = $6, location = $7, employment_type = $8, updated_at = NOW() WHERE id = $9 RETURNING *`;
+            const values = [
+                jobtitle,
+                company,
+                start_year,
+                end_year,
+                is_current,
+                jobdescription,
+                location,
+                employment_type,
+                experience_id,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            logger.error("[MODEL] Error Editing Experience Record: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;

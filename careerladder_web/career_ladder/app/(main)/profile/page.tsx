@@ -1,6 +1,7 @@
 "use client"
 
 import { toast } from "sonner"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info } from "lucide-react"
@@ -9,13 +10,16 @@ import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation, addNewEducation, deleteEducation, editEducation } from "@/app/api/user"
+import {
+    getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation,
+    addNewEducation, deleteEducation, editEducation, getStudentExperience, addNewExperience, deleteExperience, editExperience
+} from "@/app/api/user"
 
 import { DeleteDialog } from "./delete/DeleteDialog"
 import ProfileForm, { formSchema, type ProfileFormValues, jobTypes } from "./forms/ProfileForm"
 import SummaryForm, { summaryFormSchema, type SummaryFormValues } from "./forms/SummaryForm"
 import EducationForm, { educationFormSchema, type EducationFormValues } from "./forms/EducationForm"
-import ExperienceForm, { experienceFormSchema, type ExperienceFormValues } from "./forms/ExperienceForm"
+import ExperienceForm, { experienceFormSchema, type ExperienceFormValues, jobTypes as workTypes } from "./forms/ExperienceForm"
 
 
 const SectionHeader = ({ icon, title, onAdd }: { icon: React.ReactNode; title: string; onAdd?: () => void }) => (
@@ -55,7 +59,7 @@ type Experience = {
     id: number,
     clerk_id: string,
     jobtitle: string,
-    jobdescription: string,
+    job_description: string,
     company: string,
     start_year: string
     end_year: string | null
@@ -88,6 +92,7 @@ export default function Profile() {
     const [location, setLocation] = useState("");
     const [summary, setSummary] = useState("");
     const [education, setEducation] = useState<Education[]>([]);
+    const [experience, setExperience] = useState<Experience[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -128,6 +133,20 @@ export default function Profile() {
         }
     })
 
+    const experienceForm = useForm<ExperienceFormValues>({
+        resolver: zodResolver(experienceFormSchema),
+        defaultValues: {
+            jobtitle: "",
+            jobdescription: "",
+            company: "",
+            start_year: "",
+            end_year: "",
+            is_current: false,
+            location: "",
+            employment_type: ""
+        }
+    })
+
     useEffect(() => {
         const getUser = async () => {
             if (!user) return
@@ -141,6 +160,7 @@ export default function Profile() {
 
                 const userProfile = await getStudentProfile(user.id);
                 const userEducation = await getStudentEducation(user.id);
+                const userExperience = await getStudentExperience(user.id);
 
                 if (userProfile) {
                     setMajor(userProfile.data.major ?? "Not Specified Yet");
@@ -167,7 +187,11 @@ export default function Profile() {
                 }
 
                 if (userEducation) {
-                    setEducation(userEducation.data);
+                    setEducation(userEducation.data ?? []);
+                }
+
+                if (userExperience) {
+                    setExperience(userExperience.data ?? []);
                 }
             }
         }
@@ -175,7 +199,49 @@ export default function Profile() {
         getUser()
     }, [user, form, summaryForm])
 
+    const clearEditState = () => {
+        setIsEditMode(false)
+        setEditId(0)
+        setEditTarget(null)
+    }
+
     const openDialog = (type: string) => {
+        if (type === "education") {
+            educationForm.reset({
+                institution: "",
+                field: "",
+                start_year: "",
+                end_year: "",
+                is_current: false,
+            })
+        }
+        if (type === "experience") {
+            experienceForm.reset({
+                jobtitle: "",
+                company: "",
+                start_year: "",
+                end_year: "",
+                is_current: false,
+                location: "",
+                employment_type: "",
+                jobdescription: ""
+            })
+        }
+        clearEditState()
+        setDialogType(type)
+        setDialogOpen(true)
+    }
+
+    const openEditDialog = (type: "education" | "experience", id: number, target: EditTarget, formValues: EducationFormValues | ExperienceFormValues) => {
+        setIsEditMode(true)
+        setEditId(id)
+        setEditTarget(target)
+        if (type === "education") {
+            educationForm.reset(formValues as EducationFormValues)
+        }
+        if (type === "experience") {
+            experienceForm.reset(formValues as ExperienceFormValues)
+        }
         setDialogType(type)
         setDialogOpen(true)
     }
@@ -185,14 +251,10 @@ export default function Profile() {
     }
 
     const submitForm = async (values: ProfileFormValues) => {
-        console.log("Submitting", values)
         if (dialogType === "profile") {
             const updRes = await modifyUserProfile(values.linkedin_url, values.location, values.major, values.jobtype, values.work_status, cid);
 
             if (updRes.success) {
-                // setFname(values.fname);
-                // setLname(values.lname);
-                // setEmail(values.email);
                 setLocation(values.location);
                 setLinkedinURL(values.linkedin_url);
                 setMajor(values.major);
@@ -200,15 +262,13 @@ export default function Profile() {
                 setWorkStatus(values.work_status)
                 toast.success("Profile has been updated successfully")
             } else {
-                console.log("Failed to update profile")
+                toast.error("Failed to update profile. Please try again")
             }
         }
         setDialogOpen(false)
     }
 
     const submitSummaryForm = async (values: SummaryFormValues) => {
-        console.log("Submitting: ", values);
-
         const updSummary = await modifyProfileSummary(values.summary, cid);
 
         if (updSummary.success) {
@@ -241,29 +301,24 @@ export default function Profile() {
         }
 
         if (isEditMode) {
-            console.log("Editing: ", values);
-
+            const currentEditId = editId // capture before clearing
             const updEducation = await editEducation(
                 values.institution,
                 values.field,
                 values.start_year,
                 values.end_year ?? null,
                 values.is_current,
-                editId
+                currentEditId
             )
 
             if (updEducation.success) {
-                setEducation(prev => prev.map(e => e.id === editId ? updEducation.data : e))
-                toast.success("Education Record Updated Successfully");
+                setEducation(prev => prev.map(e => e.id === currentEditId ? updEducation.data : e))
+                toast.success("Education Record Updated Successfully")
+                clearEditState()
             } else {
                 toast.error("Failed to Edit Education Record. Please try again")
             }
-
-            setIsEditMode(false);
         } else {
-            console.log("Submitting: ", values);
-
-
             const addEducation = await addNewEducation(
                 cid,
                 values.institution,
@@ -284,6 +339,55 @@ export default function Profile() {
         setDialogOpen(false)
     }
 
+    const submitExperienceForm = async (values: ExperienceFormValues) => {
+        const sYear = Number(values.start_year);
+        const eYear = Number(values.end_year);
+
+        if (!values.is_current && !values.end_year) {
+            toast.error("Please provide an end year or check 'Currently working here'")
+            return
+        }
+
+        if (!values.is_current && sYear > eYear) {
+            toast.error("Start year cannot be later than end year")
+            return
+        }
+
+        if (isEditMode) {
+            const currentEditId = editId // capture before clearing
+            const updExp = await editExperience(
+                values.jobtitle,
+                values.company,
+                values.start_year,
+                values.end_year,
+                values.is_current,
+                values.jobdescription,
+                values.location,
+                values.employment_type,
+                currentEditId
+            );
+
+            if (updExp.success) {
+                setExperience(prev => prev.map(e => e.id === currentEditId ? updExp.data : e))
+                toast.success("Work experience has been edited successfully")
+                clearEditState()
+            } else {
+                toast.error("Failed to edit work experience. Please try again")
+            }
+        } else {
+            const addExperience = await addNewExperience(cid, values.jobtitle, values.company, values.start_year, values.end_year ?? null, values.is_current, values.jobdescription, values.location, values.employment_type);
+
+            if (addExperience.success) {
+                setExperience(prev => [...prev, addExperience.data]);
+                toast.success("Experience has been added successfully");
+            } else {
+                toast.error("Failed to add work experience. Please try again")
+            }
+        }
+
+        setDialogOpen(false);
+    }
+
     const deleteRecord = async (values: DeleteTarget) => {
         if (!deleteTarget) {
             toast.error("Something went wrong.");
@@ -295,15 +399,24 @@ export default function Profile() {
 
             if (deleteEdu.success) {
                 setEducation(prev => prev.filter(e => e.id !== values.id))
-                toast.success("Deleted Successfully")
+                toast.success("Education has been deleted successfully")
             } else {
                 toast.error("Failed to delete the education record")
             }
         }
 
+        if (values.type === "experience") {
+            const deleteExp = await deleteExperience(values.id);
+
+            if (deleteExp.success) {
+                setExperience(prev => prev.filter(e => e.id !== values.id))
+                toast.success("Work experience has been deleted successfully");
+            } else {
+                toast.error("Failed to delete the work experience record")
+            }
+        }
+
         setDeleteDialogOpen(false)
-
-
     }
 
     const jobLabel = jobTypes.find(j => j.value === job_type)?.label || "Not specified";
@@ -348,7 +461,7 @@ export default function Profile() {
                                 <div className="flex items-center gap-2.5 text-xs text-slate-500">
                                     <Globe size={12} className="text-slate-300 shrink-0" />
                                     <span className="text-[#2563eb]">
-                                        {form.getValues("linkedin_url") || "No LinkedIn URL"}
+                                        {linkedinURL || "No LinkedIn URL"}
                                     </span>
                                 </div>
                             </div>
@@ -465,40 +578,74 @@ export default function Profile() {
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <CardContent className="px-6 flex flex-col gap-5">
-                                    {[
-                                        {
-                                            role: "Frontend Intern",
-                                            company: "TechCorp Sdn Bhd",
-                                            period: "Jan 2024 — Present",
-                                            desc: "Built responsive UI components using React and Tailwind CSS. Collaborated with senior engineers on feature delivery and participated in agile sprints.",
-                                        },
-                                        {
-                                            role: "Junior Web Developer",
-                                            company: "Freelance",
-                                            period: "Jun 2023 — Dec 2023",
-                                            desc: "Developed landing pages and e-commerce solutions for small businesses using Next.js and Stripe integration.",
-                                        },
-                                    ].map((exp, i, arr) => (
-                                        <div key={i} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
-                                            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <Briefcase size={14} className="text-slate-400" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <p className="font-semibold text-[#0f172a] text-sm">{exp.role}</p>
-                                                        <p className="text-xs text-[#2563eb] font-medium mt-0.5">{exp.company}</p>
-                                                        <p className="text-xs text-slate-400 mt-0.5">{exp.period}</p>
-                                                    </div>
-                                                    <div className="flex gap-1.5">
-                                                        <button className="text-slate-500 hover:text-slate-400 transition-colors"><Pencil size={15} /></button>
-                                                        <button className="text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
-                                                    </div>
-                                                </div>
-                                                <p className="text-xs text-slate-500 leading-relaxed mt-2">{exp.desc}</p>
-                                            </div>
+                                    {experience.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                            <Briefcase size={28} className="text-slate-200" />
+                                            <p className="text-sm text-slate-400 font-medium">No experience added yet</p>
+                                            <p className="text-xs text-slate-300">Click Add to add your work experience</p>
                                         </div>
-                                    ))}
+                                    ) : (
+                                        experience.map((exp, i, arr) => (
+                                            <div key={exp.id} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
+                                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                    <Briefcase size={14} className="text-slate-400" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-start justify-between">
+                                                        <div>
+                                                            <p className="font-semibold text-[#0f172a] text-sm">{exp.jobtitle}</p>
+                                                            <p className="text-xs text-[#2563eb] font-medium mt-0.5">{exp.company}</p>
+                                                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                                <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
+                                                                    {workTypes.find(j => j.value === exp.employment_type)?.label ?? exp.employment_type}
+                                                                </Badge>
+                                                                {exp.location && (
+                                                                    <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
+                                                                        {exp.location}
+                                                                    </Badge>
+                                                                )}
+                                                                <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
+                                                                    {exp.start_year} — {exp.is_current ? "Present" : exp.end_year}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-1.5">
+                                                            <button
+                                                                className="text-slate-500 hover:text-slate-400 transition-colors"
+                                                                onClick={() => openEditDialog(
+                                                                    "experience",
+                                                                    exp.id,
+                                                                    { type: "experience", data: exp },
+                                                                    {
+                                                                        jobtitle: exp.jobtitle,
+                                                                        company: exp.company,
+                                                                        location: exp.location,
+                                                                        employment_type: exp.employment_type,
+                                                                        jobdescription: exp.job_description,
+                                                                        start_year: exp.start_year,
+                                                                        end_year: exp.end_year ?? "",
+                                                                        is_current: exp.is_current,
+                                                                    }
+                                                                )}
+                                                            >
+                                                                <Pencil size={15} />
+                                                            </button>
+                                                            <button
+                                                                className="text-slate-500 hover:text-red-400 transition-colors"
+                                                                onClick={() => {
+                                                                    openDeleteDialog()
+                                                                    setDeleteTarget({ id: exp.id, label: `${exp.jobtitle} at ${exp.company}`, type: "experience" })
+                                                                }}
+                                                            >
+                                                                <Trash2 size={15} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 leading-relaxed mt-2">{exp.job_description}</p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </CardContent>
                             </CollapsibleContent>
                         </Card>
@@ -533,25 +680,25 @@ export default function Profile() {
                                                             </p>
                                                         </div>
                                                         <div className="flex gap-1.5">
-                                                            <button className="text-slate-500 hover:text-slate-400 transition-colors"
-                                                                onClick={() => {
-                                                                    console.log("Editing: ", edu.institution, ": ", edu.field, ": ", edu.id);
-                                                                    setIsEditMode(true);
-                                                                    setEditTarget({ type: "education", data: edu });
-                                                                    setEditId(edu.id);
-                                                                    educationForm.reset({
+                                                            <button
+                                                                className="text-slate-500 hover:text-slate-400 transition-colors"
+                                                                onClick={() => openEditDialog(
+                                                                    "education",
+                                                                    edu.id,
+                                                                    { type: "education", data: edu },
+                                                                    {
                                                                         institution: edu.institution,
                                                                         field: edu.field,
                                                                         start_year: edu.start_year,
                                                                         end_year: edu.end_year ?? "",
                                                                         is_current: edu.is_current,
-                                                                    })
-                                                                    openDialog("education");
-                                                                }}
+                                                                    }
+                                                                )}
                                                             >
                                                                 <Pencil size={15} />
                                                             </button>
-                                                            <button className="text-slate-500 hover:text-red-400 transition-colors"
+                                                            <button
+                                                                className="text-slate-500 hover:text-red-400 transition-colors"
                                                                 onClick={() => {
                                                                     openDeleteDialog()
                                                                     setDeleteTarget({ id: edu.id, label: `${edu.institution} - ${edu.field}`, type: "education" })
@@ -657,9 +804,7 @@ export default function Profile() {
                     open={dialogOpen}
                     onOpenChange={(open) => {
                         if (!open) {
-                            summaryForm.reset({
-                                summary
-                            })
+                            summaryForm.reset({ summary })
                         }
                         setDialogOpen(open)
                     }}
@@ -672,21 +817,12 @@ export default function Profile() {
                 <EducationForm
                     open={dialogOpen}
                     onOpenChange={(open) => {
-                        if (!open) {
-                            educationForm.reset({
-                                institution: "",
-                                field: "",
-                                start_year: "",
-                                end_year: "",
-                                is_current: false,
-                            })
-                            setEditTarget(null);
-                        }
+                        if (!open) clearEditState()
                         setDialogOpen(open)
                     }}
                     form={educationForm}
                     onSubmit={submitEducationForm}
-                    mode={editTarget ? "edit" : "add"}
+                    mode={isEditMode ? "edit" : "add"}
                 />
             )}
 
@@ -694,11 +830,12 @@ export default function Profile() {
                 <ExperienceForm
                     open={dialogOpen}
                     onOpenChange={(open) => {
+                        if (!open) clearEditState()
                         setDialogOpen(open)
                     }}
-                    form={educationForm}
-                    onSubmit={submitEducationForm}
-                    mode={editTarget ? "edit" : "add"}
+                    form={experienceForm}
+                    onSubmit={submitExperienceForm}
+                    mode={isEditMode ? "edit" : "add"}
                 />
             )}
 

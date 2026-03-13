@@ -251,6 +251,159 @@ const editEducation = async (req, res) => {
     }
 };
 
+const getStudentExperience = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) {
+        return sendResponse(res, 400, "User ID is Required");
+    }
+
+    try {
+        const result = await Users.getStudentExperience(clerkid);
+
+        if (!result) {
+            return sendResponse(res, 400, "Student experience not found");
+        } else {
+            return sendResponse(res, 200, "Student experience found", result);
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error getting student experience: ", error);
+        return sendResponse(res, 500, "Failed to get student experience", {
+            error: error.message,
+        });
+    }
+};
+
+const addNewExperience = async (req, res) => {
+    const { clerkid } = req.params;
+    const {
+        jobtitle,
+        company,
+        start_year,
+        end_year,
+        is_current,
+        jobdescription,
+        location,
+        employment_type,
+    } = req.body;
+
+    if (!clerkid) {
+        return sendResponse(res, 400, "User ID is Required");
+    }
+
+    try {
+        const result = await Users.addNewExperience(
+            clerkid,
+            jobtitle,
+            company,
+            start_year,
+            end_year,
+            is_current,
+            jobdescription,
+            location,
+            employment_type,
+        );
+
+        if (!result) {
+            return sendResponse(
+                res,
+                404,
+                "Failed to Add New Work Experience",
+                result,
+            );
+        } else {
+            return sendResponse(res, 200, "New Work Experience Added", result);
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error adding new work experience: ", error);
+        return sendResponse(res, 500, "Failed to add new work experience", {
+            error: error.message,
+        });
+    }
+};
+
+const deleteExperience = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return sendResponse(res, 400, "Experience ID is Required");
+    }
+
+    try {
+        await Users.deleteExperience(id);
+        return sendResponse(
+            res,
+            200,
+            "Work Experience Record Deleted Successfully",
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Error Deleting Work Experience Record: ",
+            error,
+        );
+        return sendResponse(
+            res,
+            500,
+            "Failed to Delete Work Experience Record",
+            {
+                error: error.message,
+            },
+        );
+    }
+};
+
+const editExperience = async (req, res) => {
+    const { id } = req.params;
+    const {
+        jobtitle,
+        company,
+        start_year,
+        end_year,
+        is_current,
+        jobdescription,
+        location,
+        employment_type,
+    } = req.body;
+
+    if (!id) {
+        return sendResponse(res, 400, "Experience id is required");
+    }
+
+    try {
+        const result = await Users.editExperience(
+            jobtitle,
+            company,
+            start_year,
+            end_year,
+            is_current,
+            jobdescription,
+            location,
+            employment_type,
+            id,
+        );
+
+        if (!result) {
+            return sendResponse(
+                res,
+                404,
+                "Failed to Edit Work Experience Record",
+            );
+        } else {
+            return sendResponse(
+                res,
+                200,
+                "Experience Edited Successfully",
+                result,
+            );
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error modifying work experience");
+        return sendResponse(res, 500, "Failed to modify work experience ", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -261,4 +414,8 @@ module.exports = {
     addNewEducation,
     deleteEducation,
     editEducation,
+    getStudentExperience,
+    addNewExperience,
+    deleteExperience,
+    editExperience,
 };
