@@ -1,3 +1,4 @@
+const { removeResume } = require("../config/cloudinary");
 const pool = require("../config/database");
 const logger = require("../utils/logger");
 
@@ -257,6 +258,45 @@ class Users {
             return result.rows[0];
         } catch (error) {
             logger.error("[MODEL] Error Editing Experience Record: ", error);
+            throw error;
+        }
+    }
+
+    static async saveResume(resumeURL, clerkid) {
+        try {
+            const query =
+                "UPDATE student_profiles SET resume = $1 WHERE clerk_id = $2 RETURNING *";
+            const values = [resumeURL, clerkid];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to upload student resume: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteResume(clerkid) {
+        try {
+            const selectQuery =
+                "SELECT resume FROM student_profiles WHERE clerk_id = $1";
+            const selectResult = await pool.query(selectQuery, [clerkid]);
+            const resumeUrl = selectResult.rows[0]?.resume;
+
+            if (resumeUrl) {
+                const publicId = resumeUrl
+                    .split("/")
+                    .slice(-2)
+                    .join("/")
+                    .split(".")[0];
+                await removeResume(publicId);
+            }
+
+            const query =
+                "UPDATE student_profiles SET resume = NULL WHERE clerk_id = $1 RETURNING *";
+            const result = await pool.query(query, [clerkid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to delete student resume: ", error);
             throw error;
         }
     }

@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info } from "lucide-react"
+import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info, Download } from "lucide-react"
 
 import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
@@ -12,7 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import {
     getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation,
-    addNewEducation, deleteEducation, editEducation, getStudentExperience, addNewExperience, deleteExperience, editExperience
+    addNewEducation, deleteEducation, editEducation, getStudentExperience, addNewExperience, deleteExperience, editExperience,
+    saveResume, deleteResume
 } from "@/app/api/user"
 
 import { DeleteDialog } from "./delete/DeleteDialog"
@@ -69,9 +70,9 @@ type Experience = {
 }
 
 type DeleteTarget = {
-    id: number,
+    id?: number,
     label: string,
-    type: "education" | "experience" | "skill" | "language"
+    type: "education" | "experience" | "skill" | "language" | "resume"
 }
 
 type EditTarget = {
@@ -86,6 +87,7 @@ export default function Profile() {
     const [lname, setLname] = useState("")
     const [email, setEmail] = useState("")
     const [major, setMajor] = useState("");
+    const [resumeURL, setResumeURL] = useState("");
     const [job_type, setJobtype] = useState("");
     const [linkedinURL, setLinkedinURL] = useState("");
     const [workStatus, setWorkStatus] = useState<boolean | undefined>(undefined);
@@ -169,6 +171,7 @@ export default function Profile() {
                     setWorkStatus(userProfile.data.work_status ?? false);
                     setJobtype(userProfile.data.job_preference ?? "");
                     setSummary(userProfile.data.profile_summary ?? "");
+                    setResumeURL(userProfile.data.resume ?? "");
 
                     form.reset({
                         fname: user.firstName || "Unknown",
@@ -388,6 +391,38 @@ export default function Profile() {
         setDialogOpen(false);
     }
 
+    const uploadResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.type !== "application/pdf") {
+            toast.error("Only PDF files are allowed");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("File size must be less than 5MB")
+            return;
+        }
+
+        try {
+            console.log("Uploading resume: ", file);
+            const formData = new FormData();
+            formData.append("resume", file);
+
+            const result = await saveResume(formData, cid);
+            if (result.success) {
+                setResumeURL(result.data.resume);
+                toast.success("Resume uploaded successfully")
+            } else {
+                toast.error("Failed to upload resume. Please try again")
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again");
+        }
+
+    }
+
     const deleteRecord = async (values: DeleteTarget) => {
         if (!deleteTarget) {
             toast.error("Something went wrong.");
@@ -395,7 +430,7 @@ export default function Profile() {
         }
 
         if (values.type === "education") {
-            const deleteEdu = await deleteEducation(values.id);
+            const deleteEdu = await deleteEducation(values.id!);
 
             if (deleteEdu.success) {
                 setEducation(prev => prev.filter(e => e.id !== values.id))
@@ -406,13 +441,24 @@ export default function Profile() {
         }
 
         if (values.type === "experience") {
-            const deleteExp = await deleteExperience(values.id);
+            const deleteExp = await deleteExperience(values.id!);
 
             if (deleteExp.success) {
-                setExperience(prev => prev.filter(e => e.id !== values.id))
+                setExperience(prev => prev.filter(e => e.id !== values.id!))
                 toast.success("Work experience has been deleted successfully");
             } else {
                 toast.error("Failed to delete the work experience record")
+            }
+        }
+
+        if (values.type === "resume") {
+            const delResume = await deleteResume(cid);
+
+            if (delResume.success) {
+                setResumeURL("");
+                toast.success("Resume has been deleted successfully");
+            } else {
+                toast.error("Failed to delete resume");
             }
         }
 
@@ -484,21 +530,39 @@ export default function Profile() {
                                 </span>
                                 <span className="font-semibold text-[#0f172a] text-sm">Resume</span>
                             </div>
-                            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                                <div className="w-9 h-9 rounded-lg bg-[#0f172a] flex items-center justify-center shrink-0">
-                                    <FileText size={13} className="text-white" />
+
+                            {resumeURL ? (
+                                <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                                    <div className="w-9 h-9 rounded-lg bg-[#0f172a] flex items-center justify-center shrink-0">
+                                        <FileText size={13} className="text-white" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-[#0f172a] truncate">{resumeURL.split("/").pop()}</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">Uploaded</p>
+                                    </div>
+                                    <a href={resumeURL} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#2563eb] transition-colors cursor-pointer">
+                                        <Download size={15} />
+                                    </a>
+                                    <button className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            openDeleteDialog()
+                                            setDeleteTarget({ label: "Resume", type: "resume" })
+                                        }}
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-[#0f172a] truncate">alex_johnson_cv.pdf</p>
-                                    <p className="text-[11px] text-slate-400 mt-0.5">Uploaded · 2.1 MB</p>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <FileText size={24} className="text-slate-400" />
+                                    <p className="text-sm text-slate-400 font-medium">No resume uploaded yet</p>
+                                    <p className="text-xs text-slate-400">Upload a PDF to showcase your experience</p>
                                 </div>
-                                <button className="text-slate-300 hover:text-red-400 transition-colors">
-                                    <Trash2 size={13} />
-                                </button>
-                            </div>
-                            <label className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-slate-400 border border-dashed border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] rounded-xl py-2.5 cursor-pointer transition-colors">
-                                <Upload size={11} /> Replace Resume
-                                <input type="file" className="hidden" accept=".pdf" />
+                            )}
+
+                            <label className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 border border-dashed border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] rounded-xl py-2.5 cursor-pointer transition-colors">
+                                <Upload size={11} /> {resumeURL ? "Replace Resume" : "Upload Resume"}
+                                <input type="file" className="hidden" accept=".pdf" onChange={uploadResume} />
                             </label>
                         </CardContent>
                     </Card>

@@ -264,3 +264,28 @@ export const editExperience = async (
         throw error;
     }
 };
+
+export const saveResume = async (resumeData: FormData, clerkid: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/saveResume/${clerkid}`,
+            resumeData,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error uploadting resume: ", error);
+        throw error;
+    }
+};
+
+export const deleteResume = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/deleteResume/${clerkid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting resume");
+        throw error;
+    }
+};

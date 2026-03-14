@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { uploadResume } = require("../config/cloudinary");
 const {
     addNewUser,
     getUser,
@@ -14,6 +15,8 @@ const {
     addNewExperience,
     deleteExperience,
     editExperience,
+    saveResume,
+    deleteResume,
 } = require("../controllers/usersController");
 
 router.post("/addNewUser", addNewUser);
@@ -29,5 +32,7 @@ router.get("/getExperience/:clerkid", getStudentExperience);
 router.post("/addExperience/:clerkid", addNewExperience);
 router.delete("/deleteExperience/:id", deleteExperience);
 router.put("/editExperience/:id", editExperience);
+router.put("/saveResume/:clerkid", uploadResume.single("resume"), saveResume);
+router.put("/deleteResume/:clerkid", deleteResume);
 
 module.exports = router;

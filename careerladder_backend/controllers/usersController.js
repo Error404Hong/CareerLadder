@@ -404,6 +404,49 @@ const editExperience = async (req, res) => {
     }
 };
 
+const saveResume = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) return sendResponse(res, 400, "User id is required");
+    if (!req.file) return sendResponse(res, 400, "No file uploaded");
+
+    try {
+        const resumeURL = req.file.path;
+        const result = await Users.saveResume(resumeURL, clerkid);
+
+        if (!result) {
+            return sendResponse(res, 404, "Failed to upload resume");
+        } else {
+            return sendResponse(
+                res,
+                200,
+                "Resume uploaded successfully",
+                result,
+            );
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error uploading resume");
+        return sendResponse(res, 500, "Failed to upload resume", {
+            error: error.message,
+        });
+    }
+};
+
+const deleteResume = async (req, res) => {
+    const { clerkid } = req.params;
+    if (!clerkid) return sendResponse(res, 400, "User ID is required");
+    try {
+        const result = await Users.deleteResume(clerkid);
+        if (!result) return sendResponse(res, 404, "Resume failed to delete");
+        return sendResponse(res, 200, "Resume deleted successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Error Deleting Resume: ", error);
+        return sendResponse(res, 500, "Failed to delete resume", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -418,4 +461,6 @@ module.exports = {
     addNewExperience,
     deleteExperience,
     editExperience,
+    saveResume,
+    deleteResume,
 };
