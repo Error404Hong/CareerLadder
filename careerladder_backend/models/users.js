@@ -300,6 +300,119 @@ class Users {
             throw error;
         }
     }
+
+    static async getStudentSkills(clerkid) {
+        try {
+            const query = "SELECT * FROM student_skills WHERE clerk_id = $1";
+            const values = [clerkid];
+            const result = await pool.query(query, values);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to get student skills: ", error);
+            throw error;
+        }
+    }
+
+    static async addNewSkill(clerkid, skill) {
+        try {
+            const query =
+                "INSERT INTO student_skills(clerk_id, name) VALUES($1, $2) RETURNING *";
+            const values = [clerkid, skill];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to add new skill: ", error);
+            throw error;
+        }
+    }
+
+    static async removeSkill(id) {
+        try {
+            const query = "DELETE FROM student_skills WHERE id = $1";
+            const values = [id];
+            await pool.query(query, values);
+        } catch (error) {
+            logger.error("[MODEL] Failed to removeskill: ", error);
+            throw error;
+        }
+    }
+
+    static async addLanguage(clerk_id, language, proficiency) {
+        try {
+            const query =
+                "INSERT INTO student_languages(clerk_id, language, proficiency) VALUES($1, $2, $3) RETURNING *";
+            const values = [clerk_id, language, proficiency];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to add language: ", error);
+            throw error;
+        }
+    }
+
+    static async getLanguages(clerk_id) {
+        try {
+            const query = "SELECT * FROM student_languages WHERE clerk_id = $1";
+            const values = [clerk_id];
+            const result = await pool.query(query, values);
+            return result.rows;
+        } catch (error) {
+            logger.error("[MODEL] Failed to get languages: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteLanguage(id) {
+        try {
+            const query =
+                "DELETE FROM student_languages WHERE id = $1 RETURNING *";
+            const values = [id];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to delete language: ", error);
+            throw error;
+        }
+    }
+
+    static async checkProfileCompleted(clerk_id) {
+        try {
+            const query = `
+            SELECT 
+                sp.major, sp.location, sp.linkedin_url, sp.profile_summary,
+                (SELECT COUNT(*) FROM student_education WHERE clerk_id = $1) as edu_count,
+                (SELECT COUNT(*) FROM student_experience WHERE clerk_id = $1) as exp_count,
+                (SELECT COUNT(*) FROM student_skills WHERE clerk_id = $1) as skill_count,
+                (SELECT COUNT(*) FROM student_languages WHERE clerk_id = $1) as language_count,
+                (SELECT resume FROM student_profiles WHERE clerk_id = $1) as resume
+            FROM student_profiles sp
+            WHERE sp.clerk_id = $1
+        `;
+            const result = await pool.query(query, [clerk_id]);
+            const data = result.rows[0];
+
+            const isCompleted =
+                data.major &&
+                data.location &&
+                data.linkedin_url &&
+                data.profile_summary &&
+                parseInt(data.edu_count) > 0 &&
+                parseInt(data.exp_count) > 0 &&
+                parseInt(data.skill_count) > 0 &&
+                parseInt(data.language_count) > 0 &&
+                data.resume;
+
+            await pool.query(
+                "UPDATE users SET profile_completed = $1 WHERE clerk_id = $2",
+                [isCompleted ? 1 : 0, clerk_id],
+            );
+
+            return isCompleted ? 1 : 0;
+        } catch (error) {
+            logger.error("[MODEL] Error checking profile completion: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;

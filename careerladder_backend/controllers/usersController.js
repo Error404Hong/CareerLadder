@@ -447,6 +447,115 @@ const deleteResume = async (req, res) => {
     }
 };
 
+const getStudentSkills = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) return sendResponse(res, 400, "User id is required");
+
+    try {
+        const result = await Users.getStudentSkills(clerkid);
+
+        if (!result) {
+            return sendResponse(res, 404, "Failed to get student skills");
+        } else {
+            return sendResponse(
+                res,
+                200,
+                "Successfully get student skills",
+                result,
+            );
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error getting student skills: ", error);
+        return sendResponse(res, 500, "Failed to get student skills", {
+            error: error.message,
+        });
+    }
+};
+
+const addNewSkill = async (req, res) => {
+    const { clerkid } = req.params;
+    const { name } = req.body;
+
+    if (!clerkid) return sendResponse(res, 400, "User id is required");
+
+    try {
+        const result = await Users.addNewSkill(clerkid, name);
+
+        if (!result) {
+            return sendResponse(res, 404, "Failed to add new skill");
+        } else {
+            return sendResponse(res, 200, "Skill added successfully", result);
+        }
+    } catch (error) {
+        logger.error("[CONTROLLER] Error adding new skill: ", error);
+        return sendResponse(res, 500, "Failed to add new skill", {
+            error: error.message,
+        });
+    }
+};
+
+const removeSkill = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return sendResponse(res, 400, "Skill id is required");
+
+    try {
+        await Users.removeSkill(id);
+        return sendResponse(res, 200, "Skill removed successfully");
+    } catch (error) {
+        logger.error("[CONTROLLER] Error removing skill: ", error);
+        return sendResponse(res, 500, "Failed to remove skill", {
+            error: error.message,
+        });
+    }
+};
+
+const addLanguage = async (req, res) => {
+    const { clerkid } = req.params;
+    const { language, proficiency } = req.body;
+    if (!clerkid) return sendResponse(res, 400, "User ID is required");
+    try {
+        const result = await Users.addLanguage(clerkid, language, proficiency);
+        if (!result) return sendResponse(res, 400, "Failed to add language");
+        return sendResponse(res, 200, "Language added successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Error adding language: ", error);
+        return sendResponse(res, 500, "Failed to add language", {
+            error: error.message,
+        });
+    }
+};
+
+const getLanguages = async (req, res) => {
+    const { clerkid } = req.params;
+    if (!clerkid) return sendResponse(res, 400, "User ID is required");
+    try {
+        const result = await Users.getLanguages(clerkid);
+        return sendResponse(res, 200, "Languages fetched successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Error getting languages: ", error);
+        return sendResponse(res, 500, "Failed to get languages", {
+            error: error.message,
+        });
+    }
+};
+
+const deleteLanguage = async (req, res) => {
+    const { id } = req.params;
+    if (!id) return sendResponse(res, 400, "Language ID is required");
+    try {
+        const result = await Users.deleteLanguage(id);
+        if (!result) return sendResponse(res, 404, "Language not found");
+        return sendResponse(res, 200, "Language deleted successfully");
+    } catch (error) {
+        logger.error("[CONTROLLER] Error deleting language: ", error);
+        return sendResponse(res, 500, "Failed to delete language", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -463,4 +572,10 @@ module.exports = {
     editExperience,
     saveResume,
     deleteResume,
+    getStudentSkills,
+    addNewSkill,
+    removeSkill,
+    addLanguage,
+    getLanguages,
+    deleteLanguage,
 };

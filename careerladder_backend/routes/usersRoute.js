@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { uploadResume } = require("../config/cloudinary");
+const checkProfileCompletion = require("../middleware/profileCompletion");
 const {
     addNewUser,
     getUser,
@@ -17,22 +18,51 @@ const {
     editExperience,
     saveResume,
     deleteResume,
+    getStudentSkills,
+    addNewSkill,
+    removeSkill,
+    addLanguage,
+    getLanguages,
+    deleteLanguage,
 } = require("../controllers/usersController");
 
 router.post("/addNewUser", addNewUser);
 router.get("/getUser/:clerkid", getUser);
 router.get("/getProfile/:clerkid", getStudentProfile);
-router.put("/modifyUser/:clerkid", modifyUser);
-router.put("/modifyProfileSummary/:clerkid", modifyProfileSummary);
+router.put("/modifyUser/:clerkid", checkProfileCompletion(), modifyUser);
+router.put(
+    "/modifyProfileSummary/:clerkid",
+    checkProfileCompletion(),
+    modifyProfileSummary,
+);
 router.get("/getEducation/:clerkid", getStudentEducation);
-router.post("/addEducation/:clerkid", addNewEducation);
+router.post(
+    "/addEducation/:clerkid",
+    checkProfileCompletion(),
+    addNewEducation,
+);
 router.delete("/deleteEducation/:id", deleteEducation);
 router.put("/editEducation/:id", editEducation);
 router.get("/getExperience/:clerkid", getStudentExperience);
-router.post("/addExperience/:clerkid", addNewExperience);
+router.post(
+    "/addExperience/:clerkid",
+    checkProfileCompletion(),
+    addNewExperience,
+);
 router.delete("/deleteExperience/:id", deleteExperience);
 router.put("/editExperience/:id", editExperience);
-router.put("/saveResume/:clerkid", uploadResume.single("resume"), saveResume);
-router.put("/deleteResume/:clerkid", deleteResume);
+router.put(
+    "/saveResume/:clerkid",
+    uploadResume.single("resume"),
+    checkProfileCompletion(),
+    saveResume,
+);
+router.put("/deleteResume/:clerkid", checkProfileCompletion(), deleteResume);
+router.get("/getSkills/:clerkid", getStudentSkills);
+router.post("/addSkill/:clerkid", checkProfileCompletion(), addNewSkill);
+router.delete("/removeSkill/:id", removeSkill);
+router.get("/getLanguages/:clerkid", getLanguages);
+router.post("/addLanguage/:clerkid", checkProfileCompletion(), addLanguage);
+router.delete("/deleteLanguage/:id", deleteLanguage);
 
 module.exports = router;

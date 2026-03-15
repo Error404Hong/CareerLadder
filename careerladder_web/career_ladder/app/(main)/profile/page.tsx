@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form"
 import {
     getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation,
     addNewEducation, deleteEducation, editEducation, getStudentExperience, addNewExperience, deleteExperience, editExperience,
-    saveResume, deleteResume
+    saveResume, deleteResume, getStudentSkills, addNewSkill, removeSkill, getLanguages, addLanguage, deleteLanguage
 } from "@/app/api/user"
 
 import { DeleteDialog } from "./delete/DeleteDialog"
@@ -21,6 +21,8 @@ import ProfileForm, { formSchema, type ProfileFormValues, jobTypes } from "./for
 import SummaryForm, { summaryFormSchema, type SummaryFormValues } from "./forms/SummaryForm"
 import EducationForm, { educationFormSchema, type EducationFormValues } from "./forms/EducationForm"
 import ExperienceForm, { experienceFormSchema, type ExperienceFormValues, jobTypes as workTypes } from "./forms/ExperienceForm"
+import SkillForm, { skillsFormSchema, type SkillsFormValues } from "./forms/SkillsForm"
+import LanguageForm, { languageFormSchema, type LanguageFormValues, proficiencyLevels } from "./forms/LanguageForm"
 
 
 const SectionHeader = ({ icon, title, onAdd }: { icon: React.ReactNode; title: string; onAdd?: () => void }) => (
@@ -69,6 +71,19 @@ type Experience = {
     employment_type: string
 }
 
+type Skills = {
+    id: number,
+    clerk_id: string,
+    name: string,
+}
+
+type Language = {
+    id: number,
+    clerk_id: string,
+    language: string,
+    proficiency: string,
+}
+
 type DeleteTarget = {
     id?: number,
     label: string,
@@ -95,6 +110,8 @@ export default function Profile() {
     const [summary, setSummary] = useState("");
     const [education, setEducation] = useState<Education[]>([]);
     const [experience, setExperience] = useState<Experience[]>([]);
+    const [skills, setSkills] = useState<Skills[]>([]);
+    const [languages, setLanguages] = useState<Language[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -149,6 +166,21 @@ export default function Profile() {
         }
     })
 
+    const skillForm = useForm<SkillsFormValues>({
+        resolver: zodResolver(skillsFormSchema),
+        defaultValues: {
+            name: ""
+        }
+    })
+
+    const languageForm = useForm<LanguageFormValues>({
+        resolver: zodResolver(languageFormSchema),
+        defaultValues: {
+            language: "",
+            proficiency: ""
+        }
+    })
+
     useEffect(() => {
         const getUser = async () => {
             if (!user) return
@@ -163,6 +195,8 @@ export default function Profile() {
                 const userProfile = await getStudentProfile(user.id);
                 const userEducation = await getStudentEducation(user.id);
                 const userExperience = await getStudentExperience(user.id);
+                const userSkills = await getStudentSkills(user.id);
+                const userLanguages = await getLanguages(user.id);
 
                 if (userProfile) {
                     setMajor(userProfile.data.major ?? "Not Specified Yet");
@@ -196,6 +230,14 @@ export default function Profile() {
                 if (userExperience) {
                     setExperience(userExperience.data ?? []);
                 }
+
+                if (userSkills) {
+                    setSkills(userSkills.data ?? []);
+                }
+
+                if (userLanguages) {
+                    setLanguages(userLanguages.data ?? []);
+                }
             }
         }
 
@@ -218,6 +260,7 @@ export default function Profile() {
                 is_current: false,
             })
         }
+
         if (type === "experience") {
             experienceForm.reset({
                 jobtitle: "",
@@ -230,6 +273,14 @@ export default function Profile() {
                 jobdescription: ""
             })
         }
+
+        if (type === "skill") {
+            skillForm.reset({ name: "" })
+        }
+        if (type === "language") {
+            languageForm.reset({ language: "", proficiency: "" })
+        }
+
         clearEditState()
         setDialogType(type)
         setDialogOpen(true)
@@ -391,6 +442,43 @@ export default function Profile() {
         setDialogOpen(false);
     }
 
+    const submitSkillForm = async (values: SkillsFormValues) => {
+        try {
+            const addSkill = await addNewSkill(cid, values.name);
+
+            if (addSkill.success) {
+                setSkills(prev => [...prev, addSkill.data]);
+                toast.success("New skill has been added successfully")
+            } else {
+                toast.error("Failed to add new skill. Please try again")
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again.");
+            throw error;
+        } finally {
+            setDialogOpen(false)
+        }
+    }
+
+    const submitLanguageForm = async (values: LanguageFormValues) => {
+        console.log("Submitting: ", values)
+
+        try {
+            const result = await addLanguage(cid, values.language, values.proficiency)
+
+            if (result.success) {
+                setLanguages(prev => [...prev, result.data])
+                toast.success("Language added successfully")
+                setDialogOpen(false)
+            } else {
+                toast.error("Failed to add language. Please try again")
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again");
+            throw error;
+        }
+    }
+
     const uploadResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -459,6 +547,28 @@ export default function Profile() {
                 toast.success("Resume has been deleted successfully");
             } else {
                 toast.error("Failed to delete resume");
+            }
+        }
+
+        if (values.type === "skill") {
+            const delSkill = await removeSkill(values.id!);
+
+            if (delSkill.success) {
+                setSkills(prev => prev.filter(e => e.id !== values.id!));
+                toast.success("The skill has been removed successfully")
+            } else {
+                toast.error("Failed to remove the skill")
+            }
+        }
+
+        if (values.type === "language") {
+            const delLangauge = await deleteLanguage(values.id!);
+
+            if (delLangauge.success) {
+                setLanguages(prev => prev.filter(e => e.id !== values.id!));
+                toast.success("Language has been removed successfully")
+            } else {
+                toast.error("Failed to remove the language")
             }
         }
 
@@ -568,7 +678,7 @@ export default function Profile() {
                     </Card>
 
                     {/* Profile completion */}
-                    <Card className="rounded-2xl border border-slate-100 shadow-sm">
+                    {/* <Card className="rounded-2xl border border-slate-100 shadow-sm">
                         <CardContent className="px-5">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="font-semibold text-[#0f172a] text-sm">Profile Strength</span>
@@ -599,7 +709,7 @@ export default function Profile() {
                                 ))}
                             </div>
                         </CardContent>
-                    </Card>
+                    </Card> */}
                 </div>
 
                 {/* ── RIGHT SIDE ── */}
@@ -785,21 +895,34 @@ export default function Profile() {
                     <Collapsible defaultOpen className="group">
                         <Card className="rounded-2xl border border-slate-100 shadow-sm">
                             <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<Code2 size={13} />} title="Skills" />
+                                <SectionHeader icon={<Code2 size={13} />} title="Skills" onAdd={() => openDialog("skill")} />
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <CardContent className="px-6">
-                                    <div className="flex flex-wrap gap-2">
-                                        {["React", "TypeScript", "Next.js", "Node.js", "PostgreSQL", "TailwindCSS", "Python", "Git", "REST APIs", "Figma"].map(skill => (
-                                            <span key={skill} className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors cursor-default">
-                                                {skill}
-                                                <button className="text-slate-300 hover:text-red-400 transition-colors"><span className="text-[10px]">✕</span></button>
-                                            </span>
-                                        ))}
-                                        <button className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border border-dashed border-slate-300 text-slate-400 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
-                                            <Plus size={11} /> Add skill
-                                        </button>
-                                    </div>
+                                    {skills.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                            <Code2 size={28} className="text-slate-200" />
+                                            <p className="text-sm text-slate-400 font-medium">No skills added yet</p>
+                                            <p className="text-xs text-slate-300">Click Add to add your skills</p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {skills.map((skill) => (
+                                                <span key={skill.id} className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
+                                                    {skill.name}
+                                                    <button
+                                                        className="text-slate-300 hover:text-red-400 transition-colors"
+                                                        onClick={() => {
+                                                            setDeleteTarget({ id: skill.id, label: skill.name, type: "skill" })
+                                                            setDeleteDialogOpen(true)
+                                                        }}
+                                                    >
+                                                        <span className="text-[10px]">✕</span>
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </CollapsibleContent>
                         </Card>
@@ -809,28 +932,41 @@ export default function Profile() {
                     <Collapsible defaultOpen className="group">
                         <Card className="rounded-2xl border border-slate-100 shadow-sm">
                             <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<Languages size={13} />} title="Languages" />
+                                <SectionHeader icon={<Languages size={13} />} title="Languages" onAdd={() => openDialog("language")} />
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <CardContent className="px-6 flex flex-col gap-3">
-                                    {[
-                                        { lang: "English", level: "Fluent", pct: 90 },
-                                        { lang: "Bahasa Malaysia", level: "Native", pct: 100 },
-                                        { lang: "Mandarin", level: "Basic", pct: 35 },
-                                    ].map((l, i) => (
-                                        <div key={i} className="flex items-center gap-4">
-                                            <div className="w-28 shrink-0">
-                                                <p className="text-sm font-medium text-[#0f172a]">{l.lang}</p>
-                                                <p className="text-[11px] text-slate-400">{l.level}</p>
-                                            </div>
-                                            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-linear-to-r from-[#0f172a] to-[#2563eb] rounded-full" style={{ width: `${l.pct}%` }} />
-                                            </div>
-                                            <button className="text-slate-200 hover:text-red-400 transition-colors shrink-0">
-                                                <Trash2 size={12} />
-                                            </button>
+                                    {languages.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                            <Languages size={28} className="text-slate-200" />
+                                            <p className="text-sm text-slate-400 font-medium">No languages added yet</p>
+                                            <p className="text-xs text-slate-300">Click Add to add your languages</p>
                                         </div>
-                                    ))}
+                                    ) : (
+                                        languages.map((l) => {
+                                            const pct = proficiencyLevels.find(p => p.value === l.proficiency)?.pct ?? 0
+                                            return (
+                                                <div key={l.id} className="flex items-center gap-4">
+                                                    <div className="w-28 shrink-0">
+                                                        <p className="text-sm font-medium text-[#0f172a]">{l.language}</p>
+                                                        <p className="text-[11px] text-slate-400 capitalize">{l.proficiency}</p>
+                                                    </div>
+                                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-linear-to-r from-[#0f172a] to-[#2563eb] rounded-full" style={{ width: `${pct}%` }} />
+                                                    </div>
+                                                    <button
+                                                        className="text-slate-500 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
+                                                        onClick={() => {
+                                                            setDeleteTarget({ id: l.id, label: l.language, type: "language" })
+                                                            setDeleteDialogOpen(true)
+                                                        }}
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </div>
+                                            )
+                                        })
+                                    )}
                                 </CardContent>
                             </CollapsibleContent>
                         </Card>
@@ -900,6 +1036,38 @@ export default function Profile() {
                     form={experienceForm}
                     onSubmit={submitExperienceForm}
                     mode={isEditMode ? "edit" : "add"}
+                />
+            )}
+
+            {dialogType === "skill" && (
+                <SkillForm
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            skillForm.reset({ name: "" })
+                        }
+                        setDialogOpen(open)
+                    }}
+                    form={skillForm}
+                    onSubmit={submitSkillForm}
+                />
+            )}
+
+            {dialogType === "language" && (
+                <LanguageForm
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            languageForm.reset({
+                                language: "",
+                                proficiency: ""
+                            })
+                        }
+                        setDialogOpen(open)
+                    }}
+                    form={languageForm}
+                    onSubmit={submitLanguageForm}
+
                 />
             )}
 

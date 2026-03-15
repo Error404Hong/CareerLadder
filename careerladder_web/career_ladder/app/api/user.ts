@@ -289,3 +289,83 @@ export const deleteResume = async (clerkid: string) => {
         throw error;
     }
 };
+
+export const getStudentSkills = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(`/users/getSkills/${clerkid}`);
+        console.log("Skills Fetched: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error getting student skills");
+        throw error;
+    }
+};
+
+export const addNewSkill = async (clerkid: string, name: string) => {
+    try {
+        const response = await axiosInstance.post(
+            `/users/addSkill/${clerkid}`,
+            { name },
+        );
+        console.log("ADDED: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding new skill: ", error);
+        throw error;
+    }
+};
+
+export const removeSkill = async (id: number) => {
+    try {
+        const response = await axiosInstance.delete(`/users/removeSkill/${id}`);
+        console.log("DELETED: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error removing student skills");
+        throw error;
+    }
+};
+
+export const getLanguages = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/users/getLanguages/${clerkid}`,
+        );
+        console.log("GET LANGUAGES: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error getting languages");
+        throw error;
+    }
+};
+
+export const addLanguage = async (
+    clerkid: string,
+    language: string,
+    proficiency: string,
+) => {
+    try {
+        const response = await axiosInstance.post(
+            `/users/addLanguage/${clerkid}`,
+            { language, proficiency },
+        );
+        console.log("ADDED LANGUAGE: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding language");
+        throw error;
+    }
+};
+
+export const deleteLanguage = async (id: number) => {
+    try {
+        const response = await axiosInstance.delete(
+            `/users/deleteLanguage/${id}`,
+        );
+        console.log("DELETED LANGUAGE: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting language");
+        throw error;
+    }
+};
