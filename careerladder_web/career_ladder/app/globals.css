@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary: oklch(0.282 0.072 261.3);
+  --primary: oklch(25.668% 0.06462 261.846);
   --color-danger: #EF4444;
   --color-success: #22C543;
   --color-warning: #F36B16;
@@ -121,6 +121,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  
 }
 
 @layer base {
@@ -131,3 +132,4 @@
     @apply bg-background text-foreground;
   }
 }
+

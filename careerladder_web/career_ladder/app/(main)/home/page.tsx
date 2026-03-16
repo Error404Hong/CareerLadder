@@ -25,13 +25,6 @@ export default function HomePage() {
             const userData = await getUserById(user.id);
             console.log("data: ", userData.data);
 
-            localStorage.setItem("clerkid", user.id);
-            localStorage.setItem("userid", userData.data.id)
-            localStorage.setItem("role", userData.data.role);
-            localStorage.setItem("firstname", user.firstName || "Unknown");
-            localStorage.setItem("lastname", user.lastName || "Unknown");
-            localStorage.setItem("profile_completion", userData.data.profile_completed);
-
             if (userData.data.profile_completed == '0') {
                 setOpenDialog(true)
             }
