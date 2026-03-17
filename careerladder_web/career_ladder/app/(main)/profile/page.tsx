@@ -597,7 +597,7 @@ export default function Profile() {
                         <CardContent className="px-6 pb-6 pt-3 text-center">
                             <h2 className="text-lg font-bold text-[#0f172a]">{fname} {lname}</h2>
                             <p className="text-sm text-[#2563eb] font-medium mt-0.5">{major} Student</p>
-                            <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs mt-2">
+                            <div className="flex items-center justify-center gap-1.5 text-slate-400 text-sm mt-2">
                                 <MapPin size={11} /><span>{location}</span>
                             </div>
                             <div className="flex flex-wrap justify-center gap-1.5 mt-4">
@@ -610,11 +610,11 @@ export default function Profile() {
                             </div>
                             <div className="h-px bg-slate-100 my-4" />
                             <div className="flex flex-col gap-2 text-left">
-                                <div className="flex items-center gap-2.5 text-xs text-slate-500">
+                                <div className="flex items-center gap-2.5 text-sm text-slate-500">
                                     <Mail size={12} className="text-slate-300 shrink-0" />
                                     <span>{email || "No email"}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 text-xs text-slate-500">
+                                <div className="flex items-center gap-2.5 text-sm text-slate-500">
                                     <Globe size={12} className="text-slate-300 shrink-0" />
                                     <span className="text-[#2563eb]">
                                         {linkedinURL || "No LinkedIn URL"}
@@ -623,7 +623,7 @@ export default function Profile() {
                             </div>
                             <div className="h-px bg-slate-100 my-4" />
                             <button
-                                className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-xl py-2.5 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors"
+                                className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-xl py-2.5 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors"
                                 onClick={() => openDialog("profile")}
                             >
                                 <Pencil size={11} /> Edit Profile
@@ -647,7 +647,7 @@ export default function Profile() {
                                         <FileText size={13} className="text-white" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-medium text-[#0f172a] truncate">{resumeURL.split("/").pop()}</p>
+                                        <p className="text-sm font-medium text-[#0f172a] truncate">{resumeURL.split("/").pop()}</p>
                                         <p className="text-[11px] text-slate-400 mt-0.5">Uploaded</p>
                                     </div>
                                     <a href={resumeURL} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#2563eb] transition-colors cursor-pointer">
@@ -666,11 +666,11 @@ export default function Profile() {
                                 <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-50 border border-slate-200 rounded-xl">
                                     <FileText size={24} className="text-slate-400" />
                                     <p className="text-sm text-slate-400 font-medium">No resume uploaded yet</p>
-                                    <p className="text-xs text-slate-400">Upload a PDF to showcase your experience</p>
+                                    <p className="text-sm text-slate-400">Upload a PDF to showcase your experience</p>
                                 </div>
                             )}
 
-                            <label className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 border border-dashed border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] rounded-xl py-2.5 cursor-pointer transition-colors">
+                            <label className="mt-3 w-full flex items-center justify-center gap-1.5 text-sm font-medium text-slate-500 border border-dashed border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] rounded-xl py-2.5 cursor-pointer transition-colors">
                                 <Upload size={11} /> {resumeURL ? "Replace Resume" : "Upload Resume"}
                                 <input type="file" className="hidden" accept=".pdf" onChange={uploadResume} />
                             </label>
@@ -682,7 +682,7 @@ export default function Profile() {
                         <CardContent className="px-5">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="font-semibold text-[#0f172a] text-sm">Profile Strength</span>
-                                <span className="text-xs font-bold text-[#2563eb]">83%</span>
+                                <span className="text-sm font-bold text-[#2563eb]">83%</span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-4">
                                 <div className="h-full w-[83%] bg-linear-to-r from-[#0f172a] to-[#2563eb] rounded-full" />
@@ -704,7 +704,7 @@ export default function Profile() {
                                                 </svg>
                                             )}
                                         </div>
-                                        <span className={`text-xs ${item.done ? "text-slate-600" : "text-slate-400"}`}>{item.label}</span>
+                                        <span className={`text-sm ${item.done ? "text-slate-600" : "text-slate-400"}`}>{item.label}</span>
                                     </div>
                                 ))}
                             </div>
@@ -738,7 +738,7 @@ export default function Profile() {
                                 <div className="flex flex-col items-center justify-center py-8 gap-2">
                                     <Info size={28} className="text-slate-200" />
                                     <p className="text-sm text-slate-400 font-medium">No summary yet</p>
-                                    <p className="text-xs text-slate-300">Click Edit to add a profile summary</p>
+                                    <p className="text-sm text-slate-300">Click Edit to add a profile summary</p>
                                 </div>
                             )}
                         </CardContent>
@@ -756,7 +756,7 @@ export default function Profile() {
                                         <div className="flex flex-col items-center justify-center py-8 gap-2">
                                             <Briefcase size={28} className="text-slate-200" />
                                             <p className="text-sm text-slate-400 font-medium">No experience added yet</p>
-                                            <p className="text-xs text-slate-300">Click Add to add your work experience</p>
+                                            <p className="text-sm text-slate-300">Click Add to add your work experience</p>
                                         </div>
                                     ) : (
                                         experience.map((exp, i, arr) => (
@@ -768,7 +768,7 @@ export default function Profile() {
                                                     <div className="flex items-start justify-between">
                                                         <div>
                                                             <p className="font-semibold text-[#0f172a] text-sm">{exp.jobtitle}</p>
-                                                            <p className="text-xs text-[#2563eb] font-medium mt-0.5">{exp.company}</p>
+                                                            <p className="text-sm text-[#2563eb] font-medium mt-0.5">{exp.company}</p>
                                                             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                                                                 <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
                                                                     {workTypes.find(j => j.value === exp.employment_type)?.label ?? exp.employment_type}
@@ -815,7 +815,7 @@ export default function Profile() {
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    <p className="text-xs text-slate-500 leading-relaxed mt-2">{exp.job_description}</p>
+                                                    <p className="text-sm text-slate-500 leading-relaxed mt-2">{exp.job_description}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -837,7 +837,7 @@ export default function Profile() {
                                         <div className="flex flex-col items-center justify-center py-8 gap-2">
                                             <GraduationCap size={28} className="text-slate-200" />
                                             <p className="text-sm text-slate-400 font-medium">No education added yet</p>
-                                            <p className="text-xs text-slate-300">Click Add to add your education history</p>
+                                            <p className="text-sm text-slate-300">Click Add to add your education history</p>
                                         </div>
                                     ) : (
                                         education.map((edu, i, arr) => (
@@ -848,8 +848,8 @@ export default function Profile() {
                                                 <div className="flex-1">
                                                     <div className="flex items-start justify-between">
                                                         <div>
-                                                            <p className="text-xs text-[#2563eb] font-medium mt-0.5">{edu.institution}</p>
-                                                            <p className="text-xs text-slate-400 mt-0.5">
+                                                            <p className="text-sm text-[#2563eb] font-medium mt-0.5">{edu.institution}</p>
+                                                            <p className="text-sm text-slate-400 mt-0.5">
                                                                 {edu.field} · {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
                                                             </p>
                                                         </div>
@@ -903,12 +903,12 @@ export default function Profile() {
                                         <div className="flex flex-col items-center justify-center py-8 gap-2">
                                             <Code2 size={28} className="text-slate-200" />
                                             <p className="text-sm text-slate-400 font-medium">No skills added yet</p>
-                                            <p className="text-xs text-slate-300">Click Add to add your skills</p>
+                                            <p className="text-sm text-slate-300">Click Add to add your skills</p>
                                         </div>
                                     ) : (
                                         <div className="flex flex-wrap gap-2">
                                             {skills.map((skill) => (
-                                                <span key={skill.id} className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
+                                                <span key={skill.id} className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
                                                     {skill.name}
                                                     <button
                                                         className="text-slate-300 hover:text-red-400 transition-colors"
@@ -940,7 +940,7 @@ export default function Profile() {
                                         <div className="flex flex-col items-center justify-center py-8 gap-2">
                                             <Languages size={28} className="text-slate-200" />
                                             <p className="text-sm text-slate-400 font-medium">No languages added yet</p>
-                                            <p className="text-xs text-slate-300">Click Add to add your languages</p>
+                                            <p className="text-sm text-slate-300">Click Add to add your languages</p>
                                         </div>
                                     ) : (
                                         languages.map((l) => {

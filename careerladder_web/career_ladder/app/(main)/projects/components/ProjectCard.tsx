@@ -26,7 +26,7 @@ export type Project = {
 export function ProjectCard({ project }: { project: Project }) {
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
-    const viewProject = (project: Project) => {
+    const viewProject = () => {
         setOpenDrawer(true);
     }
 
@@ -41,12 +41,12 @@ export function ProjectCard({ project }: { project: Project }) {
                                 <Briefcase size={16} className="text-slate-400" />
                             </div>
                             <Badge className="text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 rounded-full px-2.5 py-0.5 shrink-0">
-                                {project.status}
+                                {project.status.toUpperCase()}
                             </Badge>
                         </div>
-                        <h3 className="font-semibold text-[#0f172a] text-sm leading-snug mb-1">{project.title}</h3>
-                        <p className="text-xs text-[#2563eb] font-medium mb-3">{project.company_id}</p>
-                        <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mb-4 min-h-10">{project.description}</p>
+                        <h3 className="font-bold text-[#0f172a] text-large leading-snug mb-1">{project.title}</h3>
+                        <p className="text-sm text-[#2563eb] font-medium mb-3">{project.company_id}</p>
+                        <p className="text-sm text-slate-400 leading-relaxed line-clamp-2 mb-4 min-h-10">{project.description}</p>
                         <div className="flex flex-wrap gap-1.5 mb-4 min-h-6">
                             {project.skills_required?.slice(0, 3).map((skill) => (
                                 <span key={skill} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
@@ -60,26 +60,26 @@ export function ProjectCard({ project }: { project: Project }) {
                             )}
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-4">
-                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <div className="flex items-center gap-1.5 text-sm text-slate-400">
                                 <Clock size={11} className="shrink-0" />
                                 <span>{project.duration}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <div className="flex items-center gap-1.5 text-sm text-slate-400">
                                 <Users size={11} className="shrink-0" />
                                 <span>{project.vacancies} vacancies</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <div className="flex items-center gap-1.5 text-sm text-slate-400">
                                 <Wallet size={11} className="shrink-0" />
                                 <span>RM {project.allowance}/mo</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <div className="flex items-center gap-1.5 text-sm text-slate-400">
                                 <Calendar size={11} className="shrink-0" />
                                 <span>{new Date(project.start_date).toLocaleDateString("en-MY", { month: "short", year: "numeric" })}</span>
                             </div>
                         </div>
                         <div className="mt-auto">
-                            <Button className="w-full text-xs py-2.5 rounded-lg cursor-pointer"
-                                onClick={() => viewProject(project)}
+                            <Button className="w-full text-sm py-2.5 rounded-lg cursor-pointer"
+                                onClick={() => viewProject()}
                             >
                                 View Project
                             </Button>

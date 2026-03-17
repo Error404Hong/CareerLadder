@@ -10,3 +10,17 @@ export const getAllProjects = async () => {
         throw error;
     }
 };
+
+export const applyProjects = async (applicationData: FormData) => {
+    try {
+        const response = await axiosInstance.post(
+            "/projects/applyProjects",
+            applicationData,
+        );
+        console.log("Application for project: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error applying for project");
+        throw error;
+    }
+};

@@ -2,45 +2,49 @@
 
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { getAllProjects } from "@/app/api/project"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Briefcase, Search } from "lucide-react"
 
-import { ProjectCard, type Project } from "./components/ProjectCard"
-import { ProjectCardSkeleton } from "./components/ProjectCardSkeleton"
+import { getAllJobs } from "@/app/api/job"
+import { JobCard, type Jobs } from "./components/JobCard"
+import { JobCardSkeleton } from "./components/JobCardSkeleton"
 
-export default function Projects() {
-    const [projectList, setProjectList] = useState<Project[]>([])
+
+export default function Jobs() {
+    const [jobList, setJobList] = useState<Jobs[]>([]);
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
-    const [durationFilter, setDurationFilter] = useState("all")
+    const [employmentFilter, setEmploymentFilter] = useState("all")
+    const [remoteFilter, setRemoteFilter] = useState("all")
 
     useEffect(() => {
-        const fetchProjects = async () => {
+        const fetchJobs = async () => {
             try {
-                const projects = await getAllProjects()
-                if (projects.success) {
-                    setProjectList(projects.data)
+                const jobs = await getAllJobs()
+                if (jobs.success) {
+                    setJobList(jobs.data)
                 } else {
-                    toast.error("Failed to fetch projects. Please reload page.")
+                    toast.error("Failed to fetch jobs. Please reload page.")
                 }
             } finally {
                 setLoading(false)
             }
         }
-        fetchProjects();
+
+        fetchJobs();
     }, [])
 
-    const filtered = projectList
-        .filter(p => p.title.toLowerCase().includes(search.toLowerCase()) ||
-            p.description.toLowerCase().includes(search.toLowerCase()))
-        .filter(p => durationFilter === "all" || p.duration === durationFilter)
+    const filtered = jobList
+        .filter(j =>
+            j.title.toLowerCase().includes(search.toLowerCase()) ||
+            j.description.toLowerCase().includes(search.toLowerCase())
+        )
+        .filter(j => employmentFilter === "all" || j.employment_type === employmentFilter)
+        .filter(j => remoteFilter === "all" || (remoteFilter === "remote" ? j.is_remote : !j.is_remote))
 
     return (
         <div className="min-h-screen bg-slate-50">
-
-            {/* Header */}
             <div className="bg-white border-b border-slate-100">
                 <div className="max-w-7xl mx-auto px-6 py-6">
 
@@ -56,42 +60,50 @@ export default function Projects() {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm text-[#0f172a] font-medium">Project Listings</BreadcrumbPage>
+                                <BreadcrumbPage className="text-sm text-[#0f172a] font-medium">Opening Job Positions</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
 
                     <div className="flex items-end justify-between gap-6 flex-wrap">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">Project Listings</h1>
+                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">Opening Job Positions</h1>
                             <p className="text-sm text-slate-400 mt-1">
-                                {loading ? "Loading..." : `${filtered.length} open project${filtered.length !== 1 ? "s" : ""} available`}
+                                {loading ? "Loading..." : `${filtered.length} job${filtered.length !== 1 ? "s" : ""} available`}
                             </p>
                         </div>
 
-                        {/* Filters */}
                         <div className="flex items-center gap-3 flex-wrap">
                             <div className="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-200 bg-white w-56">
                                 <Search size={13} className="text-slate-400 shrink-0" />
                                 <input
                                     type="text"
-                                    placeholder="Search projects..."
+                                    placeholder="Search jobs..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     className="flex-1 text-sm bg-transparent outline-none text-slate-600 placeholder:text-slate-400"
                                 />
                             </div>
-                            <Select value={durationFilter} onValueChange={setDurationFilter}>
-                                <SelectTrigger className="h-9 w-36 text-sm rounded-xl border-slate-200">
-                                    <SelectValue placeholder="Duration" />
+                            <Select value={employmentFilter} onValueChange={setEmploymentFilter}>
+                                <SelectTrigger className="h-9 w-40 text-sm rounded-xl border-slate-200">
+                                    <SelectValue placeholder="Employment Type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Durations</SelectItem>
-                                    <SelectItem value="1 month">1 Month</SelectItem>
-                                    <SelectItem value="2 months">2 Months</SelectItem>
-                                    <SelectItem value="3 months">3 Months</SelectItem>
-                                    <SelectItem value="4 months">4 Months</SelectItem>
-                                    <SelectItem value="6 months">6 Months</SelectItem>
+                                    <SelectItem value="all">All Types</SelectItem>
+                                    <SelectItem value="fulltime">Full Time</SelectItem>
+                                    <SelectItem value="parttime">Part Time</SelectItem>
+                                    <SelectItem value="contract">Contract</SelectItem>
+                                    <SelectItem value="freelance">Freelance</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={remoteFilter} onValueChange={setRemoteFilter}>
+                                <SelectTrigger className="h-9 w-36 text-sm rounded-xl border-slate-200">
+                                    <SelectValue placeholder="Work Mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All</SelectItem>
+                                    <SelectItem value="remote">Remote</SelectItem>
+                                    <SelectItem value="onsite">On-site</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -99,23 +111,21 @@ export default function Projects() {
                 </div>
             </div>
 
-            {/* Grid */}
+            {/* Job Grid */}
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                        {Array.from({ length: 8 }).map((_, i) => <ProjectCardSkeleton key={i} />)}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 6 }).map((_, i) => <JobCardSkeleton key={i} />)}
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
                         <Briefcase size={36} className="text-slate-200" />
-                        <p className="text-sm font-medium text-slate-400">No projects found</p>
-                        <p className="text-sm text-slate-400">Try adjusting your search or filters</p>
+                        <p className="text-sm font-medium text-slate-400">No jobs found</p>
+                        <p className="text-sm text-slate-300">Try adjusting your search or filters</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                        {filtered.map((project) => (
-                            <ProjectCard key={project.id} project={project} />
-                        ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filtered.map((job) => <JobCard key={job.id} job={job} />)}
                     </div>
                 )}
             </div>

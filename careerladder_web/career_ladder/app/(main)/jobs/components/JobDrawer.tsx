@@ -6,13 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogHeader } from "@/components/ui/dialog"
-import { Calendar, Clock, Users, Wallet, Upload, FileText, Check } from "lucide-react"
-import type { Project } from "./ProjectCard"
+import { Briefcase, MapPin, Users, Wallet, Upload, FileText, Check } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
-import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field"
+import { Field, FieldGroup, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
 import { toast } from "sonner"
 
-import { getStudentProfile } from "@/app/api/user"
+import { Jobs } from "./JobCard"
 import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -22,7 +21,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
-import { applyProjects } from "@/app/api/project"
+
+import { getStudentProfile } from "@/app/api/user"
+import { applyJob } from "@/app/api/job"
 
 const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_FILE_TYPE = ['application/pdf']
@@ -30,72 +31,75 @@ const ACCEPTED_FILE_TYPE = ['application/pdf']
 type Props = {
     open: boolean
     onOpenChange: (open: boolean) => void
-    project: Project | null
+    job: Jobs | null
 }
 
 const formSchema = z.object({
     resume: z.union([
-        z.string(), // for existing resume (URL)
-        z
-            .any()
+        z.string(),
+        z.any()
             .refine((file) => file?.length !== 0, "Resume must be uploaded")
             .refine((file) => file?.[0]?.size < MAX_FILE_SIZE, "Max 5MB")
             .refine((file) => ACCEPTED_FILE_TYPE.includes(file?.[0]?.type), "Only PDF allowed")
     ]),
     cover_letter: z.string(),
-    skills: z.array(z.string()).min(1, "Please select at least one skill")
-});
+    skills: z.array(z.string()).min(1, "Please select at least one skill"),
+    expected_salary: z.string().min(1, "Please enter your expected salary"),
+    availability: z.string().min(1, "Please enter your soonest availability"),
+})
 
 type FormValues = z.infer<typeof formSchema>;
 
-
-export function ProjectDrawer({ open, onOpenChange, project }: Props) {
+export function JobDrawer({ open, onOpenChange, job }: Props) {
     const { user } = useUser();
-    const [applyDialogOpen, setApplyDialogOpen] = useState<boolean>(false);
+    const [openApplicationDialog, setOpenApplicationDialog] = useState<boolean>(false);
     const [resumeURL, setResumeURL] = useState<string>("");
     const [currentPhase, setCurrentPhase] = useState<number>(1);
-    const [progressValue, setProgressValue] = useState<number>(33);
+    const [progressValue, setProgressValue] = useState<number>(25);
     const [skillsRequired, setSkillsRequired] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const handleApply = async () => {
-
-        const userData = await getStudentProfile(user!.id);
-
+        const userData = await getStudentProfile(user!.id)
         if (userData.success) {
-            setResumeURL(userData.data.resume);
+            setResumeURL(userData.data.resume)
         } else {
-            setResumeURL("");
+            setResumeURL("")
         }
 
-        if (!applyDialogOpen) {
-            setApplyDialogOpen(true);
-            return;
+        if (!openApplicationDialog) {
+            setOpenApplicationDialog(true)
+            return
         }
 
         if (currentPhase === 1) {
             if (resumeURL && !form.watch("resume")?.[0]) {
-                form.setValue("resume", resumeURL) // set string value
+                form.setValue("resume", resumeURL)
                 setCurrentPhase(2)
-                setProgressValue(66)
-                setSkillsRequired(project?.skills_required ?? [])
+                setProgressValue(50)
+                setSkillsRequired(job?.skills_required ?? [])
                 return
             }
-
-            const isValid = await form.trigger("resume");
-            if (!isValid) return;
-
-            setCurrentPhase(2);
-            setProgressValue(66);
-            setSkillsRequired(project?.skills_required ?? []);
+            const isValid = await form.trigger("resume")
+            if (!isValid) return
+            setCurrentPhase(2)
+            setProgressValue(50)
+            setSkillsRequired(job?.skills_required ?? [])
         }
 
         if (currentPhase === 2) {
             const isValid = await form.trigger("skills")
             if (!isValid) return
+            setCurrentPhase(3)
+            setProgressValue(75)
+        }
 
-            const values = form.getValues();
-            const formData = new FormData();
+        if (currentPhase === 3) {
+            const isValid = await form.trigger(["expected_salary", "availability"])
+            if (!isValid) return
+
+            const values = form.getValues()
+            const formData = new FormData()
 
             if (typeof values.resume === "string") {
                 formData.append("resume", values.resume)
@@ -103,47 +107,53 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                 formData.append("resume", values.resume[0])
             }
 
-            formData.append("cover_letter", values.cover_letter);
+            formData.append("cover_letter", values.cover_letter)
             values.skills.forEach((skill) => formData.append("skills", skill))
-            formData.append("clerkid", user!.id);
-            formData.append("listingid", project!.id);
+            formData.append("expected_salary", values.expected_salary)
+            formData.append("availability", values.availability)
+            formData.append("clerkid", user!.id)
+            formData.append("listingid", job!.id)
 
             try {
                 setIsSubmitting(true)
-                const application = await applyProjects(formData)
+                const application = await applyJob(formData);
 
                 if (application.success) {
-                    if (application.message === "You have already applied for this project") {
-                        toast.error("You have already applied for this project")
+                    if (application.message === "You have already applied for this job earlier") {
+                        toast.error("You have already applied for this job earlier")
+                        setOpenApplicationDialog(false)
                         resetDialog();
-                        setApplyDialogOpen(false)
                         return
                     }
-                    setCurrentPhase(3)
-                    setProgressValue(100)
+                    setCurrentPhase(4);
+                    setProgressValue(100);
                 } else {
-                    toast.error("Failed to apply for project. Please try again")
-                    resetDialog();
-                    setApplyDialogOpen(false)
+                    toast.error("Failed to apply for job. Please try again")
+                    setOpenApplicationDialog(false)
                 }
+
+            } catch (error) {
+                toast.error("Something went wrong. Please try again");
             } finally {
                 setIsSubmitting(false)
             }
         }
-    };
+    }
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             resume: resumeURL ?? "",
             cover_letter: "",
-            skills: []
+            skills: [],
+            expected_salary: "",
+            availability: ""
         }
     })
 
     const resetDialog = () => {
         setCurrentPhase(1);
-        setProgressValue(33);
+        setProgressValue(25);
         form.reset();
     }
 
@@ -153,28 +163,32 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                 <DrawerContent className="h-full min-w-[40%] ml-auto rounded-none flex flex-col">
 
                     {/* Header */}
-                    <DrawerHeader className="border-b border-slate-300 px-6 py-5 space-y-0">
+                    <DrawerHeader className="border-b border-slate-100 px-6 py-5 space-y-0">
                         <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-4 flex-col justify-center">
-                                <div>
-                                    <Image
-                                        src="/careerladder-logo.png"
-                                        width={300}
-                                        height={300}
-                                        alt="Company Logo"
-                                        className="mb-5"
-                                    />
-                                </div>
+                            <div className="flex flex-col gap-4">
+                                <Image
+                                    src="/careerladder-logo.png"
+                                    width={160}
+                                    height={60}
+                                    alt="Company Logo"
+                                />
                                 <div>
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
-                                        PROJECT SCOPE: {project?.title.toUpperCase()}
+                                        {job?.title}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb] font-medium mt-0.5">{project?.company_id}</p>
+                                    <p className="text-sm text-[#2563eb] font-medium mt-0.5">{job?.company_id}</p>
                                 </div>
                             </div>
-                            <Badge className="text-[11px] font-medium bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5 shrink-0 mt-1">
-                                {project?.status.toUpperCase()}
-                            </Badge>
+                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                <Badge className="text-[11px] font-medium bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5">
+                                    {job?.status.toUpperCase()}
+                                </Badge>
+                                {job?.is_remote && (
+                                    <Badge className="text-[11px] font-medium bg-blue-50 text-blue-500 border border-blue-100 rounded-full px-3 py-1.5">
+                                        Remote
+                                    </Badge>
+                                )}
+                            </div>
                         </div>
                     </DrawerHeader>
 
@@ -182,23 +196,27 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
 
                         {/* Details */}
                         <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-5">
-                                <Clock size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">{project?.duration}</p>
+                            <div className="flex items-center gap-4">
+                                <Briefcase size={13} className="text-slate-400" />
+                                <p className="text-sm font-medium text-[#0f172a] capitalize">{job?.employment_type}</p>
+
                             </div>
-                            <div className="flex items-center gap-5">
-                                <Users size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">{project?.vacancies} spots available</p>
+                            <div className="flex items-center gap-4">
+
+                                <MapPin size={15} className="text-slate-400" />
+
+                                <p className="text-sm font-medium text-[#0f172a]">{job?.location}</p>
                             </div>
-                            <div className="flex items-center gap-5">
-                                <Wallet size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">RM {project?.allowance} / month</p>
-                            </div>
-                            <div className="flex items-center gap-5">
-                                <Calendar size={15} className="text-slate-400 shrink-0" />
+                            <div className="flex items-center gap-4">
+                                <Wallet size={13} className="text-slate-400" />
                                 <p className="text-sm font-medium text-[#0f172a]">
-                                    {project?.start_date && new Date(project.start_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} to{" "}
-                                    {project?.end_date && new Date(project.end_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
+                                    RM {job?.salary_min.toLocaleString()} — RM {job?.salary_max.toLocaleString()} / month
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <Users size={13} className="text-slate-400" />
+                                <p className="text-sm font-medium text-[#0f172a]">
+                                    {job?.vacancies} {job?.vacancies === 1 ? "spot" : "spots"} available
                                 </p>
                             </div>
                         </div>
@@ -209,7 +227,7 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                         <div>
                             <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">Skills Required</p>
                             <div className="flex flex-wrap gap-2">
-                                {project?.skills_required?.map((skill) => (
+                                {job?.skills_required?.map((skill) => (
                                     <Badge key={skill} className="px-4 py-2 text-sm">{skill}</Badge>
                                 ))}
                             </div>
@@ -217,10 +235,21 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
 
                         <div className="h-px bg-slate-300" />
 
+                        {/* Requirements */}
+                        {job?.requirements && (
+                            <>
+                                <div>
+                                    <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">Requirements</p>
+                                    <p className="text-sm text-slate-500 leading-relaxed">{job.requirements}</p>
+                                </div>
+                                <div className="h-px bg-slate-300" />
+                            </>
+                        )}
+
                         {/* Description */}
                         <div>
-                            <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">About This Project</p>
-                            <p className="text-sm text-slate-500 leading-relaxed">{project?.description}</p>
+                            <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">About This Role</p>
+                            <p className="text-sm text-slate-500 leading-relaxed">{job?.description}</p>
                         </div>
 
                     </div>
@@ -238,22 +267,22 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                 </DrawerContent>
             </Drawer>
 
-            <Dialog open={applyDialogOpen} onOpenChange={(open) => {
+            <Dialog open={openApplicationDialog} onOpenChange={(open) => {
                 if (!open) resetDialog()
-                setApplyDialogOpen(open)
+                setOpenApplicationDialog(open)
             }}>
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>Apply for {project?.title}</DialogTitle>
-                        <DialogDescription>Submit your application for this project.</DialogDescription>
+                        <DialogTitle>Apply for {job?.title}</DialogTitle>
+                        <DialogDescription>Submit your application for this position.</DialogDescription>
                     </DialogHeader>
 
                     <Field>
-                        <FieldLabel htmlFor="progress-upload">
+                        <FieldLabel htmlFor="progress">
                             <span>Application progress</span>
                             <span className="ml-auto">{progressValue}%</span>
                         </FieldLabel>
-                        <Progress value={progressValue} id="progress-upload" />
+                        <Progress value={progressValue} id="progress" />
                     </Field>
 
                     {currentPhase === 1 && (
@@ -360,6 +389,50 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                     )}
 
                     {currentPhase === 3 && (
+                        <FieldGroup>
+                            <Field>
+                                <Controller name="expected_salary" control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <Label htmlFor="expected_salary">Expected Salary <span className="text-slate-400">(RM / month)</span></Label>
+                                            <Input
+                                                {...field}
+                                                id="expected_salary"
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder={`e.g. ${job?.salary_min.toLocaleString()}`}
+                                            />
+                                            {job?.salary_min && job?.salary_max && (
+                                                <FieldDescription className="text-xs text-slate-400 mt-1">
+                                                    Budget range: RM {job.salary_min.toLocaleString()} — RM {job.salary_max.toLocaleString()} / month
+                                                </FieldDescription>
+                                            )}
+                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            </Field>
+
+                            <Field>
+                                <Controller name="availability" control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <Label htmlFor="availability">Availability</Label>
+                                            <Input
+                                                {...field}
+                                                id="availability"
+                                                placeholder="Please provide your soonest availability. Eg. 1 month.."
+                                            />
+                                            <FieldDescription className="text-xs text-slate-400 mt-1">When are you available to start?</FieldDescription>
+                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            </Field>
+                        </FieldGroup>
+                    )}
+
+                    {currentPhase === 4 && (
                         <div className="flex flex-col items-center justify-center py-8 gap-4">
                             <div className="w-16 h-16 rounded-full bg-green-100 border border-green-100 flex items-center justify-center">
                                 <Check size={28} className="text-green-600" />
@@ -371,17 +444,10 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                         </div>
                     )}
 
-
-
                     <DialogFooter className="gap-2">
-                        {currentPhase !== 3 && (
+                        {currentPhase !== 4 && (
                             <DialogClose asChild>
-                                <Button variant="outline" size="sm" className="cursor-pointer px-4 py-5"
-                                    onClick={() => {
-                                        setCurrentPhase(1)
-                                        setProgressValue(33)
-                                    }}
-                                >
+                                <Button variant="outline" size="sm" className="cursor-pointer px-4 py-5" onClick={resetDialog}>
                                     Cancel
                                 </Button>
                             </DialogClose>
@@ -390,14 +456,16 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                             size="sm"
                             className="cursor-pointer px-4 py-5"
                             disabled={isSubmitting}
-                            onClick={currentPhase === 3 ? () => { setApplyDialogOpen(false); resetDialog() } : handleApply}
+                            onClick={currentPhase === 4 ? () => { setOpenApplicationDialog(false); resetDialog() } : handleApply}
                         >
                             {currentPhase === 1 ? "Next"
-                                : currentPhase === 2 ? (isSubmitting ? "Submitting..." : "Submit Application")
-                                    : "Close"}
+                                : currentPhase === 2 ? "Next"
+                                    : currentPhase === 3 ? (isSubmitting ? "Submitting..." : "Submit Application")
+                                        : "Close"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
+
             </Dialog>
         </>
     )

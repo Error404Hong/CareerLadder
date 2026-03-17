@@ -49,7 +49,7 @@ export default function ProfileForm({ open, onOpenChange, form, onSubmit }: Prop
                         <DialogDescription>Update your profile information</DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex items-start gap-2 px-1 py-2.5 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-500">
+                    <div className="flex items-start gap-2 px-1 py-2.5 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-500">
                         <Info size={13} className="shrink-0 mt-0.5" />
                         <span>First name, last name, and email can only be modified from <span className="font-semibold">Manage Account</span>.</span>
                     </div>
