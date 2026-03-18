@@ -57,4 +57,28 @@ const applyProjects = async (req, res) => {
     }
 };
 
-module.exports = { getAllProjects, applyProjects };
+const getUsersProjectApplications = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) return sendResponse(res, 400, "User ID is required");
+
+    try {
+        const result = await Projects.getUsersProjectApplications(clerkid);
+        return sendResponse(
+            res,
+            200,
+            "Project applications fetched successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to get project applications: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to get project applications", {
+            error: error.message,
+        });
+    }
+};
+
+module.exports = { getAllProjects, applyProjects, getUsersProjectApplications };

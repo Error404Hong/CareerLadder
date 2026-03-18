@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen flex bg-slate-50 overflow-hidden">
+        <div className="min-h-screen flex bg-slate-100 overflow-hidden">
 
             {/* ── LEFT PANEL ── */}
             <div className="hidden lg:flex w-[55%] relative flex-col justify-end p-16 overflow-hidden">

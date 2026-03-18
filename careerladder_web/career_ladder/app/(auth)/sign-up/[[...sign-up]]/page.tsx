@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function RegisterPage() {
     return (
-        <div className="min-h-screen flex bg-slate-50 overflow-hidden">
+        <div className="min-h-screen flex bg-slate-100 overflow-hidden">
 
             {/* ── LEFT PANEL ── */}
             <div className="flex-1 lg:w-[45%] flex flex-col items-center justify-center bg-white px-8 py-12 relative border-r border-slate-200">

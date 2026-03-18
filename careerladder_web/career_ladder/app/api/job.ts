@@ -24,3 +24,16 @@ export const applyJob = async (applicationData: FormData) => {
         throw error;
     }
 };
+
+export const getJobApplications = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/jobs/getUsersJobApplications/${clerkid}`,
+        );
+        console.log("Job Application: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching job applications: ", error);
+        throw error;
+    }
+};

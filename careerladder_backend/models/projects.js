@@ -50,6 +50,39 @@ class Projects {
             throw error;
         }
     }
+
+    static async getUsersProjectApplications(clerk_id) {
+        try {
+            const query = `
+            SELECT 
+                applications.id,
+                applications.clerk_id,
+                applications.listing_id,
+                applications.type,
+                applications.resume_url,
+                applications.cover_letter,
+                applications.skills_fulfilled,
+                applications.applied_at,
+                applications.status AS application_status,
+                projects.status AS project_status,
+                projects.title,
+                projects.company_id,
+                projects.duration,
+                projects.allowance,
+                projects.start_date,
+                projects.end_date
+            FROM applications 
+            LEFT JOIN projects ON projects.id = applications.listing_id
+            WHERE applications.clerk_id = $1 AND applications.type = 'project'
+            ORDER BY applications.applied_at DESC
+        `;
+            const result = await pool.query(query, [clerk_id]);
+            return result.rows;
+        } catch (error) {
+            logger.error("[MODEL] Failed to get project applications: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Projects;

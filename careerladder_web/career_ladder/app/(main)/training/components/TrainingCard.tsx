@@ -96,7 +96,7 @@ export function TrainingCard({ training }: Props) {
                         </div>
 
                         {/* Deadline */}
-                        <div className={`flex items-center justify-between px-3 py-2 rounded-xl mb-4 ${deadlineSoon ? "bg-red-50 border border-red-200" : "bg-slate-50 border border-slate-200"}`}>
+                        <div className={`flex items-center justify-between px-3 py-2 rounded-xl mb-4 ${deadlineSoon ? "bg-red-50 border border-red-200" : "bg-slate-100 border border-slate-200"}`}>
                             <div className="flex items-center gap-2">
                                 <Calendar size={12} className={deadlineSoon ? "text-red-400 shrink-0" : "text-slate-400 shrink-0"} />
                                 <span className={`text-xs  ${deadlineSoon ? "text-red-500" : "text-slate-500"}`}>

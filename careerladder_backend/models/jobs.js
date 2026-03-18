@@ -41,6 +41,39 @@ class Jobs {
             throw error;
         }
     }
+
+    static async getUsersJobApplications(clerkid) {
+        try {
+            const query = `SELECT 
+                applications.id,
+                applications.clerk_id,
+                applications.listing_id,
+                applications.type,
+                applications.resume_url,
+                applications.cover_letter,
+                applications.skills_fulfilled,
+                applications.applied_at,
+                applications.status AS application_status,
+                jobs.status AS job_status,
+                jobs.title,
+                jobs.company_id,
+                jobs.employment_type,
+                jobs.location,
+                jobs.salary_min,
+                jobs.salary_max
+            FROM applications 
+            LEFT JOIN jobs ON jobs.id = applications.listing_id
+            WHERE applications.clerk_id = $1 AND applications.type = 'job'
+            ORDER BY applications.applied_at DESC`;
+
+            const values = [clerkid];
+            const result = await pool.query(query, values);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to get applied jobs");
+            throw error;
+        }
+    }
 }
 
 module.exports = Jobs;

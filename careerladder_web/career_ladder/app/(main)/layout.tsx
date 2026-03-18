@@ -39,7 +39,7 @@ export default function MainLayout({
             <SignedOut>
               <div className="flex items-center gap-2">
                 <SignInButton>
-                  <button className="text-sm  text-slate-600 hover:text-[#0f172a] px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                  <button className="text-sm  text-slate-600 hover:text-[#0f172a] px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
                     Login
                   </button>
                 </SignInButton>
@@ -52,7 +52,7 @@ export default function MainLayout({
             </SignedOut>
 
             <SignedIn>
-              <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-[#0f172a] transition-colors">
+              <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-[#0f172a] transition-colors">
                 <Bell size={15} />
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#2563eb] rounded-full" />
               </button>

@@ -65,4 +65,28 @@ const applyJobs = async (req, res) => {
     }
 };
 
-module.exports = { getAllJobs, applyJobs };
+const getUsersJobApplications = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) return sendResponse(res, 400, "User ID is required");
+
+    try {
+        const result = await Jobs.getUsersJobApplications(clerkid);
+        return sendResponse(
+            res,
+            200,
+            "Job applications fetched successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to get job applications: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to get job applications", {
+            error: error.message,
+        });
+    }
+};
+
+module.exports = { getAllJobs, applyJobs, getUsersJobApplications };

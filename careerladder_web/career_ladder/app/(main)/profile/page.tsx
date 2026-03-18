@@ -578,7 +578,7 @@ export default function Profile() {
     const jobLabel = jobTypes.find(j => j.value === job_type)?.label || "Not specified";
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-slate-100">
             <div className="max-w-7xl mx-auto px-6 py-8 flex gap-0">
 
                 {/* ── LEFT SIDE ── */}
@@ -642,7 +642,7 @@ export default function Profile() {
                             </div>
 
                             {resumeURL ? (
-                                <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                                <div className="flex items-center gap-3 bg-slate-100 border border-slate-200 rounded-xl p-3">
                                     <div className="w-9 h-9 rounded-lg bg-[#0f172a] flex items-center justify-center shrink-0">
                                         <FileText size={13} className="text-white" />
                                     </div>
@@ -663,7 +663,7 @@ export default function Profile() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-50 border border-slate-200 rounded-xl">
+                                <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-100 border border-slate-200 rounded-xl">
                                     <FileText size={24} className="text-slate-400" />
                                     <p className="text-sm text-slate-400 ">No resume uploaded yet</p>
                                     <p className="text-sm text-slate-400">Upload a PDF to showcase your experience</p>

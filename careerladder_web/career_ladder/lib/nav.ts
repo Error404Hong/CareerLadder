@@ -11,13 +11,7 @@ export const navItems = [
     {
         label: "Applications",
         href: null,
-        links: [
-            { label: "Track Application Status", href: "/applications/track" },
-            {
-                label: "View Application History",
-                href: "/applications/history",
-            },
-        ],
+        links: [{ label: "Track Application Status", href: "/applications" }],
     },
     {
         label: "Company Reviews",

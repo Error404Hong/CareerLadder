@@ -294,7 +294,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                 {resumeURL ? (
                                     <>
                                         {/* Show current resume */}
-                                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                                        <div className="flex items-center gap-3 bg-slate-100 border border-slate-200 rounded-xl p-3">
                                             <FileText size={14} className="text-slate-400 shrink-0" />
                                             <p className="text-sm text-slate-500 flex-1 truncate">
                                                 {form.watch("resume")?.[0]?.name ?? resumeURL}

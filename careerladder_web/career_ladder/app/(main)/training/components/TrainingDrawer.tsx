@@ -106,7 +106,7 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
                         </div>
 
                         {/* Deadline */}
-                        <div className={`flex items-center justify-between px-4 py-3 rounded-xl ${isDeadlineSoon(training?.application_deadline ?? "") ? "bg-red-50 border border-red-200" : "bg-slate-50 border border-slate-200"}`}>
+                        <div className={`flex items-center justify-between px-4 py-3 rounded-xl ${isDeadlineSoon(training?.application_deadline ?? "") ? "bg-red-50 border border-red-200" : "bg-slate-100 border border-slate-200"}`}>
                             <div className="flex items-center gap-2">
                                 <Calendar size={13} className={isDeadlineSoon(training?.application_deadline ?? "") ? "text-red-400" : "text-slate-400"} />
                                 <span className={`text-sm  ${isDeadlineSoon(training?.application_deadline ?? "") ? "text-red-500" : "text-slate-500"}`}>
