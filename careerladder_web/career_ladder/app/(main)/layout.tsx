@@ -39,12 +39,12 @@ export default function MainLayout({
             <SignedOut>
               <div className="flex items-center gap-2">
                 <SignInButton>
-                  <button className="text-sm font-medium text-slate-600 hover:text-[#0f172a] px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                  <button className="text-sm  text-slate-600 hover:text-[#0f172a] px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                     Login
                   </button>
                 </SignInButton>
                 <SignUpButton>
-                  <button className="text-sm font-medium text-white bg-[#0f172a] hover:bg-[#1e293b] px-4 py-1.5 rounded-lg transition-colors cursor-pointer shadow-sm">
+                  <button className="text-sm  text-white bg-[#0f172a] hover:bg-[#1e293b] px-4 py-1.5 rounded-lg transition-colors cursor-pointer shadow-sm">
                     Register
                   </button>
                 </SignUpButton>
@@ -63,7 +63,7 @@ export default function MainLayout({
                   elements: {
                     avatarBox: "w-7 h-7",
                     userButtonBox: "flex-row-reverse gap-2",
-                    userButtonOuterIdentifier: "text-sm font-medium text-[#0f172a]",
+                    userButtonOuterIdentifier: "text-sm  text-[#0f172a]",
                   },
                 }}
               >

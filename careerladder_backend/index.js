@@ -13,6 +13,7 @@ const port = process.env.PORT || 5000;
 const usersRoutes = require("./routes/usersRoute");
 const projectRoutes = require("./routes/projectsRoute");
 const jobRoutes = require("./routes/jobsRoute");
+const trainingRoutes = require("./routes/trainingRoute");
 
 app.use(
     cors({
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use("/users", usersRoutes);
 app.use("/projects", projectRoutes);
 app.use("/jobs", jobRoutes);
+app.use("/training", trainingRoutes);
 
 app.get("/", async (req, res) => {
     try {

@@ -42,7 +42,7 @@ export default function LoginPage() {
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-violet-300 animate-pulse" />
-                        <span className="text-white text-sm font-medium tracking-widest uppercase">
+                        <span className="text-white text-sm  tracking-widest uppercase">
                             Student · Industry Bridge
                         </span>
                     </div>

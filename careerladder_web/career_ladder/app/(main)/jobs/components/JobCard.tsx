@@ -45,15 +45,15 @@ export function JobCard({ job }: Props) {
                     <div className="flex items-center gap-3">
                         <div>
                             <h3 className="font-bold text-[#0f172a] text-lg leading-snug">{job.title}</h3>
-                            <p className="text-sm text-[#2563eb] font-medium mt-0.5">{job.company_id}</p>
+                            <p className="text-sm text-[#2563eb]  mt-0.5">{job.company_id}</p>
                         </div>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100">
+                        <span className="text-[12px]  px-2.5 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100">
                             {job.status.toUpperCase()}
                         </span>
                         {job.is_remote && (
-                            <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-500 border border-blue-100">
+                            <span className="text-[12px]  px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-500 border border-blue-100">
                                 REMOTE
                             </span>
                         )}
@@ -65,19 +65,19 @@ export function JobCard({ job }: Props) {
 
                 {/* Meta */}
                 <div className="grid grid-cols-2 gap-2 mb-4">
-                    <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
                         <MapPin size={12} className="shrink-0" />
                         <span className="truncate">{job.location}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
                         <Users size={12} className="shrink-0" />
                         <span>{job.vacancies} {job.vacancies === 1 ? "vacancy" : "vacancies"}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-sm text-slate-400 col-span-2">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 col-span-2">
                         <Wallet size={11} className="shrink-0" />
                         <span>RM {job.salary_min.toLocaleString()} — RM {job.salary_max.toLocaleString()} / month</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
                         <Briefcase size={11} className="shrink-0" />
                         <span className="capitalize">{job.employment_type}</span>
                     </div>
@@ -86,12 +86,12 @@ export function JobCard({ job }: Props) {
                 {/* Skills */}
                 <div className="flex flex-wrap gap-1.5 mb-4 min-h-6">
                     {job.skills_required?.slice(0, 3).map((skill) => (
-                        <span key={skill} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                        <span key={skill} className="text-[11px]  px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
                             {skill}
                         </span>
                     ))}
                     {job.skills_required?.length > 3 && (
-                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">
+                        <span className="text-[11px]  px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">
                             +{job.skills_required.length - 3} more
                         </span>
                     )}

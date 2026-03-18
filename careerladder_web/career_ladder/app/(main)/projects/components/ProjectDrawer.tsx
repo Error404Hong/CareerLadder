@@ -11,6 +11,7 @@ import type { Project } from "./ProjectCard"
 import { Progress } from "@/components/ui/progress"
 import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field"
 import { toast } from "sonner"
+import { Separator } from "@/components/ui/separator"
 
 import { getStudentProfile } from "@/app/api/user"
 import { useState } from "react"
@@ -169,10 +170,10 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         PROJECT SCOPE: {project?.title.toUpperCase()}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb] font-medium mt-0.5">{project?.company_id}</p>
+                                    <p className="text-sm text-[#2563eb]  mt-0.5">{project?.company_id}</p>
                                 </div>
                             </div>
-                            <Badge className="text-[11px] font-medium bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5 shrink-0 mt-1">
+                            <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5 shrink-0 mt-1">
                                 {project?.status.toUpperCase()}
                             </Badge>
                         </div>
@@ -184,26 +185,26 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-5">
                                 <Clock size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">{project?.duration}</p>
+                                <p className="text-sm  text-[#0f172a]">{project?.duration}</p>
                             </div>
                             <div className="flex items-center gap-5">
                                 <Users size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">{project?.vacancies} spots available</p>
+                                <p className="text-sm  text-[#0f172a]">{project?.vacancies} spots available</p>
                             </div>
                             <div className="flex items-center gap-5">
                                 <Wallet size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">RM {project?.allowance} / month</p>
+                                <p className="text-sm  text-[#0f172a]">RM {project?.allowance} / month</p>
                             </div>
                             <div className="flex items-center gap-5">
                                 <Calendar size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm font-medium text-[#0f172a]">
+                                <p className="text-sm  text-[#0f172a]">
                                     {project?.start_date && new Date(project.start_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} to{" "}
                                     {project?.end_date && new Date(project.end_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="h-px bg-slate-300" />
+                        <Separator />
 
                         {/* Skills */}
                         <div>
@@ -215,7 +216,7 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                             </div>
                         </div>
 
-                        <div className="h-px bg-slate-300" />
+                        <Separator />
 
                         {/* Description */}
                         <div>
@@ -269,7 +270,7 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                                             <p className="text-sm text-slate-500 flex-1 truncate">
                                                 {form.watch("resume")?.[0]?.name ?? resumeURL}
                                             </p>
-                                            <span className="text-[11px] font-medium shrink-0 text-green-600">
+                                            <span className="text-[11px]  shrink-0 text-green-600">
                                                 {form.watch("resume")?.[0] ? "Custom" : "Default"}
                                             </span>
                                         </div>

@@ -56,7 +56,7 @@ export default function Projects() {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm text-[#0f172a] font-medium">Project Listings</BreadcrumbPage>
+                                <BreadcrumbPage className="text-sm text-[#0f172a] ">Project Listings</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -108,7 +108,7 @@ export default function Projects() {
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
                         <Briefcase size={36} className="text-slate-200" />
-                        <p className="text-sm font-medium text-slate-400">No projects found</p>
+                        <p className="text-sm  text-slate-400">No projects found</p>
                         <p className="text-sm text-slate-400">Try adjusting your search or filters</p>
                     </div>
                 ) : (

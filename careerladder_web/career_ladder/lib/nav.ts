@@ -3,9 +3,9 @@ export const navItems = [
         label: "Opportunities",
         href: null,
         links: [
-            { label: "View Project Listings", href: "/projects" },
-            { label: "View Opening Job Positions", href: "/jobs" },
-            { label: "View Industrial Training Programs", href: "/training" },
+            { label: "Project Listings", href: "/projects" },
+            { label: "Opening Job Positions", href: "/jobs" },
+            { label: "Industrial Training Programs", href: "/training" },
         ],
     },
     {

@@ -55,7 +55,7 @@ export default function RegisterPage() {
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-pulse" />
-                        <span className="text-white text-sm font-medium tracking-widest uppercase">
+                        <span className="text-white text-sm  tracking-widest uppercase">
                             Join 12,000+ Students
                         </span>
                     </div>
@@ -92,7 +92,7 @@ export default function RegisterPage() {
                                     {item.step}
                                 </span>
                                 <div>
-                                    <div className="text-white font-medium text-sm">{item.title}</div>
+                                    <div className="text-white  text-sm">{item.title}</div>
                                     <div className="text-white/50 text-sm mt-0.5 font-light">{item.desc}</div>
                                 </div>
                             </div>

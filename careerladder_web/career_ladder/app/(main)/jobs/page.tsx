@@ -60,7 +60,7 @@ export default function Jobs() {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm text-[#0f172a] font-medium">Opening Job Positions</BreadcrumbPage>
+                                <BreadcrumbPage className="text-sm text-[#0f172a] ">Opening Job Positions</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -120,7 +120,7 @@ export default function Jobs() {
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
                         <Briefcase size={36} className="text-slate-200" />
-                        <p className="text-sm font-medium text-slate-400">No jobs found</p>
+                        <p className="text-sm  text-slate-400">No jobs found</p>
                         <p className="text-sm text-slate-300">Try adjusting your search or filters</p>
                     </div>
                 ) : (

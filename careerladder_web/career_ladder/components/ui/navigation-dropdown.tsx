@@ -21,7 +21,7 @@ export default function NavDropdown({ item }: { item: NavItem }) {
         return (
             <Link
                 href={item.href}
-                className="text-sm font-medium px-3 py-2 rounded-lg text-slate-500 hover:text-[#0f172a] hover:bg-slate-50 transition-colors"
+                className="text-sm  px-3 py-2 rounded-lg text-slate-500 hover:text-[#0f172a] hover:bg-slate-50 transition-colors"
             >
                 {item.label}
             </Link>
@@ -32,7 +32,7 @@ export default function NavDropdown({ item }: { item: NavItem }) {
         <div ref={ref} className="relative">
             <button
                 onClick={() => setOpen(!open)}
-                className={`flex items-center gap-1.5 text-sm font-medium font-inter px-3 py-2 rounded-lg transition-colors cursor-pointer ${open ? "bg-slate-100 text-[#0f172a]" : "text-slate-500 hover:text-[#0f172a] hover:bg-slate-50"}`}
+                className={`flex items-center gap-1.5 text-sm  font-inter px-3 py-2 rounded-lg transition-colors cursor-pointer ${open ? "bg-slate-100 text-[#0f172a]" : "text-slate-500 hover:text-[#0f172a] hover:bg-slate-50"}`}
             >
                 {item.label}
                 <ChevronDown size={11} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />

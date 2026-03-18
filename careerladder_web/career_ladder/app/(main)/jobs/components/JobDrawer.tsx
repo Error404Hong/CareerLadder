@@ -10,6 +10,7 @@ import { Briefcase, MapPin, Users, Wallet, Upload, FileText, Check } from "lucid
 import { Progress } from "@/components/ui/progress"
 import { Field, FieldGroup, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
 import { toast } from "sonner"
+import { Separator } from "@/components/ui/separator"
 
 import { Jobs } from "./JobCard"
 import { useState } from "react"
@@ -176,15 +177,15 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {job?.title}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb] font-medium mt-0.5">{job?.company_id}</p>
+                                    <p className="text-sm text-[#2563eb]  mt-0.5">{job?.company_id}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                <Badge className="text-[11px] font-medium bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5">
+                                <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5">
                                     {job?.status.toUpperCase()}
                                 </Badge>
                                 {job?.is_remote && (
-                                    <Badge className="text-[11px] font-medium bg-blue-50 text-blue-500 border border-blue-100 rounded-full px-3 py-1.5">
+                                    <Badge className="text-[11px]  bg-blue-50 text-blue-500 border border-blue-100 rounded-full px-3 py-1.5">
                                         Remote
                                     </Badge>
                                 )}
@@ -198,30 +199,30 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-4">
                                 <Briefcase size={13} className="text-slate-400" />
-                                <p className="text-sm font-medium text-[#0f172a] capitalize">{job?.employment_type}</p>
+                                <p className="text-sm  text-[#0f172a] capitalize">{job?.employment_type}</p>
 
                             </div>
                             <div className="flex items-center gap-4">
 
                                 <MapPin size={15} className="text-slate-400" />
 
-                                <p className="text-sm font-medium text-[#0f172a]">{job?.location}</p>
+                                <p className="text-sm  text-[#0f172a]">{job?.location}</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <Wallet size={13} className="text-slate-400" />
-                                <p className="text-sm font-medium text-[#0f172a]">
+                                <p className="text-sm  text-[#0f172a]">
                                     RM {job?.salary_min.toLocaleString()} — RM {job?.salary_max.toLocaleString()} / month
                                 </p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <Users size={13} className="text-slate-400" />
-                                <p className="text-sm font-medium text-[#0f172a]">
+                                <p className="text-sm  text-[#0f172a]">
                                     {job?.vacancies} {job?.vacancies === 1 ? "spot" : "spots"} available
                                 </p>
                             </div>
                         </div>
 
-                        <div className="h-px bg-slate-300" />
+                        <Separator />
 
                         {/* Skills */}
                         <div>
@@ -233,7 +234,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                             </div>
                         </div>
 
-                        <div className="h-px bg-slate-300" />
+                        <Separator />
 
                         {/* Requirements */}
                         {job?.requirements && (
@@ -242,7 +243,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                     <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">Requirements</p>
                                     <p className="text-sm text-slate-500 leading-relaxed">{job.requirements}</p>
                                 </div>
-                                <div className="h-px bg-slate-300" />
+                                <Separator />
                             </>
                         )}
 
@@ -298,7 +299,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                             <p className="text-sm text-slate-500 flex-1 truncate">
                                                 {form.watch("resume")?.[0]?.name ?? resumeURL}
                                             </p>
-                                            <span className="text-[11px] font-medium shrink-0 text-green-600">
+                                            <span className="text-[11px]  shrink-0 text-green-600">
                                                 {form.watch("resume")?.[0] ? "Custom" : "Default"}
                                             </span>
                                         </div>
