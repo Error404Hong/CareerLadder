@@ -1,7 +1,25 @@
-"use client";
+"use client"
 
-import { SignUp } from "@clerk/nextjs";
-import Image from "next/image";
+import { SignUp } from "@clerk/nextjs"
+import Image from "next/image"
+import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
+
+function SignUpContent() {
+    const searchParams = useSearchParams()
+    const role = searchParams.get("role") ?? "student"
+    const forceRedirectUrl = role === "employer" ? "/dashboard" : "/home"
+
+    return (
+        <SignUp
+            routing="path"
+            path="/sign-up"
+            signInUrl="/sign-in"
+            forceRedirectUrl={forceRedirectUrl}
+            unsafeMetadata={{ role }}
+        />
+    )
+}
 
 export default function RegisterPage() {
     return (
@@ -11,12 +29,13 @@ export default function RegisterPage() {
             <div className="flex-1 lg:w-[45%] flex flex-col items-center justify-center bg-white px-8 py-12 relative border-r border-slate-200">
 
                 {/* Top accent line */}
-                <div className="absolute top-0 left-[10%] right-[10%] h-px bg-linear
-                -to-r from-transparent via-violet-500 to-transparent" />
+                <div className="absolute top-0 left-[10%] right-[10%] h-px bg-linear-to-r from-transparent via-violet-500 to-transparent" />
 
                 {/* Clerk SignUp */}
                 <div className="w-full max-w-sm">
-                    <SignUp />
+                    <Suspense fallback={<div className="text-sm text-slate-400">Loading...</div>}>
+                        <SignUpContent />
+                    </Suspense>
                 </div>
             </div>
 
@@ -55,7 +74,7 @@ export default function RegisterPage() {
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-pulse" />
-                        <span className="text-white text-sm  tracking-widest uppercase">
+                        <span className="text-white text-sm tracking-widest uppercase">
                             Join 12,000+ Students
                         </span>
                     </div>
@@ -92,7 +111,7 @@ export default function RegisterPage() {
                                     {item.step}
                                 </span>
                                 <div>
-                                    <div className="text-white  text-sm">{item.title}</div>
+                                    <div className="text-white text-sm">{item.title}</div>
                                     <div className="text-white/50 text-sm mt-0.5 font-light">{item.desc}</div>
                                 </div>
                             </div>
@@ -101,5 +120,5 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
-    );
+    )
 }

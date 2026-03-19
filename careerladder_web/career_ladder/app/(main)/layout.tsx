@@ -38,12 +38,12 @@ export default function MainLayout({
           <div className="flex items-center gap-3 shrink-0">
             <SignedOut>
               <div className="flex items-center gap-2">
-                <SignInButton>
+                <SignInButton mode="redirect">
                   <button className="text-sm  text-slate-600 hover:text-[#0f172a] px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
                     Login
                   </button>
                 </SignInButton>
-                <SignUpButton>
+                <SignUpButton mode="redirect">
                   <button className="text-sm  text-white bg-[#0f172a] hover:bg-[#1e293b] px-4 py-1.5 rounded-lg transition-colors cursor-pointer shadow-sm">
                     Register
                   </button>

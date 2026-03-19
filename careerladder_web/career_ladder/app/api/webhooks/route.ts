@@ -12,8 +12,14 @@ export async function POST(req: NextRequest) {
         const eventType = evt.type;
 
         if (eventType === "user.created") {
-            const clerkId = user.id || "";
-            const role = 1;
+            const userData = user as {
+                id: string;
+                unsafe_metadata?: { role?: string };
+            };
+            const clerkId = userData.id || "";
+            const role = userData.unsafe_metadata?.role === "employer" ? 2 : 1;
+
+            console.log("Registering user:", clerkId, "as role:", role);
 
             try {
                 await addNewUser(clerkId, role);

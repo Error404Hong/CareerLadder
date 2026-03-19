@@ -99,7 +99,12 @@ export default function LoginPage() {
 
                 {/* Clerk SignIn */}
                 <div className="w-full max-w-sm">
-                    <SignIn />
+                    <SignIn
+                        routing="path"
+                        path="/sign-in"
+                        signUpUrl="/register"
+                        forceRedirectUrl="/home"
+                    />
                 </div>
 
 
