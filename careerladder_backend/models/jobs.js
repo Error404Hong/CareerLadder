@@ -4,7 +4,8 @@ const logger = require("../utils/logger");
 class Jobs {
     static async getAllJobs() {
         try {
-            const query = "SELECT * FROM jobs WHERE status = 'open'";
+            const query =
+                "SELECT * FROM jobs WHERE status = 'open' ORDER BY created_at DESC";
             const result = await pool.query(query);
             return result.rows ?? [];
         } catch (error) {

@@ -42,9 +42,7 @@ const registerTraining = async (req, res) => {
             );
 
         const result = await Training.registerTraining(clerkid, trainingid);
-        if (!result)
-            return sendResponse(res, 400, "Failed to register for training");
-
+        await Training.updateVacancies(trainingid);
         return sendResponse(res, 200, "Registered successfully", result);
     } catch (error) {
         logger.error(
@@ -57,4 +55,30 @@ const registerTraining = async (req, res) => {
     }
 };
 
-module.exports = { getAllTrainingPrograms, registerTraining };
+const getTrainingRegByUser = async (req, res) => {
+    const { clerkid } = req.params;
+
+    if (!clerkid) return sendResponse(res, 400, "User ID is required");
+
+    try {
+        const result = await Training.getTrainingRegByUser(clerkid);
+
+        return sendResponse(
+            res,
+            200,
+            "Training registrations fetched successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to get training registrations");
+        return sendResponse(res, 500, "Failed to get training registrations", {
+            error: error.message,
+        });
+    }
+};
+
+module.exports = {
+    getAllTrainingPrograms,
+    registerTraining,
+    getTrainingRegByUser,
+};

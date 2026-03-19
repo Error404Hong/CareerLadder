@@ -33,7 +33,7 @@ export default function TrainingPage() {
             }
         }
         fetchTrainingPrograms()
-    }, [])
+    }, [trainingList])
 
     const filtered = trainingList
         .filter(t =>

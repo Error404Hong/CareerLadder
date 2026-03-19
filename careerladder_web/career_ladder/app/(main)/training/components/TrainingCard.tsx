@@ -43,7 +43,6 @@ export function TrainingCard({ training }: Props) {
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
     const viewProgram = () => {
-        console.log("viewing: ", training);
         setOpenDrawer(true);
     }
 

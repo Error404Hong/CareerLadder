@@ -9,9 +9,12 @@ export const navItems = [
         ],
     },
     {
-        label: "Applications",
+        label: "My Activities",
         href: null,
-        links: [{ label: "Track Application Status", href: "/applications" }],
+        links: [
+            { label: "Track Application Status", href: "/applications" },
+            { label: "View Training Registration", href: "/registrations" },
+        ],
     },
     {
         label: "Company Reviews",

@@ -173,7 +173,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                     height={60}
                                     alt="Company Logo"
                                 />
-                                <div>
+                                <div className="flex flex-col gap-2">
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {job?.title}
                                     </DrawerTitle>

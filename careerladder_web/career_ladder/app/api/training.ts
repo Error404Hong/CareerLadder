@@ -23,3 +23,16 @@ export const registerTraining = async (clerkid: string, trainingid: string) => {
         throw error;
     }
 };
+
+export const getTrainingRegistrations = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/training/getTrainingReg/${clerkid}`,
+        );
+        console.log("Registered Training: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching training registrations: ", error);
+        throw error;
+    }
+};
