@@ -24,6 +24,9 @@ const {
     addLanguage,
     getLanguages,
     deleteLanguage,
+    updateCompanyProfile,
+    getCompanyProfile,
+    updateCompanyDesciption,
 } = require("../controllers/usersController");
 
 router.post("/addNewUser", addNewUser);
@@ -64,5 +67,8 @@ router.delete("/removeSkill/:id", removeSkill);
 router.get("/getLanguages/:clerkid", getLanguages);
 router.post("/addLanguage/:clerkid", checkProfileCompletion(), addLanguage);
 router.delete("/deleteLanguage/:id", deleteLanguage);
+router.put("/updateCompanyProfile/:companyid", updateCompanyProfile);
+router.get("/getCompanyProfile/:companyid", getCompanyProfile);
+router.put("/updateDescription/:companyid", updateCompanyDesciption);
 
 module.exports = router;

@@ -11,16 +11,47 @@ const addNewUser = async (req, res) => {
             return sendResponse(res, 400, "Failed to create user");
         }
 
-        const profile = await Users.createStudentProfile(clerkid);
+        if (role === 1 || role === "1") {
+            const profile = await Users.createStudentProfile(clerkid);
+            if (!profile)
+                return sendResponse(
+                    res,
+                    400,
+                    "Failed to create student profile",
+                );
 
-        if (!profile) {
-            return sendResponse(res, 400, "Failed to create user");
+            return sendResponse(
+                res,
+                200,
+                "User and Student Profile Created Successfully",
+                {
+                    user: newUser,
+                    profile,
+                },
+            );
         }
 
-        return sendResponse(res, 200, "User and Profile Created Successfully", {
-            user: newUser,
-            profile: profile,
-        });
+        if (role === 2 || role === "2") {
+            const profile = await Users.createCompanyProfile(clerkid);
+            if (!profile)
+                return sendResponse(
+                    res,
+                    400,
+                    "Failed to create company profile",
+                );
+
+            return sendResponse(
+                res,
+                200,
+                "User and Company Profile Created Successfully",
+                {
+                    user: newUser,
+                    profile,
+                },
+            );
+        }
+
+        return sendResponse(res, 400, "Invalid role");
     } catch (error) {
         logger.error("[CONTROLLER] Error Creating User:", error);
         return sendResponse(res, 500, "Failed to Create User", {
@@ -556,6 +587,82 @@ const deleteLanguage = async (req, res) => {
     }
 };
 
+const updateCompanyProfile = async (req, res) => {
+    const { companyid } = req.params;
+    const {
+        company_name,
+        industry,
+        company_size,
+        founded_year,
+        website,
+        location,
+    } = req.body;
+
+    if (!companyid) return sendResponse(res, 400, "Company Id is required");
+
+    try {
+        const result = await Users.updateCompanyProfile(
+            company_name,
+            industry,
+            company_size,
+            founded_year,
+            website,
+            location,
+            companyid,
+        );
+
+        await Users.checkCompanyProfileCompleted(companyid);
+
+        return sendResponse(
+            res,
+            200,
+            "Company profile updated successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update company profile");
+        return sendResponse(res, 500, "Failed to update company profile", {
+            error: error.message,
+        });
+    }
+};
+
+const getCompanyProfile = async (req, res) => {
+    const { companyid } = req.params;
+    if (!companyid) return sendResponse(res, 400, "Company Id is required");
+
+    try {
+        const result = await Users.getCompanyProfile(companyid);
+        return sendResponse(res, 200, "Company profile fetched", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to fetch company profile");
+        return sendResponse(res, 500, "Failed to fetch company profile", {
+            error: error.message,
+        });
+    }
+};
+
+const updateCompanyDesciption = async (req, res) => {
+    const { companyid } = req.params;
+    const { description } = req.body;
+
+    if (!companyid) return sendResponse(res, 400, "Company Id is required");
+
+    try {
+        const result = await Users.updateCompanyDesciption(
+            description,
+            companyid,
+        );
+        await Users.checkCompanyProfileCompleted(companyid);
+        return sendResponse(res, 200, "Company description updated", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update company description");
+        return sendResponse(res, 500, "Failed to update company description", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -578,4 +685,7 @@ module.exports = {
     addLanguage,
     getLanguages,
     deleteLanguage,
+    updateCompanyProfile,
+    getCompanyProfile,
+    updateCompanyDesciption,
 };

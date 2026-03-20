@@ -369,3 +369,63 @@ export const deleteLanguage = async (id: number) => {
         throw error;
     }
 };
+
+export const updateCompanyProfile = async (
+    company_name: string,
+    industry: string,
+    company_size: string,
+    founded_year: number,
+    website: string,
+    location: string,
+    company_id: string,
+) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/updateCompanyProfile/${company_id}`,
+            {
+                company_name,
+                industry,
+                company_size,
+                founded_year,
+                website,
+                location,
+            },
+        );
+
+        console.log("Company profile update status: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating company profile");
+        throw error;
+    }
+};
+
+export const getCompanyProfile = async (companyid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/users/getCompanyProfile/${companyid}`,
+        );
+        console.log("Company profile: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching company profile");
+        throw error;
+    }
+};
+
+export const updateCompanyDesciption = async (
+    description: string,
+    companyid: string,
+) => {
+    try {
+        const response = await axiosInstance.put(
+            `/users/updateDescription/${companyid}`,
+            { description },
+        );
+        console.log("Company description upd status: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating company description");
+        throw error;
+    }
+};

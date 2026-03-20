@@ -413,6 +413,110 @@ class Users {
             throw error;
         }
     }
+
+    static async createCompanyProfile(companyid) {
+        try {
+            const query =
+                "INSERT INTO company_profiles(company_id) VALUES ($1)";
+            const result = await pool.query(query, [companyid]);
+            return result.rows[0] ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to create company profile");
+            throw error;
+        }
+    }
+
+    static async updateCompanyProfile(
+        company_name,
+        industry,
+        company_size,
+        founded_year,
+        website,
+        location,
+        company_id,
+    ) {
+        try {
+            const query = `UPDATE company_profiles SET company_name = $1, industry = $2, company_size = $3, founded_year = $4,
+            website = $5, location = $6, updated_at = NOW() WHERE company_id = $7 RETURNING *`;
+            const values = [
+                company_name,
+                industry,
+                company_size,
+                founded_year,
+                website,
+                location,
+                company_id,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            logger.error("[MODEL] Failed to update company profile");
+            throw error;
+        }
+    }
+
+    static async getCompanyProfile(companyid) {
+        try {
+            const query =
+                "SELECT * FROM company_profiles WHERE company_id = $1";
+            const result = await pool.query(query, [companyid]);
+            return result.rows[0] ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to fetch company profile");
+            throw error;
+        }
+    }
+
+    static async updateCompanyDesciption(description, company_id) {
+        try {
+            const query = `UPDATE company_profiles SET description = $1 WHERE company_id = $2 RETURNING *`;
+            const values = [description, company_id];
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            logger.error("[MODEL] Failed to update company description");
+            throw error;
+        }
+    }
+
+    static async checkCompanyProfileCompleted(clerk_id) {
+        try {
+            const query = `
+            SELECT 
+                cp.company_name,
+                cp.industry,
+                cp.company_size,
+                cp.founded_year,
+                cp.location,
+                cp.description
+            FROM company_profiles cp
+            WHERE cp.company_id = $1
+        `;
+            const result = await pool.query(query, [clerk_id]);
+            const data = result.rows[0];
+
+            const isCompleted =
+                data.company_name &&
+                data.industry &&
+                data.company_size &&
+                data.founded_year &&
+                data.location &&
+                data.description;
+
+            await pool.query(
+                "UPDATE users SET profile_completed = $1 WHERE clerk_id = $2",
+                [isCompleted ? 1 : 0, clerk_id],
+            );
+
+            return isCompleted ? 1 : 0;
+        } catch (error) {
+            logger.error(
+                "[MODEL] Error checking company profile completion: ",
+                error,
+            );
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;
