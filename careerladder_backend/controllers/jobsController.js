@@ -89,4 +89,25 @@ const getUsersJobApplications = async (req, res) => {
     }
 };
 
-module.exports = { getAllJobs, applyJobs, getUsersJobApplications };
+const getJobsByCompany = async (req, res) => {
+    const { companyid } = req.params;
+
+    if (!companyid) return sendResponse(res, 400, "Company id is required");
+
+    try {
+        const result = await Jobs.getJobsByCompany(companyid);
+        return sendResponse(res, 200, "Job listings fetched", result);
+    } catch (error) {
+        logger.error("[CONTROLLER Failed to get job listings");
+        return sendResponse(req, 500, "Failed to get job listings", {
+            error: error.message,
+        });
+    }
+};
+
+module.exports = {
+    getAllJobs,
+    applyJobs,
+    getUsersJobApplications,
+    getJobsByCompany,
+};

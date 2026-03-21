@@ -37,3 +37,16 @@ export const getJobApplications = async (clerkid: string) => {
         throw error;
     }
 };
+
+export const getJobsByCompany = async (companyid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/jobs/getJobsByCompany/${companyid}`,
+        );
+        console.log("Job data: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error getting job listings: ", error);
+        throw error;
+    }
+};

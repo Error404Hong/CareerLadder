@@ -75,6 +75,24 @@ class Jobs {
             throw error;
         }
     }
+
+    static async getJobsByCompany(companyid) {
+        try {
+            const query = `SELECT 
+                jobs.*,
+                COUNT(applications.id) AS application_count
+            FROM jobs
+            LEFT JOIN applications ON jobs.id = applications.listing_id
+            WHERE jobs.company_id = $1
+            GROUP BY jobs.id
+            ORDER BY jobs.created_at DESC`;
+            const result = await pool.query(query, [companyid]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to job listings");
+            throw error;
+        }
+    }
 }
 
 module.exports = Jobs;

@@ -1,32 +1,41 @@
 "use client"
 
-import {
-    ColumnDef, SortingState,
-    flexRender, getCoreRowModel, getSortedRowModel,
-    getFilteredRowModel, useReactTable,
-} from "@tanstack/react-table"
+import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable, SortingState, ColumnFiltersState } from "@tanstack/react-table"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useState } from "react"
-import { Search } from "lucide-react"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Search } from "lucide-react"
+import { useState } from "react"
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    searchKey?: string
     searchPlaceholder?: string
-    emptyIcon?: React.ReactNode
     emptyTitle?: string
     emptyDescription?: string
+    emptyIcon?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
-    columns, data, searchKey, searchPlaceholder = "Search...",
-    emptyIcon, emptyTitle = "No results", emptyDescription,
+    columns,
+    data,
+    searchPlaceholder = "Search...",
+    emptyTitle = "No results",
+    emptyDescription,
+    emptyIcon,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [globalFilter, setGlobalFilter] = useState("")
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
     const table = useReactTable({
         data,
@@ -34,25 +43,74 @@ export function DataTable<TData, TValue>({
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
-        state: { sorting, globalFilter },
+        onColumnFiltersChange: setColumnFilters,
+        state: { sorting, globalFilter, columnFilters },
+        initialState: { pagination: { pageSize: 10 } }
     })
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Search */}
-            <div className="sm:w-60">
-                <InputGroup>
-                    <InputGroupInput
-                        type="text"
-                        placeholder={searchPlaceholder}
-                        value={globalFilter}
-                        onChange={(e) => setGlobalFilter(e.target.value)}
-                        className="flex-1 text-sm bg-transparent outline-none text-slate-600 placeholder:text-slate-400"
-                    />
-                    <InputGroupAddon><Search size={13} className="text-slate-400 shrink-0" /></InputGroupAddon>
-                </InputGroup>
+
+            {/* Toolbar */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3 flex-wrap">
+                    {/* Search */}
+                    <div className="w-64">
+                        <InputGroup>
+                            <InputGroupInput
+                                type="text"
+                                placeholder={searchPlaceholder}
+                                value={globalFilter}
+                                onChange={(e) => setGlobalFilter(e.target.value)}
+                                className="flex-1 text-sm bg-transparent outline-none text-slate-600 placeholder:text-slate-400"
+                            />
+                            <InputGroupAddon><Search size={13} className="text-slate-400 shrink-0" /></InputGroupAddon>
+                        </InputGroup>
+                    </div>
+
+                    {/* Status Filter */}
+                    <Select
+                        value={(table.getColumn("status")?.getFilterValue() as string) ?? "all"}
+                        onValueChange={(value) =>
+                            table.getColumn("status")?.setFilterValue(value === "all" ? undefined : value)
+                        }
+                    >
+                        <SelectTrigger className="h-9 w-36 text-sm rounded-md border-slate-200">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="open">Open</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {/* Employment Type Filter */}
+                    <Select
+                        value={(table.getColumn("employment_type")?.getFilterValue() as string) ?? "all"}
+                        onValueChange={(value) =>
+                            table.getColumn("employment_type")?.setFilterValue(value === "all" ? undefined : value)
+                        }
+                    >
+                        <SelectTrigger className="h-9 w-40 text-sm rounded-md border-slate-200">
+                            <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="fulltime">Full Time</SelectItem>
+                            <SelectItem value="parttime">Part Time</SelectItem>
+                            <SelectItem value="contract">Contract</SelectItem>
+                            <SelectItem value="freelance">Freelance</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="text-xs text-slate-400">
+                    <span>{table.getFilteredRowModel().rows.length} result{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}</span>
+                </div>
             </div>
 
             {/* Table */}
@@ -62,7 +120,7 @@ export function DataTable<TData, TValue>({
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className="border-b border-slate-300 bg-(--color-navy-mid) hover:bg-(--color-navy-light)">
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="px-6 py-4 text-white">
+                                    <TableHead key={header.id} className="px-6 py-4 text-white text-left">
                                         {flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
@@ -95,12 +153,11 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
 
-            {/* Footer */}
+            {/* Pagination */}
             <div className="flex items-center justify-between">
-                <p className="text-sm text-slate-400">
-                    {table.getFilteredRowModel().rows.length} result{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
+                <p className="text-xs text-slate-400">
+                    Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </p>
-
                 <Pagination className="w-fit mx-0">
                     <PaginationContent>
                         <PaginationItem>
@@ -109,7 +166,6 @@ export function DataTable<TData, TValue>({
                                 className={!table.getCanPreviousPage() ? "pointer-events-none opacity-40 cursor-not-allowed" : "cursor-pointer"}
                             />
                         </PaginationItem>
-
                         {Array.from({ length: table.getPageCount() }, (_, i) => {
                             const page = i + 1
                             const currentPage = table.getState().pagination.pageIndex + 1
@@ -130,14 +186,11 @@ export function DataTable<TData, TValue>({
                                     </PaginationItem>
                                 )
                             }
-
                             if (Math.abs(currentPage - page) === 2) {
                                 return <PaginationItem key={i}><PaginationEllipsis /></PaginationItem>
                             }
-
                             return null
                         })}
-
                         <PaginationItem>
                             <PaginationNext
                                 onClick={() => table.nextPage()}

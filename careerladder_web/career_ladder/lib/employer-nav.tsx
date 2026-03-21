@@ -12,7 +12,7 @@ export const navItems = [
         href: "/dashboard/jobs",
         icon: <Briefcase size={16} />,
         children: [
-            { label: "All Jobs", href: "/dashboard/jobs" },
+            { label: "All Jobs", href: "/job-listings" },
             { label: "Post a Job", href: "/dashboard/jobs/create" },
         ],
     },

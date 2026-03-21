@@ -14,6 +14,7 @@ const usersRoutes = require("./routes/usersRoute");
 const projectRoutes = require("./routes/projectsRoute");
 const jobRoutes = require("./routes/jobsRoute");
 const trainingRoutes = require("./routes/trainingRoute");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 app.use(
     cors({
@@ -29,6 +30,7 @@ app.use("/users", usersRoutes);
 app.use("/projects", projectRoutes);
 app.use("/jobs", jobRoutes);
 app.use("/training", trainingRoutes);
+app.use("/payment", paymentRoutes);
 
 app.get("/", async (req, res) => {
     try {
