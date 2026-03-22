@@ -50,3 +50,127 @@ export const getJobsByCompany = async (companyid: string) => {
         throw error;
     }
 };
+
+export const createJob = async (
+    company_id: string,
+    title: string,
+    description: string,
+    requirements: string,
+    skills_required: string[],
+    employment_type: string,
+    salary_min: number,
+    salary_max: number,
+    location: string,
+    is_remote: boolean,
+    vacancies: number,
+) => {
+    try {
+        const response = await axiosInstance.post("/jobs/createJob", {
+            company_id,
+            title,
+            description,
+            requirements,
+            skills_required,
+            employment_type,
+            salary_min,
+            salary_max,
+            location,
+            is_remote,
+            vacancies,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error creating job: ", error);
+        throw error;
+    }
+};
+
+export const deleteJob = async (id: string) => {
+    try {
+        const response = await axiosInstance.delete(`/jobs/deleteJob/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting job: ", error);
+        throw error;
+    }
+};
+
+export const getJobById = async (id: string) => {
+    try {
+        const response = await axiosInstance.get(`/jobs/getJob/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting job: ", error);
+        throw error;
+    }
+};
+
+export const updateJob = async (
+    id: string,
+    title: string,
+    description: string,
+    requirements: string,
+    skills_required: string[],
+    employment_type: string,
+    salary_min: number,
+    salary_max: number,
+    location: string,
+    is_remote: boolean,
+    vacancies: number,
+) => {
+    try {
+        const response = await axiosInstance.put(`/jobs/updateJob/${id}`, {
+            title,
+            description,
+            requirements,
+            skills_required,
+            employment_type,
+            salary_min,
+            salary_max,
+            location,
+            is_remote,
+            vacancies,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating job: ", error);
+        throw error;
+    }
+};
+
+export const getJobApplicationsById = async (id: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/jobs/getJobApplications/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching job applications: ", error);
+        throw error;
+    }
+};
+
+export const getApplicantsProfile = async (id: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/jobs/getApplicantsProfile/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching application: ", error);
+        throw error;
+    }
+};
+
+export const updateApplicationStatus = async (id: string, status: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/jobs/updateApplicationStatus/${id}`,
+            { status },
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error updating application status: ", error);
+        throw error;
+    }
+};

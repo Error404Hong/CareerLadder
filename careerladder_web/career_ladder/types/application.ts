@@ -1,0 +1,21 @@
+export type Application = {
+    id: string;
+    clerk_id: string;
+    listing_id: string;
+    status: string;
+    cover_letter: string;
+    skills_fulfilled: string[];
+    resume_url: string;
+    expected_salary: string;
+    availability: string;
+    applied_at: string;
+    role: number;
+    major: string;
+    location: string;
+    linkedin_url: string;
+    profile_summary: string;
+    first_name: string | null;
+    last_name: string | null;
+    image_url: string | null;
+    email: string | null;
+};

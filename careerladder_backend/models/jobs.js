@@ -93,6 +93,188 @@ class Jobs {
             throw error;
         }
     }
+
+    static async createJob(
+        company_id,
+        title,
+        description,
+        requirements,
+        skills_required,
+        employment_type,
+        salary_min,
+        salary_max,
+        location,
+        is_remote,
+        vacancies,
+    ) {
+        try {
+            const query = `
+            INSERT INTO jobs(company_id, title, description, requirements, skills_required, employment_type, salary_min, salary_max, location, is_remote, vacancies, status)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'open')
+            RETURNING *
+        `;
+            const values = [
+                company_id,
+                title,
+                description,
+                requirements,
+                skills_required,
+                employment_type,
+                salary_min,
+                salary_max,
+                location,
+                is_remote,
+                vacancies,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to create new job: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteJob(id) {
+        try {
+            const query = "DELETE FROM jobs WHERE id = $1";
+            await pool.query(query, [id]);
+        } catch (error) {
+            logger.error("[MODEL] Failed to delete job: ", error);
+            throw error;
+        }
+    }
+
+    static async getJobById(id) {
+        try {
+            const query = `SELECT jobs.*, COUNT(applications.id) AS application_count FROM jobs 
+            LEFT JOIN applications ON jobs.id = applications.listing_id
+            WHERE jobs.id = $1 GROUP BY jobs.id`;
+            const result = await pool.query(query, [id]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to fetch job by id: ", error);
+            throw error;
+        }
+    }
+
+    static async updateJob(
+        id,
+        title,
+        description,
+        requirements,
+        skills_required,
+        employment_type,
+        salary_min,
+        salary_max,
+        location,
+        is_remote,
+        vacancies,
+    ) {
+        try {
+            const query = `
+            UPDATE jobs SET
+                title = $1,
+                description = $2,
+                requirements = $3,
+                skills_required = $4,
+                employment_type = $5,
+                salary_min = $6,
+                salary_max = $7,
+                location = $8,
+                is_remote = $9,
+                vacancies = $10,
+                updated_at = NOW()
+            WHERE id = $11
+            RETURNING *
+        `;
+            const values = [
+                title,
+                description,
+                requirements,
+                skills_required,
+                employment_type,
+                salary_min,
+                salary_max,
+                location,
+                is_remote,
+                vacancies,
+                id,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update job: ", error);
+            throw error;
+        }
+    }
+
+    static async getJobApplicationById(job_id) {
+        try {
+            const query = `
+            SELECT
+                applications.id,
+                applications.clerk_id,
+                applications.listing_id,
+                applications.status,
+                applications.cover_letter,
+                applications.skills_fulfilled,
+                applications.resume_url,
+                applications.expected_salary,
+                applications.availability,
+                applications.applied_at,
+                users.role,
+                sp.major,
+                sp.location,
+                sp.linkedin_url,
+                sp.profile_summary
+            FROM applications
+            LEFT JOIN users ON users.clerk_id = applications.clerk_id
+            LEFT JOIN student_profiles sp ON sp.clerk_id = applications.clerk_id
+            WHERE applications.listing_id = $1 AND applications.type = 'job'
+            ORDER BY applications.applied_at DESC
+        `;
+            const result = await pool.query(query, [job_id]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to fetch job applications: ", error);
+            throw error;
+        }
+    }
+
+    static async getApplicantsProfile(application_id) {
+        try {
+            const query = `
+            SELECT
+                applications.*,
+                sp.major,
+                sp.location,
+                sp.linkedin_url,
+                sp.profile_summary
+            FROM applications
+            LEFT JOIN student_profiles sp ON sp.clerk_id = applications.clerk_id
+            WHERE applications.id = $1
+        `;
+            const result = await pool.query(query, [application_id]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to fetch applicants profile: ", error);
+            throw error;
+        }
+    }
+
+    static async updateApplicationStatus(application_id, status) {
+        try {
+            const query = `UPDATE applications SET status = $1 WHERE id = $2 RETURNING *`;
+            const result = await pool.query(query, [status, application_id]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error(
+                "[MODEL] Failed to update application status: ",
+                error,
+            );
+            throw error;
+        }
+    }
 }
 
 module.exports = Jobs;

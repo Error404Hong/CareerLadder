@@ -2,6 +2,7 @@ const Jobs = require("../models/jobs");
 const Projects = require("../models/projects");
 const sendResponse = require("../utils/responseHelper");
 const logger = require("../utils/logger");
+const { clerkClient } = require("@clerk/express");
 
 const getAllJobs = async (req, res) => {
     try {
@@ -105,9 +106,245 @@ const getJobsByCompany = async (req, res) => {
     }
 };
 
+const createJob = async (req, res) => {
+    const {
+        company_id,
+        title,
+        description,
+        requirements,
+        skills_required,
+        employment_type,
+        salary_min,
+        salary_max,
+        location,
+        is_remote,
+        vacancies,
+    } = req.body;
+
+    if (!company_id) return sendResponse(res, 400, "Company ID is required");
+
+    try {
+        const result = await Jobs.createJob(
+            company_id,
+            title,
+            description,
+            requirements,
+            skills_required,
+            employment_type,
+            salary_min,
+            salary_max,
+            location,
+            is_remote,
+            vacancies,
+        );
+        return sendResponse(res, 200, "Job created successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to create job: ", error.message);
+        return sendResponse(res, 500, "Failed to create job", {
+            error: error.message,
+        });
+    }
+};
+
+const deleteJob = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return sendResponse(res, 400, "Job ID is required");
+
+    try {
+        const result = await Jobs.deleteJob(id);
+        return sendResponse(res, 200, "Job deleted successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to delete job: ", error.message);
+        return sendResponse(res, 500, "Failed to delete job", {
+            error: error.message,
+        });
+    }
+};
+
+const getJobById = async (req, res) => {
+    const { id } = req.params;
+    if (!id) return sendResponse(res, 400, "Job ID is required");
+
+    try {
+        const result = await Jobs.getJobById(id);
+        return sendResponse(res, 200, "Job fetched successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to fetch job: ", error.message);
+        return sendResponse(res, 500, "Failed to fetch job", {
+            error: error.message,
+        });
+    }
+};
+
+const updateJob = async (req, res) => {
+    const { id } = req.params;
+    const {
+        title,
+        description,
+        requirements,
+        skills_required,
+        employment_type,
+        salary_min,
+        salary_max,
+        location,
+        is_remote,
+        vacancies,
+    } = req.body;
+
+    if (!id) return sendResponse(res, 400, "Job ID is required");
+
+    try {
+        const result = await Jobs.updateJob(
+            id,
+            title,
+            description,
+            requirements,
+            skills_required,
+            employment_type,
+            salary_min,
+            salary_max,
+            location,
+            is_remote,
+            vacancies,
+        );
+        if (!result) return sendResponse(res, 400, "Failed to update job");
+        return sendResponse(res, 200, "Job updated successfully", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update job: ", error.message);
+        return sendResponse(res, 500, "Failed to update job", {
+            error: error.message,
+        });
+    }
+};
+
+const getJobApplicationById = async (req, res) => {
+    const { id } = req.params;
+    if (!id) return sendResponse(res, 400, "Job ID is required");
+
+    try {
+        const applications = await Jobs.getJobApplicationById(id);
+
+        // enrich each application with Clerk user data
+        const enriched = await Promise.all(
+            applications.map(async (app) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        app.clerk_id,
+                    );
+                    return {
+                        ...app,
+                        first_name: clerkUser.firstName,
+                        last_name: clerkUser.lastName,
+                        image_url: clerkUser.imageUrl,
+                        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return {
+                        ...app,
+                        first_name: null,
+                        last_name: null,
+                        image_url: null,
+                        email: null,
+                    };
+                }
+            }),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Job applications fetched successfully",
+            enriched,
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to fetch job applications: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to fetch job applications", {
+            error: error.message,
+        });
+    }
+};
+
+const getApplicantsProfile = async (req, res) => {
+    const { id } = req.params;
+    if (!id) return sendResponse(res, 400, "Application ID is required");
+
+    try {
+        const application = await Jobs.getApplicantsProfile(id);
+        if (!application)
+            return sendResponse(res, 404, "Application not found");
+
+        const clerkUser = await clerkClient.users.getUser(application.clerk_id);
+        const result = {
+            ...application,
+            first_name: clerkUser.firstName,
+            last_name: clerkUser.lastName,
+            email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+            image_url: clerkUser.imageUrl,
+        };
+
+        return sendResponse(
+            res,
+            200,
+            "Application fetched successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to fetch application: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to fetch application", {
+            error: error.message,
+        });
+    }
+};
+
+const updateApplicationStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id) return sendResponse(res, 400, "Application ID is required");
+    if (!status) return sendResponse(res, 400, "Status is required");
+
+    try {
+        const result = await Jobs.updateApplicationStatus(id, status);
+        if (!result)
+            return sendResponse(
+                res,
+                400,
+                "Failed to update application status",
+            );
+        return sendResponse(
+            res,
+            200,
+            "Application status updated successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to update application status: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to update application status", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllJobs,
     applyJobs,
     getUsersJobApplications,
     getJobsByCompany,
+    createJob,
+    deleteJob,
+    getJobById,
+    updateJob,
+    getJobApplicationById,
+    getApplicantsProfile,
+    updateApplicationStatus,
 };
