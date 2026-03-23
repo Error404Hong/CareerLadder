@@ -150,3 +150,15 @@ export const getProjectApplicationsById = async (id: string) => {
         throw error;
     }
 };
+
+export const getProjectAppByCom = async (companyid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getProjectAppByCom/${companyid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching project applications: ", error);
+        throw error;
+    }
+};

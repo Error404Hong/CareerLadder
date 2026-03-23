@@ -11,6 +11,7 @@ const {
     getProjectById,
     updateProject,
     getProjectApplicationsById,
+    getAllProjectApplicationByCompany,
 } = require("../controllers/projectsController");
 
 router.get("/getAllProjects", getAllProjects);
@@ -27,5 +28,6 @@ router.post("/createProject", createProject);
 router.get("/getProjectById/:id", getProjectById);
 router.put("/updateProject/:id", updateProject);
 router.get("/getProjectApplications/:id", getProjectApplicationsById);
+router.get("/getProjectAppByCom/:companyid", getAllProjectApplicationByCompany);
 
 module.exports = router;

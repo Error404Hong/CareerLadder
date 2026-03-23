@@ -13,6 +13,7 @@ const {
     getJobApplicationById,
     getApplicantsProfile,
     updateApplicationStatus,
+    getAllJobsApplicationByCompany,
 } = require("../controllers/jobsController");
 
 router.get("/getAllJobs", getAllJobs);
@@ -26,5 +27,6 @@ router.put("/updateJob/:id", updateJob);
 router.get("/getJobApplications/:id", getJobApplicationById);
 router.get("/getApplicantsProfile/:id", getApplicantsProfile);
 router.put("/updateApplicationStatus/:id", updateApplicationStatus);
+router.get("/getJobsAppByCom/:companyid", getAllJobsApplicationByCompany);
 
 module.exports = router;

@@ -30,8 +30,8 @@ export const navItems = [
         href: "/dashboard/applications",
         icon: <Users size={16} />,
         children: [
-            { label: "Job Applications", href: "/dashboard/applications/jobs" },
-            { label: "Project Applications", href: "/dashboard/applications/projects" },
+            { label: "Job Applications", href: "/application-management/jobs" },
+            { label: "Project Applications", href: "/application-management/projects" },
         ],
     },
     {

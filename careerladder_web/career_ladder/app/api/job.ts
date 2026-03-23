@@ -174,3 +174,15 @@ export const updateApplicationStatus = async (id: string, status: string) => {
         throw error;
     }
 };
+
+export const getAllJobAppByCom = async (companyid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/jobs/getJobsAppByCom/${companyid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching job applications by company");
+        throw error;
+    }
+};

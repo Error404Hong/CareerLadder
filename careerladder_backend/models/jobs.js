@@ -275,6 +275,30 @@ class Jobs {
             throw error;
         }
     }
+
+    static async getAllJobsApplicationByCompany(company_id) {
+        try {
+            const query = `
+            SELECT 
+                applications.*,
+                applications.status AS application_status,
+                jobs.*,
+                jobs.status AS job_status,
+                student_profiles.*
+            FROM applications
+            LEFT JOIN jobs ON jobs.id = applications.listing_id
+            LEFT JOIN users ON users.clerk_id = applications.clerk_id
+            LEFT JOIN student_profiles ON student_profiles.clerk_id = applications.clerk_id
+            WHERE applications.type = 'job' AND jobs.company_id = $1
+            `;
+
+            const result = await pool.query(query, [company_id]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to fetch all job applications");
+            throw error;
+        }
+    }
 }
 
 module.exports = Jobs;

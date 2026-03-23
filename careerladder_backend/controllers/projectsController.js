@@ -261,6 +261,43 @@ const getProjectApplicationsById = async (req, res) => {
     }
 };
 
+const getAllProjectApplicationByCompany = async (req, res) => {
+    const { companyid } = req.params;
+
+    if (!companyid) return sendResponse(res, 400, "Company ID is required");
+
+    try {
+        const applications =
+            await Projects.getAllProjectApplicationByCompany(companyid);
+
+        const result = await Promise.all(
+            applications.map(async (app) => {
+                const user = await clerkClient.users.getUser(app.clerk_id);
+
+                return {
+                    ...app,
+                    first_name: user.firstName,
+                    last_name: user.lastName,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                    image_url: user.imageUrl,
+                };
+            }),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Applications fetch successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to fetch project applications");
+        return sendResponse(res, 500, "Failed to fetch project applications", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllProjects,
     applyProjects,
@@ -271,4 +308,5 @@ module.exports = {
     getProjectById,
     updateProject,
     getProjectApplicationsById,
+    getAllProjectApplicationByCompany,
 };
