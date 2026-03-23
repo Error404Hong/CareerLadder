@@ -105,7 +105,7 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
             }
 
             formData.append("cover_letter", values.cover_letter);
-            values.skills.forEach((skill) => formData.append("skills", skill))
+            formData.append("skills", JSON.stringify(values.skills))
             formData.append("clerkid", user!.id);
             formData.append("listingid", project!.id);
 

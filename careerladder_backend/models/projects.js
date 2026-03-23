@@ -84,6 +84,174 @@ class Projects {
             throw error;
         }
     }
+
+    static async getProjectsByCompany(company_id) {
+        try {
+            const query = `SELECT projects.*, COUNT(applications.id) AS application_count FROM projects
+                LEFT JOIN applications ON projects.id = applications.listing_id
+                WHERE projects.company_id = $1
+                GROUP BY projects.id
+                ORDER BY projects.created_at DESC
+            `;
+
+            const result = await pool.query(query, [company_id]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to fetch company projects");
+            throw error;
+        }
+    }
+
+    static async deleteProjectsByCompany(projectid) {
+        try {
+            const query = `DELETE FROM projects WHERE id = $1 RETURNING *`;
+            const result = await pool.query(query, [projectid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to delete company projects");
+            throw error;
+        }
+    }
+
+    static async deleteProjectApplications(projectid) {
+        try {
+            const query = `DELETE FROM applications WHERE listing_id = $1 AND type = 'project' RETURNING *`;
+            const result = await pool.query(query, [projectid]);
+            return result.rows;
+        } catch (error) {
+            logger.error("[MODEL] Failed to delete project applications");
+            throw error;
+        }
+    }
+
+    static async createProject(
+        company_id,
+        title,
+        description,
+        skills_required,
+        duration,
+        allowance,
+        vacancies,
+        start_date,
+        end_date,
+    ) {
+        try {
+            const query = `
+            INSERT INTO projects(company_id, title, description, skills_required, duration, allowance, vacancies, start_date, end_date, status)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, 'open')
+            RETURNING *
+        `;
+            const values = [
+                company_id,
+                title,
+                description,
+                skills_required,
+                duration,
+                allowance,
+                vacancies,
+                start_date,
+                end_date,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to create project: ", error);
+            throw error;
+        }
+    }
+
+    static async getProjectById(projectid) {
+        try {
+            const query = `SELECT projects.*, COUNT(applications.id) AS application_count FROM projects 
+            LEFT JOIN applications ON projects.id = applications.listing_id
+            WHERE projects.id = $1 GROUP BY projects.id`;
+
+            const result = await pool.query(query, [projectid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to get project by id: ", error);
+            throw error;
+        }
+    }
+
+    static async updateProject(
+        id,
+        title,
+        description,
+        skills_required,
+        duration,
+        allowance,
+        vacancies,
+        start_date,
+        end_date,
+        status,
+    ) {
+        try {
+            const query = `
+            UPDATE projects SET
+                title = $1, description = $2, skills_required = $3,
+                duration = $4, allowance = $5, vacancies = $6,
+                start_date = $7, end_date = $8, status = $9,
+                updated_at = NOW()
+            WHERE id = $10
+            RETURNING *
+        `;
+            const values = [
+                title,
+                description,
+                skills_required,
+                duration,
+                allowance,
+                vacancies,
+                start_date,
+                end_date,
+                status,
+                id,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update project: ", error);
+            throw error;
+        }
+    }
+
+    static async getProjectApplicationsById(projectid) {
+        try {
+            const query = `
+            SELECT
+                applications.id,
+                applications.clerk_id,
+                applications.listing_id,
+                applications.status,
+                applications.cover_letter,
+                applications.skills_fulfilled,
+                applications.resume_url,
+                applications.expected_salary,
+                applications.availability,
+                applications.applied_at,
+                users.role,
+                sp.major,
+                sp.location,
+                sp.linkedin_url,
+                sp.profile_summary
+            FROM applications
+            LEFT JOIN users ON users.clerk_id = applications.clerk_id
+            LEFT JOIN student_profiles sp ON sp.clerk_id = applications.clerk_id
+            WHERE applications.listing_id = $1 AND applications.type = 'project'
+            ORDER BY applications.applied_at DESC
+            `;
+
+            const result = await pool.query(query, [projectid]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error(
+                "[MODEL] Failed to fetch project applications: ",
+                error,
+            );
+            throw error;
+        }
+    }
 }
 
 module.exports = Projects;

@@ -13,7 +13,7 @@ export const navItems = [
         icon: <Briefcase size={16} />,
         children: [
             { label: "All Jobs", href: "/job-listings" },
-            { label: "Post a Job", href: "/job-listings/create" },
+            { label: "Create New Job", href: "/job-listings/create" },
         ],
     },
     {
@@ -21,8 +21,8 @@ export const navItems = [
         href: "/dashboard/projects",
         icon: <FileText size={16} />,
         children: [
-            { label: "All Projects", href: "/dashboard/projects" },
-            { label: "Post a Project", href: "/dashboard/projects/create" },
+            { label: "All Projects", href: "/project-listings" },
+            { label: "Create New Project", href: "/project-listings/create" },
         ],
     },
     {
