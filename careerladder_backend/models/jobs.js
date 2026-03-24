@@ -281,6 +281,7 @@ class Jobs {
             const query = `
             SELECT 
                 applications.*,
+                applications.id AS application_id,
                 applications.status AS application_status,
                 jobs.*,
                 jobs.status AS job_status,

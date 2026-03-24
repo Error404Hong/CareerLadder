@@ -258,6 +258,7 @@ class Projects {
             const query = `
             SELECT 
                 applications.*,
+                applications.id AS application_id,
                 applications.status AS application_status,
                 projects.*,
                 projects.status AS project_status,
