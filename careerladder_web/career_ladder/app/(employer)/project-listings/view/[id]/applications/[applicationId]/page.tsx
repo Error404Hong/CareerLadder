@@ -1,12 +1,14 @@
 "use client"
 
+import { useUser } from "@clerk/nextjs"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { Application, Project } from "@/types"
 import { getApplicantsProfile, updateApplicationStatus } from "@/app/api/job"
-import { getProjectById } from "@/app/api/project"
+import { getProjectById, updateProjectVacancies, updateProjectStatus } from "@/app/api/project"
+import { calculatePayable, createProjectPayment } from "@/app/api/payment"
 
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -19,6 +21,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { MapPin, Briefcase, Link, ExternalLink, User } from "lucide-react"
 
 import { MeetingDialog } from "./meeting-dialog"
+import { PaymentDialog } from "./payment-dialog"
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
@@ -29,6 +32,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 }
 
 export default function ApplicantsProfile() {
+    const { user } = useUser();
     const params = useParams()
     const id = params.id as string
     const applicationId = params.applicationId as string
@@ -39,6 +43,8 @@ export default function ApplicantsProfile() {
     const [selectedStatus, setSelectedStatus] = useState<string>("")
     const [projectData, setProjectData] = useState<Project | null>(null);
     const [meetingDialogOpen, setMeetingDialogOpen] = useState(false)
+    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+    const [totalVacancies, setTotalVacancies] = useState(0);
 
     useEffect(() => {
         const getApplication = async () => {
@@ -46,7 +52,6 @@ export default function ApplicantsProfile() {
                 const fetchRes = await getApplicantsProfile(applicationId)
                 const projectRes = await getProjectById(id);
                 if (fetchRes.success && projectRes.success) {
-                    console.log("Project data: ", projectRes.data);
                     setProjectData(projectRes.data)
                     setApplication(fetchRes.data)
                     setSelectedStatus(fetchRes.data.status)
@@ -67,11 +72,61 @@ export default function ApplicantsProfile() {
             const res = await updateApplicationStatus(applicationId, selectedStatus)
             if (res.success) {
                 setApplication(prev => prev ? { ...prev, status: selectedStatus } : prev)
-                toast.success("Application status updated successfully");
 
                 if (selectedStatus === "shortlisted") {
-                    setMeetingDialogOpen(true);
+                    toast.success("Application status updated successfully")
+                    setMeetingDialogOpen(true)
+                    return
                 }
+
+                if (selectedStatus === "accepted") {
+                    const vacancyRes = await updateProjectVacancies(id)
+
+
+                    if (!vacancyRes.success) {
+                        toast.error("Status updated but failed to update vacancies")
+                        return
+                    }
+
+                    const monthMatch = projectData?.duration.toLowerCase().match(/(\d+)\s*month/)
+                    const months = monthMatch ? parseInt(monthMatch[1]) : 1
+                    const totalAmount = Number(projectData?.allowance) * months
+
+                    const paymentRes = await createProjectPayment(
+                        applicationId,
+                        id,
+                        user!.id,
+                        application!.clerk_id,
+                        totalAmount,
+                        Number(projectData!.allowance),
+                        months
+                    )
+
+                    if (!paymentRes.success) {
+                        toast.error("Failed to create payment record")
+                        return
+                    }
+
+                    toast.success("Application status updated successfully")
+
+                    if (vacancyRes.data.vacancies === 0) {
+
+                        const calculatedRes = await calculatePayable(id);
+                        const updStatus = await updateProjectStatus(id, "closed");
+
+                        if (updStatus.success) {
+                            setProjectData(prev => prev ? { ...prev, status: "closed", vacancies: 0 } : prev)
+                        }
+
+                        if (calculatedRes.success) {
+                            setTotalVacancies(Number(calculatedRes.data.total_vacancies))
+                        }
+
+                        setPaymentDialogOpen(true)
+                    }
+                }
+
+
             } else {
                 toast.error("Failed to update status")
             }
@@ -336,8 +391,8 @@ export default function ApplicantsProfile() {
                 </div>
             </div>
 
-
             <MeetingDialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} application={application} project={projectData} />
+            <PaymentDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen} project={projectData} total_vacancies={totalVacancies} />
         </>
     )
 }

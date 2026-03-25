@@ -21,6 +21,10 @@ export type Jobs = {
     status: string
     created_at: string
     updated_at: string
+    company_name: string
+    company_website: string
+    company_email: string
+    company_logo_url: string
 }
 
 type Props = {
@@ -39,21 +43,21 @@ export function JobCard({ job }: Props) {
     return (
         <>
 
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 p-5 flex flex-col">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 p-6 flex flex-col">
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
                         <div>
-                            <h3 className="font-bold text-[#0f172a] text-lg leading-snug">{job.title}</h3>
-                            <p className="text-sm text-[#2563eb]  mt-0.5">{job.company_id}</p>
+                            <h3 className="font-bold text-lg leading-snug">{job.title}</h3>
+                            <p className="text-sm text-[#2563eb]  mt-0.5">{job.company_name}</p>
                         </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className="text-[12px]  px-2.5 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100">
+                    <div className="flex items-end gap-1.5 shrink-0">
+                        <span className="text-[12px]  px-2.5 py-1 rounded-full bg-green-100 text-green-700 border border-green-100">
                             {job.status.toUpperCase()}
                         </span>
                         {job.is_remote && (
-                            <span className="text-[12px]  px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-500 border border-blue-100">
+                            <span className="text-[12px]  px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-100">
                                 REMOTE
                             </span>
                         )}

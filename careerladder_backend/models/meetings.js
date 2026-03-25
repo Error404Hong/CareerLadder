@@ -65,7 +65,23 @@ class Meetings {
 
     static async getMeetingsByCompany(company_id) {
         try {
-            const query = `SELECT * FROM meetings WHERE company_id = $1 ORDER BY scheduled_at DESC`;
+            const query = `
+            SELECT
+                meetings.*,
+                CASE
+                    WHEN meetings.reference_type = 'job' THEN jobs.title
+                    WHEN meetings.reference_type = 'project' THEN projects.title
+                    ELSE NULL
+                END AS reference_title,
+                sp.major,
+                sp.location AS applicant_location
+            FROM meetings
+            LEFT JOIN jobs ON jobs.id = meetings.reference_id::uuid AND meetings.reference_type = 'job'
+            LEFT JOIN projects ON projects.id = meetings.reference_id::uuid AND meetings.reference_type = 'project'
+            LEFT JOIN student_profiles sp ON sp.clerk_id = meetings.applicant_id
+            WHERE meetings.company_id = $1
+            ORDER BY meetings.scheduled_at ASC
+        `;
             const result = await pool.query(query, [company_id]);
             return result.rows ?? [];
         } catch (error) {
@@ -76,7 +92,22 @@ class Meetings {
 
     static async getMeetingsByApplicant(applicant_id) {
         try {
-            const query = `SELECT * FROM meetings WHERE applicant_id = $1 ORDER BY scheduled_at DESC`;
+            const query = `
+            SELECT
+                meetings.*,
+                CASE
+                    WHEN meetings.reference_type = 'job' THEN jobs.title
+                    WHEN meetings.reference_type = 'project' THEN projects.title
+                    ELSE NULL
+                END AS reference_title,
+                company_profiles.company_name
+            FROM meetings
+            LEFT JOIN jobs ON jobs.id = meetings.reference_id::uuid AND meetings.reference_type = 'job'
+            LEFT JOIN projects ON projects.id = meetings.reference_id::uuid AND meetings.reference_type = 'project'
+            LEFT JOIN company_profiles ON company_profiles.company_id = meetings.company_id
+            WHERE meetings.applicant_id = $1
+            ORDER BY meetings.scheduled_at ASC
+        `;
             const result = await pool.query(query, [applicant_id]);
             return result.rows ?? [];
         } catch (error) {
@@ -106,6 +137,29 @@ class Meetings {
             return result.rows[0] ?? null;
         } catch (error) {
             logger.error("[MODEL] Failed to delete meeting: ", error);
+            throw error;
+        }
+    }
+
+    static async getMeetingByRoomName(room_name) {
+        try {
+            const query = `
+            SELECT
+                meetings.*,
+                CASE
+                    WHEN meetings.reference_type = 'job' THEN jobs.title
+                    WHEN meetings.reference_type = 'project' THEN projects.title
+                    ELSE NULL
+                END AS reference_title
+            FROM meetings
+            LEFT JOIN jobs ON jobs.id = meetings.reference_id::uuid AND meetings.reference_type = 'job'
+            LEFT JOIN projects ON projects.id = meetings.reference_id::uuid AND meetings.reference_type = 'project'
+            WHERE meetings.room_name = $1
+        `;
+            const result = await pool.query(query, [room_name]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to get meeting by room name: ", error);
             throw error;
         }
     }

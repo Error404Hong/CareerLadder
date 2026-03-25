@@ -2,6 +2,7 @@ const Meetings = require("../models/meetings");
 const sendResponse = require("../utils/responseHelper");
 const logger = require("../utils/logger");
 const { StreamClient } = require("@stream-io/node-sdk");
+const { clerkClient } = require("@clerk/express");
 
 const streamClient = new StreamClient(
     process.env.STREAM_API_KEY,
@@ -55,7 +56,7 @@ const scheduleMeeting = async (req, res) => {
             },
         });
 
-        const meeting_url = `${process.env.FRONTEND_URL}/meeting/room/${roomName}`;
+        const meeting_url = `${process.env.FRONTEND_URL}/room/${roomName}`;
 
         const meeting = await Meetings.scheduleMeeting(
             application_id ?? null,
@@ -113,12 +114,36 @@ const getMeetingsByCompany = async (req, res) => {
 
     try {
         const meetings = await Meetings.getMeetingsByCompany(companyId);
-        return sendResponse(
-            res,
-            200,
-            "Meetings fetched successfully",
-            meetings,
+
+        const enriched = await Promise.all(
+            meetings.map(async (meeting) => {
+                try {
+                    const clerkUser = await streamClient.upsertUsers([
+                        { id: meeting.applicant_id },
+                    ]);
+                    const user = await clerkClient.users.getUser(
+                        meeting.applicant_id,
+                    );
+
+                    return {
+                        ...meeting,
+                        applicant_name: `${user.firstName} ${user.lastName}`,
+                        applicant_email:
+                            user.emailAddresses[0]?.emailAddress ?? "",
+                        applicant_image: user.imageUrl,
+                    };
+                } catch {
+                    return {
+                        ...meeting,
+                        applicant_name: null,
+                        applicant_email: null,
+                        applicant_image: null,
+                    };
+                }
+            }),
         );
+
+        return sendResponse(res, 200, "Meetings fetched", enriched);
     } catch (error) {
         logger.error("[CONTROLLER] Failed to get meetings: ", error.message);
         return sendResponse(res, 500, "Failed to get meetings", {
@@ -211,6 +236,24 @@ const getStreamToken = async (req, res) => {
     }
 };
 
+const getMeetingByRoomName = async (req, res) => {
+    const { roomName } = req.params;
+    if (!roomName) return sendResponse(res, 400, "Room name is required");
+
+    try {
+        const meeting = await Meetings.getMeetingByRoomName(roomName);
+        return sendResponse(res, 200, "Meeting fetched successfully", meeting);
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to get meeting by room name: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to get meeting", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     scheduleMeeting,
     getMeetingByApplication,
@@ -219,4 +262,5 @@ module.exports = {
     updateMeetingStatus,
     deleteMeeting,
     getStreamToken,
+    getMeetingByRoomName,
 };

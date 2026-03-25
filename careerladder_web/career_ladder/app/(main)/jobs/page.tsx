@@ -52,15 +52,15 @@ export default function Jobs() {
                     <Breadcrumb className="mb-4">
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink href="/home" className="text-sm text-slate-400 hover:text-[#0f172a]">Home</BreadcrumbLink>
+                                <BreadcrumbLink href="/home" >Home</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbLink className="text-sm text-slate-400 hover:text-[#0f172a]">Opportunities</BreadcrumbLink>
+                                <BreadcrumbLink >Opportunities</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm text-[#0f172a] ">Opening Job Positions</BreadcrumbPage>
+                                <BreadcrumbPage>Opening Job Positions</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -129,6 +129,6 @@ export default function Jobs() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

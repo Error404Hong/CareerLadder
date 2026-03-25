@@ -61,10 +61,10 @@ export function TrainingCard({ training }: Props) {
                                 <BookOpen size={16} className="text-slate-400" />
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <Badge className={`text-[11px]  rounded-full px-2.5 py-0.5 shrink-0 ${training.status === "open" ? "bg-green-50 text-green-600 border border-green-100" : "bg-blue-50 text-blue-600 border border-blue-100"}`}>
+                                <Badge className={`text-[11px]  rounded-full px-2.5 py-1 shrink-0 ${training.status === "open" ? "bg-green-100 text-green-700 border border-green-100" : "bg-blue-100 text-blue-700 border border-blue-100"}`}>
                                     {training.status.toUpperCase()}
                                 </Badge>
-                                <span className="flex items-center gap-1 text-[11px]  px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                <span className="flex items-center gap-1 text-[11px]  px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                                     {training.is_public ? <Globe size={10} /> : <Lock size={10} />}
                                     {training.is_public ? "Public" : "Private"}
                                 </span>

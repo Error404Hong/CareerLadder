@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"c:/Users/User/Desktop/CareerLadder/careerladder_web/career_ladder/app/\\(employer\\)/project-listings/view/[id]/applications/[applicationId]/\")",
+      "Bash(ls \"c:/Users/User/Desktop/CareerLadder/careerladder_web/career_ladder/app/\\(employer\\)/project-listings/view/[id]/applications/[applicationId]/payment/\")",
+      "Bash(ls \"c:/Users/User/Desktop/CareerLadder/careerladder_web/career_ladder/app/\\(employer\\)/project-listings/view/[id]/applications/[applicationId]/payment/success/\")",
+      "Bash(ls \"c:/Users/User/Desktop/CareerLadder/careerladder_web/career_ladder/app/\\(employer\\)/project-listings/view/[id]/applications/[applicationId]/payment/cancel/\")"
+    ]
+  }
+}

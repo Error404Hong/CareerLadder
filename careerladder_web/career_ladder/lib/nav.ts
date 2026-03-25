@@ -14,6 +14,7 @@ export const navItems = [
         links: [
             { label: "Track Application Status", href: "/applications" },
             { label: "View Training Registration", href: "/registrations" },
+            { label: "My Meetings", href: "/my-meetings" },
         ],
     },
     {

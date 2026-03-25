@@ -21,6 +21,10 @@ export type Project = {
     end_date: string
     created_at: string
     updated_at: string
+    company_name: string
+    company_website: string
+    company_email: string
+    company_logo_url: string
 }
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -40,12 +44,12 @@ export function ProjectCard({ project }: { project: Project }) {
                             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                                 <Briefcase size={16} className="text-slate-400" />
                             </div>
-                            <Badge className="text-[11px]  bg-green-50 text-green-600 border border-green-100 rounded-full px-2.5 py-0.5 shrink-0">
+                            <Badge className="text-[11px] bg-green-100 text-green-700 border border-green-100 rounded-full px-2.5 py-1 shrink-0">
                                 {project.status.toUpperCase()}
                             </Badge>
                         </div>
                         <h3 className="font-bold text-[#0f172a] text-sm leading-snug mb-1">{project.title}</h3>
-                        <p className="text-sm text-[#2563eb]  mb-3">{project.company_id}</p>
+                        <p className="text-sm text-[#2563eb]  mb-3">{project.company_name}</p>
                         <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mb-4 min-h-10">{project.description}</p>
                         <div className="flex flex-wrap gap-1.5 mb-4 min-h-6">
                             {project.skills_required?.slice(0, 3).map((skill) => (

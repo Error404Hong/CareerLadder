@@ -20,6 +20,7 @@ export type ProjectApplication = {
     allowance: number
     start_date: string
     end_date: string
+    company_name: string
 }
 
 const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
@@ -44,9 +45,9 @@ export const projectColumns: ColumnDef<ProjectApplication>[] = [
         cell: ({ row }) => <p className="text-sm font-medium text-[#0f172a] text-left">{row.getValue("title")}</p>
     },
     {
-        accessorKey: "company_id",
+        accessorKey: "company_name",
         header: () => <span className="text-sm font-medium text-left block">Company</span>,
-        cell: ({ row }) => <p className="text-sm text-[#2563eb] font-medium text-left">{row.getValue("company_id")}</p>
+        cell: ({ row }) => <p className="text-sm text-[#2563eb] font-medium text-left">{row.getValue("company_name")}</p>
     },
     {
         accessorKey: "duration",

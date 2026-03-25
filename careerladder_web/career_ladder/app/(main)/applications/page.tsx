@@ -54,15 +54,15 @@ export default function Applications() {
                     <Breadcrumb className="mb-4">
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink href="/home" className="text-sm text-slate-400 hover:text-[#0f172a]">Home</BreadcrumbLink>
+                                <BreadcrumbLink href="/home" >Home</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbLink className="text-sm text-slate-400 hover:text-[#0f172a]">Applications</BreadcrumbLink>
+                                <BreadcrumbLink >Applications</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm text-[#0f172a] font-medium">Track Application Status</BreadcrumbPage>
+                                <BreadcrumbPage >Track Application Status</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>

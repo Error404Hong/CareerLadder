@@ -8,9 +8,29 @@ const getAllJobs = async (req, res) => {
     try {
         const result = await Jobs.getAllJobs();
 
-        if (!result) return sendResponse(res, 404, "Failed to fetch all jobs");
+        const enriched = await Promise.all(
+            result.map(async (res) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        res.company_id,
+                    );
+                    return {
+                        ...res,
+                        company_logo_url: clerkUser.imageUrl,
+                        company_email:
+                            clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return {
+                        ...res,
+                        company_logo_url: null,
+                        company_email: null,
+                    };
+                }
+            }),
+        );
 
-        return sendResponse(res, 200, "Jobs fetched successfully", result);
+        return sendResponse(res, 200, "Jobs fetched successfully", enriched);
     } catch (error) {
         logger.error("[CONTROLLER] Failed to fetch all jobs: ", error.message);
         return sendResponse(res, 500, "Failed to fetch all jobs", {
@@ -73,6 +93,7 @@ const getUsersJobApplications = async (req, res) => {
 
     try {
         const result = await Jobs.getUsersJobApplications(clerkid);
+
         return sendResponse(
             res,
             200,

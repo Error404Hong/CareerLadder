@@ -4,8 +4,15 @@ const logger = require("../utils/logger");
 class Projects {
     static async getAllProjects() {
         try {
-            const query =
-                "SELECT * FROM projects WHERE status = 'open' ORDER BY created_at DESC";
+            const query = `SELECT 
+                projects.*, 
+                company_profiles.company_name,
+                company_profiles.website
+            FROM projects 
+            LEFT JOIN users ON users.clerk_id = projects.company_id
+            LEFT JOIN company_profiles ON company_profiles.company_id = users.clerk_id
+            WHERE projects.status = 'open' 
+            ORDER BY projects.created_at DESC`;
             const result = await pool.query(query);
             return result.rows ?? [];
         } catch (error) {
@@ -71,9 +78,11 @@ class Projects {
                 projects.duration,
                 projects.allowance,
                 projects.start_date,
-                projects.end_date
+                projects.end_date,
+                company_profiles.company_name
             FROM applications 
             LEFT JOIN projects ON projects.id = applications.listing_id
+            LEFT JOIN company_profiles ON company_profiles.company_id = projects.company_id
             WHERE applications.clerk_id = $1 AND applications.type = 'project'
             ORDER BY applications.applied_at DESC
         `;
@@ -274,6 +283,30 @@ class Projects {
             return result.rows ?? [];
         } catch (error) {
             logger.error("[MODEL] Failed to fetch all project applications");
+            throw error;
+        }
+    }
+
+    static async updateProjectVacancies(projectid) {
+        try {
+            const query =
+                "UPDATE projects SET vacancies = vacancies - 1 WHERE id = $1 RETURNING *";
+            const result = await pool.query(query, [projectid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update project vacancies");
+            throw error;
+        }
+    }
+
+    static async updateProjectStatus(projectid, status) {
+        try {
+            const query =
+                "UPDATE projects SET status = $1 WHERE id = $2 RETURNING *";
+            const result = await pool.query(query, [status, projectid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update project status");
             throw error;
         }
     }

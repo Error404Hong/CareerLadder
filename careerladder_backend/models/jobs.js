@@ -4,8 +4,17 @@ const logger = require("../utils/logger");
 class Jobs {
     static async getAllJobs() {
         try {
-            const query =
-                "SELECT * FROM jobs WHERE status = 'open' ORDER BY created_at DESC";
+            const query = `
+            SELECT 
+                jobs.*, 
+                company_profiles.company_name,
+                company_profiles.website
+            FROM jobs 
+            LEFT JOIN users ON users.clerk_id = jobs.company_id
+            LEFT JOIN company_profiles ON company_profiles.company_id = users.clerk_id
+            WHERE jobs.status = 'open' 
+            ORDER BY jobs.created_at DESC
+            `;
             const result = await pool.query(query);
             return result.rows ?? [];
         } catch (error) {
@@ -61,9 +70,11 @@ class Jobs {
                 jobs.employment_type,
                 jobs.location,
                 jobs.salary_min,
-                jobs.salary_max
+                jobs.salary_max,
+                company_profiles.company_name
             FROM applications 
             LEFT JOIN jobs ON jobs.id = applications.listing_id
+            LEFT JOIN company_profiles ON company_profiles.company_id = jobs.company_id
             WHERE applications.clerk_id = $1 AND applications.type = 'job'
             ORDER BY applications.applied_at DESC`;
 

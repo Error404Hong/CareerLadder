@@ -104,3 +104,15 @@ export const deleteMeeting = async (id: string) => {
         throw error;
     }
 };
+
+export const getMeetingByRoomName = async (roomName: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/meetings/getByRoomName/${roomName}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching meeting by room name: ", error);
+        throw error;
+    }
+};

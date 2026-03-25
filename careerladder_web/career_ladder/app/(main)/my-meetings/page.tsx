@@ -4,9 +4,10 @@ import { useUser } from "@clerk/nextjs"
 import { useState, useEffect } from "react"
 
 import { Meeting } from "@/types"
-import { getMeetingsByCompany, updateMeetingStatus } from "@/app/api/meetings"
+import { getMeetingsByApplicant } from "@/app/api/meetings"
 
 import { toast } from "sonner"
+import { Video } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 
@@ -14,20 +15,29 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 
 import { MeetingCard } from "./MeetingCard"
 import { MeetingCardSkeleton } from "./MeetingCardSkeleton"
-import { EmptyState } from "./EmptyState"
 
-export default function AllMeetings() {
+
+function EmptyState({ label }: { label: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Video size={36} className="text-slate-200" />
+            <p className="text-sm font-medium text-slate-400">No {label} meetings</p>
+            <p className="text-xs text-slate-300">Your scheduled meetings will appear here</p>
+        </div>
+    )
+}
+
+export default function MyMeetings() {
     const { user } = useUser()
+    const [isLoading, setIsLoading] = useState<boolean>(true)
     const [meetings, setMeetings] = useState<Meeting[]>([])
-    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         if (!user) return
         const getMeetings = async () => {
             try {
-                const fetchRes = await getMeetingsByCompany(user.id)
+                const fetchRes = await getMeetingsByApplicant(user.id)
                 if (fetchRes.success) {
-                    console.log("Fetch: ", fetchRes.data)
                     setMeetings(fetchRes.data)
                 } else {
                     toast.error("Failed to fetch meetings. Please try again")
@@ -44,17 +54,6 @@ export default function AllMeetings() {
     const completed = meetings.filter(m => m.status === "completed")
     const cancelled = meetings.filter(m => m.status === "cancelled")
 
-    const handleCancel = async (id: string) => {
-        const cancelMeeting = await updateMeetingStatus(id, "cancelled");
-
-        if (cancelMeeting.success) {
-            setMeetings(prev => prev.map(m => m.id === id ? { ...m, status: "cancelled" } : m))
-            toast.success("Meeting has been cancelled successfully")
-        } else {
-            toast.error("Failed to cancel meeting. Please try again")
-        }
-    }
-
     const renderGrid = (list: Meeting[], label: string) => {
         if (isLoading) return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -64,36 +63,43 @@ export default function AllMeetings() {
         if (list.length === 0) return <EmptyState label={label} />
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {list.map(m => <MeetingCard key={m.id} meeting={m} onCancel={handleCancel} />)}
+                {list.map(m => <MeetingCard key={m.id} meeting={m} />)}
             </div>
         )
     }
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
+            <div className="bg-white border-b border-slate-100">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <Breadcrumb className="mb-4">
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/home">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink>My Activities</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>My Meetings</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
 
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Meetings</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-
-                <div className="flex items-end justify-between flex-wrap gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">Meetings</h1>
-                        <p className="text-sm text-slate-400 mt-1">
-                            {isLoading ? "Loading..." : `${meetings.length} meeting${meetings.length !== 1 ? "s" : ""} total`}
-                        </p>
+                    <div className="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">My Meetings</h1>
+                            <p className="text-sm text-slate-400 mt-1">
+                                {isLoading ? "Loading..." : `${meetings.length} total meeting${meetings.length !== 1 ? "s" : ""}`}
+                            </p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
+            <div className="max-w-7xl mx-auto px-6 py-8">
                 <Tabs defaultValue="scheduled">
                     <TabsList className="mb-6">
                         <TabsTrigger value="scheduled" className="gap-2">

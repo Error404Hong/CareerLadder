@@ -159,21 +159,20 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                             <div className="flex items-start gap-4 flex-col justify-center">
                                 <div>
                                     <Image
-                                        src="/careerladder-logo.png"
-                                        width={300}
-                                        height={300}
+                                        src={project!.company_logo_url}
+                                        width={150}
+                                        height={100}
                                         alt="Company Logo"
-                                        className="mb-5"
                                     />
                                 </div>
                                 <div>
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
-                                        PROJECT SCOPE: {project?.title.toUpperCase()}
+                                        {project?.title.toUpperCase()}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb]  mt-0.5">{project?.company_id}</p>
+                                    <p className="text-sm text-[#2563eb]">{project?.company_name}</p>
                                 </div>
                             </div>
-                            <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5 shrink-0 mt-1">
+                            <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1 shrink-0 mt-1">
                                 {project?.status.toUpperCase()}
                             </Badge>
                         </div>

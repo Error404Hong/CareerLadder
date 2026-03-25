@@ -8,6 +8,7 @@ const {
     updateMeetingStatus,
     deleteMeeting,
     getStreamToken,
+    getMeetingByRoomName,
 } = require("../controllers/meetingsController");
 
 router.post("/scheduleMeeting", scheduleMeeting);
@@ -17,5 +18,6 @@ router.get("/getByApplicant/:applicantId", getMeetingsByApplicant);
 router.put("/updateStatus/:id", updateMeetingStatus);
 router.delete("/deleteMeeting/:id", deleteMeeting);
 router.get("/getToken/:userId", getStreamToken);
+router.get("/getByRoomName/:roomName", getMeetingByRoomName);
 
 module.exports = router;

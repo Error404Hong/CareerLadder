@@ -162,3 +162,35 @@ export const getProjectAppByCom = async (companyid: string) => {
         throw error;
     }
 };
+
+export const updateProjectVacancies = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/projects/updateProjectVacancies/${projectid}`,
+        );
+        console.log("UPDATED VACANCIES: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating project vacancies");
+        throw error;
+    }
+};
+
+export const updateProjectStatus = async (
+    projectid: string,
+    status: string,
+) => {
+    try {
+        const response = await axiosInstance.put(
+            `/projects/updateProjectStatus/${projectid}`,
+            {
+                status,
+            },
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error("Error updating project status");
+        throw error;
+    }
+};

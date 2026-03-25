@@ -67,15 +67,15 @@ export default function TrainingPage() {
                     <Breadcrumb className="mb-4">
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink href="/home" className="text-sm text-slate-400 hover:text-[#0f172a]">Home</BreadcrumbLink>
+                                <BreadcrumbLink href="/home" >Home</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbLink className="text-sm text-slate-400 hover:text-[#0f172a]">Opportunities</BreadcrumbLink>
+                                <BreadcrumbLink>Opportunities</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm text-[#0f172a] ">Industrial Training Programs</BreadcrumbPage>
+                                <BreadcrumbPage>Industrial Training Programs</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -140,6 +140,6 @@ export default function TrainingPage() {
                     </Tabs>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

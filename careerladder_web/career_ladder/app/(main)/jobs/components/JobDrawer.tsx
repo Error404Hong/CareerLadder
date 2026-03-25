@@ -168,8 +168,8 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex flex-col gap-4">
                                 <Image
-                                    src="/careerladder-logo.png"
-                                    width={160}
+                                    src={job!.company_logo_url}
+                                    width={150}
                                     height={60}
                                     alt="Company Logo"
                                 />
@@ -177,7 +177,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {job?.title}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb]  mt-0.5">{job?.company_id}</p>
+                                    <p className="text-sm text-[#2563eb]">{job?.company_name}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end gap-1.5 shrink-0">

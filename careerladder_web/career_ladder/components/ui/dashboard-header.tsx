@@ -36,7 +36,7 @@ export function DashboardHeader() {
                                             {crumb.label}
                                         </BreadcrumbPage>
                                     ) : (
-                                        <BreadcrumbLink href={crumb.href} className="text-sm text-slate-400 hover:text-[#0f172a]">
+                                        <BreadcrumbLink href={crumb.href} >
                                             {crumb.label}
                                         </BreadcrumbLink>
                                     )}

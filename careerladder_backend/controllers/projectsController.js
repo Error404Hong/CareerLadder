@@ -7,10 +7,35 @@ const getAllProjects = async (req, res) => {
     try {
         const result = await Projects.getAllProjects();
 
-        if (!result)
-            return sendResponse(res, 404, "Failed to fetch all projects");
+        const enriched = await Promise.all(
+            result.map(async (res) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        res.company_id,
+                    );
 
-        return sendResponse(res, 200, "Projects fetched successfully", result);
+                    return {
+                        ...res,
+                        company_logo_url: clerkUser.imageUrl,
+                        company_email:
+                            clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return {
+                        ...res,
+                        company_logo_url: null,
+                        company_email: null,
+                    };
+                }
+            }),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Projects fetched successfully",
+            enriched,
+        );
     } catch (error) {
         logger.error(
             "[CONTROLLER] Failed to fetch all projects: ",
@@ -298,6 +323,39 @@ const getAllProjectApplicationByCompany = async (req, res) => {
     }
 };
 
+const updateProjectVacancies = async (req, res) => {
+    const { projectid } = req.params;
+
+    if (!projectid) return sendResponse(res, 400, "Project id is required");
+
+    try {
+        const result = await Projects.updateProjectVacancies(projectid);
+        return sendResponse(res, 200, "Project vacancies updated", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update project vacancies");
+        return sendResponse(res, 500, "Failed to update project vacancies", {
+            error: error.message,
+        });
+    }
+};
+
+const updateProjectStatus = async (req, res) => {
+    const { projectid } = req.params;
+    const { status } = req.body;
+
+    if (!projectid) return sendResponse(res, 400, "Project id is required");
+
+    try {
+        const result = await Projects.updateProjectStatus(projectid, status);
+        return sendResponse(res, 200, "Status updated successfully");
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update project status");
+        return sendResponse(res, 500, "Failed to update project status", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllProjects,
     applyProjects,
@@ -309,4 +367,6 @@ module.exports = {
     updateProject,
     getProjectApplicationsById,
     getAllProjectApplicationByCompany,
+    updateProjectVacancies,
+    updateProjectStatus,
 };
