@@ -1,4 +1,4 @@
-import { LayoutDashboard, Briefcase, FileText, Users, DollarSign, Star, Video } from "lucide-react"
+import { LayoutDashboard, Briefcase, FileText, Users, DollarSign, Star, Video, Backpack } from "lucide-react"
 
 export const navItems = [
     {
@@ -24,6 +24,15 @@ export const navItems = [
             { label: "All Projects", href: "/project-listings" },
             { label: "Create New Project", href: "/project-listings/create" },
         ],
+    },
+    {
+        label: "Training Programs",
+        href: "/training-programs",
+        icon: <Backpack size={16} />,
+        children: [
+            { label: "All Training Programs", href: "/training-programs" },
+            { label: "Create New Program", href: "/training-programs/create" }
+        ]
     },
     {
         label: "Applications",

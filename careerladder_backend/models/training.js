@@ -85,6 +85,132 @@ class Training {
             throw error;
         }
     }
+
+    static async getCompanyTrainingPrograms(company_id) {
+        try {
+            const query = `SELECT tp.*, COUNT(tr.id) AS registration_count 
+            FROM training_programs tp
+            LEFT JOIN training_registration tr ON tr.training_id = tp.id
+            WHERE company_id = $1
+            GROUP BY tp.id
+            ORDER BY tp.created_at DESC
+            `;
+            const result = await pool.query(query, [company_id]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to get company programs");
+            throw error;
+        }
+    }
+
+    static async createNewProgram(
+        company_id,
+        title,
+        description,
+        prerequisites,
+        expected_outcome,
+        location,
+        date,
+        time,
+        duration,
+        vacancies,
+        is_public,
+        application_deadline,
+    ) {
+        try {
+            const query = `
+            INSERT INTO training_programs(company_id, title, description, prerequisites, expected_outcome, location, date, time, duration, 
+            vacancies, meeting_url, is_public, application_deadline, status) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'meeting url', $11, $12, 'open') RETURNING *
+            `;
+
+            const values = [
+                company_id,
+                title,
+                description,
+                prerequisites,
+                expected_outcome,
+                location,
+                date,
+                time,
+                duration,
+                vacancies,
+                is_public,
+                application_deadline,
+            ];
+
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to create new program");
+            throw error;
+        }
+    }
+
+    static async getProgramById(programid) {
+        try {
+            const query = `SELECT * FROM training_programs WHERE id = $1`;
+            const result = await pool.query(query, [programid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to get company programs by id");
+            throw error;
+        }
+    }
+
+    static async updateProgramById(
+        title,
+        description,
+        prerequisites,
+        expected_outcome,
+        location,
+        date,
+        time,
+        duration,
+        vacancies,
+        is_public,
+        application_deadline,
+        status,
+        id,
+    ) {
+        try {
+            const query = `UPDATE training_programs SET title = $1, description = $2, prerequisites = $3, expected_outcome = $4,
+            location = $5, date = $6, time = $7, duration = $8, vacancies = $9, is_public = $10, application_deadline = $11, status = $12,
+            updated_at = NOW() WHERE id = $13 RETURNING *`;
+
+            const values = [
+                title,
+                description,
+                prerequisites,
+                expected_outcome,
+                location,
+                date,
+                time,
+                duration,
+                vacancies,
+                is_public,
+                application_deadline,
+                status,
+                id,
+            ];
+
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update training program");
+            throw error;
+        }
+    }
+
+    static async deleteProgramById(programid) {
+        try {
+            const query = "DELETE FROM training_programs WHERE id = $1";
+            await pool.query(query, [programid]);
+        } catch (error) {
+            logger.error("[MODEL] Failed to delete training program");
+            throw error;
+        }
+    }
 }
 
 module.exports = Training;

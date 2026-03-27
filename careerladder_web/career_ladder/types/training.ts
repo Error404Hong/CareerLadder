@@ -1,0 +1,20 @@
+export type Training = {
+    id: string;
+    company_id: string;
+    title: string;
+    description: string;
+    date: string;
+    time: string;
+    duration: string;
+    location: string;
+    meeting_url: string;
+    vacancies: number;
+    prerequisites: string;
+    expected_outcome: string;
+    application_deadline: string;
+    is_public: boolean;
+    status: string;
+    created_at: string;
+    updated_at: string | null;
+    registration_count: string;
+};
