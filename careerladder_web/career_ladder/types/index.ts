@@ -4,3 +4,5 @@ export * from "./project";
 export * from "./projectApplication";
 export * from "./jobApplication";
 export * from "./meeting";
+export * from "./paymentStats";
+export * from "./projectPayment";

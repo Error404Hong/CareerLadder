@@ -393,6 +393,38 @@ const getAllJobsApplicationByCompany = async (req, res) => {
     }
 };
 
+const updateJobVacancies = async (req, res) => {
+    const { jobid } = req.params;
+
+    if (!jobid) return sendResponse(res, 400, "Job id is required");
+
+    try {
+        const result = await Jobs.updateJobVacancies(jobid);
+        return sendResponse(res, 200, "Job vacancies updated", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update job vacancies");
+        return sendResponse(res, 500, "Failed to update job vacancies", {
+            error: error.message,
+        });
+    }
+};
+
+const updateJobStatus = async (req, res) => {
+    const { jobid } = req.params;
+    const { status } = req.body;
+    if (!jobid) return sendResponse(res, 400, "Job id is required");
+
+    try {
+        const result = await Jobs.updateJobStatus(status, jobid);
+        return sendResponse(res, 200, "Job status updated", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update job status");
+        return sendResponse(res, 500, "Failed to update job status", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllJobs,
     applyJobs,
@@ -406,4 +438,6 @@ module.exports = {
     getApplicantsProfile,
     updateApplicationStatus,
     getAllJobsApplicationByCompany,
+    updateJobVacancies,
+    updateJobStatus,
 };

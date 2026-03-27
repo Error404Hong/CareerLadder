@@ -23,6 +23,14 @@ import { MapPin, Briefcase, Link, ExternalLink, User } from "lucide-react"
 import { MeetingDialog } from "./meeting-dialog"
 import { PaymentDialog } from "./payment-dialog"
 
+const allowedTransitions: Record<string, string[]> = {
+    pending:     ["pending", "reviewed", "shortlisted", "accepted", "rejected"],
+    reviewed:    ["reviewed", "shortlisted", "accepted", "rejected"],
+    shortlisted: ["shortlisted", "accepted", "rejected"],
+    accepted:    ["accepted"],
+    rejected:    ["rejected"],
+}
+
 const statusConfig: Record<string, { label: string; className: string }> = {
     pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
     reviewed: { label: "Reviewed", className: "bg-blue-100 text-blue-700 border border-blue-200" },
@@ -370,11 +378,14 @@ export default function ApplicantsProfile() {
                                             <SelectValue placeholder="Select status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="reviewed">Reviewed</SelectItem>
-                                            <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                                            <SelectItem value="accepted">Accepted</SelectItem>
-                                            <SelectItem value="rejected">Rejected</SelectItem>
+                                            {(["pending", "reviewed", "shortlisted", "accepted", "rejected"] as const).map((s) => {
+                                                const allowed = allowedTransitions[application?.status ?? "pending"] ?? []
+                                                return (
+                                                    <SelectItem key={s} value={s} disabled={!allowed.includes(s)}>
+                                                        {statusConfig[s].label}
+                                                    </SelectItem>
+                                                )
+                                            })}
                                         </SelectContent>
                                     </Select>
                                     <Button

@@ -76,7 +76,7 @@ export default function MainLayout({
                   <UserButton.Link
                     label="Finance"
                     labelIcon={<DollarSign size={14} />}
-                    href="/finance"
+                    href="/my-finance"
                   />
                   <UserButton.Action label="manageAccount" />
                   <UserButton.Action label="signOut" />

@@ -48,6 +48,7 @@ export function PaymentDialog({ open, onOpenChange, project, total_vacancies }: 
                 user.id,
                 total,
                 `Allowance payment for ${project.title} (${total_vacancies} student${total_vacancies !== 1 ? "s" : ""}, ${months} month${months !== 1 ? "s" : ""})`,
+                "project",
                 id,
                 applicationId,
             )

@@ -311,6 +311,30 @@ class Jobs {
             throw error;
         }
     }
+
+    static async updateJobVacancies(jobid) {
+        try {
+            const query =
+                "UPDATE jobs SET vacancies = vacancies - 1 WHERE id = $1 RETURNING *";
+            const result = await pool.query(query, [jobid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to updated job vacancies");
+            throw error;
+        }
+    }
+
+    static async updateJobStatus(status, jobid) {
+        try {
+            const query =
+                "UPDATE jobs SET status = $1 WHERE id = $2 RETURNING *";
+            const result = await pool.query(query, [status, jobid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update job status");
+            throw error;
+        }
+    }
 }
 
 module.exports = Jobs;

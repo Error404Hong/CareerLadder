@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { format, addMonths, addWeeks, addDays } from "date-fns"
+import { format, addMonths } from "date-fns"
 
 import { Plus, X, CalendarIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -29,9 +29,9 @@ const formSchema = z.object({
     title: z.string().min(1, "Project title cannot be empty"),
     description: z.string().min(20, "Please provide a detailed project description"),
     skills_required: z.array(z.string()).min(1, "Please add at least one skill"),
-    duration: z.string().min(1, "Duration is required"),
+    duration_months: z.number().min(1, "Duration must be at least 1 month"),
     allowance: z.number().min(0, "Allowance must be 0 or more"),
-    vacancies: z.number().min(1, "At least 1 vacancy is required"),
+    vacancies: z.number().optional(),
     start_date: z.date({ message: "Start date is required" }),
     end_date: z.date({ message: "End date is required" }),
     status: z.string().min(1, "Status is required"),
@@ -39,15 +39,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-const parseEndDate = (startDate: Date, duration: string): Date | null => {
-    const lower = duration.toLowerCase().trim()
+// parse existing duration string from DB to months number
+const parseDurationToMonths = (duration: string): number => {
+    const lower = duration.toLowerCase()
     const monthMatch = lower.match(/(\d+)\s*month/)
-    const weekMatch = lower.match(/(\d+)\s*week/)
-    const dayMatch = lower.match(/(\d+)\s*day/)
-    if (monthMatch) return addMonths(startDate, parseInt(monthMatch[1]))
-    if (weekMatch) return addWeeks(startDate, parseInt(weekMatch[1]))
-    if (dayMatch) return addDays(startDate, parseInt(dayMatch[1]))
-    return null
+    if (monthMatch) return parseInt(monthMatch[1])
+    return 1
 }
 
 export default function EditProject() {
@@ -65,7 +62,7 @@ export default function EditProject() {
             title: "",
             description: "",
             skills_required: [],
-            duration: "",
+            duration_months: 1,
             allowance: 0,
             vacancies: 1,
             status: "open",
@@ -82,7 +79,7 @@ export default function EditProject() {
                         title: p.title ?? "",
                         description: p.description ?? "",
                         skills_required: p.skills_required ?? [],
-                        duration: p.duration ?? "",
+                        duration_months: parseDurationToMonths(p.duration ?? "1 month"),
                         allowance: Number(p.allowance) || 0,
                         vacancies: p.vacancies ?? 1,
                         start_date: p.start_date ? new Date(p.start_date) : undefined,
@@ -113,42 +110,42 @@ export default function EditProject() {
         form.setValue("skills_required", current.filter(s => s !== skill))
     }
 
-    const handleDurationChange = (duration: string) => {
-        form.setValue("duration", duration)
+    const handleDurationChange = (months: number) => {
+        form.setValue("duration_months", months)
         const startDate = form.getValues("start_date")
-        if (startDate && duration) {
-            const endDate = parseEndDate(startDate, duration)
-            if (endDate) form.setValue("end_date", endDate)
+        if (startDate && months >= 1) {
+            form.setValue("end_date", addMonths(startDate, months))
         }
     }
 
     const handleStartDateChange = (date: Date | undefined) => {
         if (!date) return
         form.setValue("start_date", date)
-        const duration = form.getValues("duration")
-        if (duration) {
-            const endDate = parseEndDate(date, duration)
-            if (endDate) form.setValue("end_date", endDate)
+        const months = form.getValues("duration_months")
+        if (months >= 1) {
+            form.setValue("end_date", addMonths(date, months))
         }
     }
 
     const handleSubmit = async (values: FormValues) => {
         setIsSubmitting(true)
         try {
+            const duration = `${values.duration_months} month${values.duration_months > 1 ? "s" : ""}`
             const res = await updateProject(
                 id,
                 values.title,
                 values.description,
                 values.skills_required,
-                values.duration,
+                duration,
                 values.allowance,
-                values.vacancies,
+                values.vacancies ?? 0,
                 values.start_date.toISOString(),
                 values.end_date.toISOString(),
                 values.status,
             )
             if (res.success) {
                 toast.success("Project has been updated successfully")
+                router.push("/project-listings")
             } else {
                 toast.error("Failed to update project. Please try again")
             }
@@ -215,17 +212,26 @@ export default function EditProject() {
 
                                     {/* Duration + Vacancies */}
                                     <Field className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Controller name="duration" control={form.control}
+                                        <Controller name="duration_months" control={form.control}
                                             render={({ field, fieldState }) => (
                                                 <Field data-invalid={fieldState.invalid}>
-                                                    <Label htmlFor="duration">Duration</Label>
-                                                    <Input
-                                                        {...field}
-                                                        id="duration"
-                                                        placeholder="e.g. 3 months, 6 weeks"
-                                                        aria-invalid={fieldState.invalid}
-                                                        onChange={(e) => handleDurationChange(e.target.value)}
-                                                    />
+                                                    <Label htmlFor="duration_months">Duration (Months)</Label>
+                                                    <div className="flex items-center gap-2">
+                                                        <Input
+                                                            {...field}
+                                                            id="duration_months"
+                                                            type="number"
+                                                            min={1}
+                                                            placeholder="e.g. 3"
+                                                            value={isNaN(field.value) || field.value === 0 ? "" : field.value}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value === "" ? 1 : Number(e.target.value)
+                                                                handleDurationChange(val)
+                                                            }}
+                                                            aria-invalid={fieldState.invalid}
+                                                        />
+                                                        <span className="text-sm text-slate-400 shrink-0">month{field.value > 1 ? "s" : ""}</span>
+                                                    </div>
                                                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                                 </Field>
                                             )}
@@ -239,7 +245,7 @@ export default function EditProject() {
                                                         id="vacancies"
                                                         type="number"
                                                         placeholder="e.g. 2"
-                                                        value={isNaN(field.value) || field.value === 0 ? "" : field.value}
+                                                        value={field.value === 0 ? "" : field.value}
                                                         onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                                                         aria-invalid={fieldState.invalid}
                                                     />
@@ -319,7 +325,6 @@ export default function EditProject() {
                                                 </Field>
                                             )}
                                         />
-
                                         <Controller name="end_date" control={form.control}
                                             render={({ field, fieldState }) => (
                                                 <Field data-invalid={fieldState.invalid}>

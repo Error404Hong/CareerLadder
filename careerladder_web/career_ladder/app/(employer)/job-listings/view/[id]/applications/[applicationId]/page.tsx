@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { Application, Job } from "@/types"
-import { getApplicantsProfile, updateApplicationStatus, getJobById } from "@/app/api/job"
+import { getApplicantsProfile, updateApplicationStatus, getJobById, updateJobStatus, updateJobVacancies } from "@/app/api/job"
 
 import Image from "next/image"
 import { MeetingDialog } from "./meeting-dialog"
@@ -17,6 +17,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User } from "lucide-react"
+
+const allowedTransitions: Record<string, string[]> = {
+    pending: ["pending", "reviewed", "shortlisted", "accepted", "rejected"],
+    reviewed: ["reviewed", "shortlisted", "accepted", "rejected"],
+    shortlisted: ["shortlisted", "accepted", "rejected"],
+    accepted: ["accepted"],
+    rejected: ["rejected"],
+}
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
@@ -72,6 +80,25 @@ export default function ApplicationDetails() {
 
                 if (selectedStatus === "shortlisted") {
                     setMeetingDialogOpen(true);
+                }
+
+                if (selectedStatus === "accepted") {
+                    const updVacancy = await updateJobVacancies(id);
+
+                    if (!updVacancy.success) {
+                        toast.error("Status updated but failed to update vacancies");
+                        return
+                    } else {
+                        setJobData(prev => prev ? { ...prev, vacancies: updVacancy.data.vacancies } : prev)
+                    }
+
+                    if (updVacancy.data.vacancies === 0) {
+                        const updStatus = await updateJobStatus(id, "closed");
+
+                        if (updStatus.success) {
+                            setJobData(prev => prev ? { ...prev, status: "closed" } : prev);
+                        }
+                    }
                 }
 
             } else {
@@ -333,11 +360,14 @@ export default function ApplicationDetails() {
                                             <SelectValue placeholder="Select status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="reviewed">Reviewed</SelectItem>
-                                            <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                                            <SelectItem value="accepted">Accepted</SelectItem>
-                                            <SelectItem value="rejected">Rejected</SelectItem>
+                                            {(["pending", "reviewed", "shortlisted", "accepted", "rejected"] as const).map((s) => {
+                                                const allowed = allowedTransitions[application?.status ?? "pending"] ?? []
+                                                return (
+                                                    <SelectItem key={s} value={s} disabled={!allowed.includes(s)}>
+                                                        {statusConfig[s].label}
+                                                    </SelectItem>
+                                                )
+                                            })}
                                         </SelectContent>
                                     </Select>
                                     <Button

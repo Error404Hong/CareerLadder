@@ -186,3 +186,31 @@ export const getAllJobAppByCom = async (companyid: string) => {
         throw error;
     }
 };
+
+export const updateJobVacancies = async (jobid: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/jobs/updateJobVacancies/${jobid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error updating job vacancies");
+        throw error;
+    }
+};
+
+export const updateJobStatus = async (jobid: string, status: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/jobs/updateJobStatus/${jobid}`,
+            {
+                status,
+            },
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error("Error updating job status");
+        throw error;
+    }
+};

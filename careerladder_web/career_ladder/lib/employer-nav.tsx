@@ -48,7 +48,7 @@ export const navItems = [
         href: "/dashboard/finance",
         icon: <DollarSign size={16} />,
         children: [
-            { label: "Overview", href: "/dashboard/finance" },
+            { label: "Overview", href: "/finance" },
             { label: "Withdrawals", href: "/dashboard/finance/withdrawals" },
         ],
     },

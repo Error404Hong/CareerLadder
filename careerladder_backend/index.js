@@ -24,6 +24,13 @@ app.use(
     }),
 );
 
+const { handleWebhook } = require("./controllers/paymentController");
+app.post(
+    "/payment/webhook",
+    express.raw({ type: "application/json" }),
+    handleWebhook,
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
