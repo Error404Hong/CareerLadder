@@ -37,7 +37,9 @@ export function TrainingRegistrationDrawer({ open, onOpenChange, training }: Pro
                 <DrawerHeader className="border-b border-slate-300 px-6 py-5 space-y-0">
                     <div className="flex flex-col gap-4">
                         <div className="flex items-start justify-between">
-                            <Image src="/careerladder-logo.png" width={160} height={60} alt="Company Logo" />
+                            <div>
+                                {training?.company_logo_url && <Image src={training.company_logo_url} width={150} height={100} alt="Company Logo" />}
+                            </div>
                             <div className="flex items-end gap-1.5 shrink-0">
                                 <span className={`text-[11px] px-3 py-1.5 rounded-full ${registrationStatusConfig[training?.registration_status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
                                     {registrationStatusConfig[training?.registration_status ?? ""]?.label ?? training?.registration_status}
@@ -50,7 +52,7 @@ export function TrainingRegistrationDrawer({ open, onOpenChange, training }: Pro
                         </div>
                         <div className="flex flex-col gap-1">
                             <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">{training?.title}</DrawerTitle>
-                            <p className="text-sm text-[#2563eb]">{training?.company_id}</p>
+                            <p className="text-sm text-[#2563eb]">{training?.company_name}</p>
                         </div>
                     </div>
                 </DrawerHeader>

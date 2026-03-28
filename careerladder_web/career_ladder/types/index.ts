@@ -7,3 +7,5 @@ export * from "./meeting";
 export * from "./paymentStats";
 export * from "./projectPayment";
 export * from "./training";
+export * from "./trainingRegistration";
+export * from "./student";

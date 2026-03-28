@@ -26,6 +26,10 @@ export type Training = {
     status: string
     created_at: string
     updated_at: string
+    company_name: string
+    company_email: string
+    company_logo_url: string
+    website: string
 }
 
 type Props = {
@@ -73,7 +77,7 @@ export function TrainingCard({ training }: Props) {
 
                         {/* Title */}
                         <h3 className="font-bold text-[#0f172a] text-sm leading-snug mb-1">{training.title}</h3>
-                        <p className="text-sm text-[#2563eb]  mb-3">{training.company_id}</p>
+                        <p className="text-sm text-[#2563eb]  mb-3">{training.company_name}</p>
 
                         {/* Description */}
                         <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mb-4 min-h-8">{training.description}</p>

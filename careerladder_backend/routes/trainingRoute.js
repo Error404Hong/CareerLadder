@@ -9,6 +9,7 @@ const {
     getProgramById,
     updateProgramById,
     deleteProgramById,
+    getProgramRegistration,
 } = require("../controllers/trainingController");
 
 router.get("/getAllTraining", getAllTrainingPrograms);
@@ -19,5 +20,6 @@ router.post("/createProgram", createNewProgram);
 router.get("/getProgramById/:programid", getProgramById);
 router.put("/updateProgramById/:programid", updateProgramById);
 router.delete("/deleteProgram/:programid", deleteProgramById);
+router.get("/getProgramRegistration/:programid", getProgramRegistration);
 
 module.exports = router;

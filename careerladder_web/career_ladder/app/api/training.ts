@@ -150,3 +150,15 @@ export const deleteProgramById = async (programid: string) => {
         throw error;
     }
 };
+
+export const getProgramRegistration = async (programid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/training/getProgramRegistration/${programid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching program registration");
+        throw error;
+    }
+};

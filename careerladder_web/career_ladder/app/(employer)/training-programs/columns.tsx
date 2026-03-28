@@ -28,6 +28,23 @@ export const getColumns = (
             ),
             cell: ({ row }) => <p className="text-sm font-medium text-[#0f172a]">{row.getValue("title")}</p>
         },
+
+        {
+            accessorKey: "location",
+            header: () => <span className="text-sm font-medium text-left block">Location</span>,
+            cell: ({ row }) => (
+                <span className="text-sm text-slate-500">{row.getValue("location")}</span>
+            )
+        },
+        {
+            id: "registrations",
+            header: () => <span className="text-sm font-medium text-left block">Registrations</span>,
+            cell: ({ row }) => (
+                <span className="text-sm text-slate-500">
+                    {Number(row.original.registration_count)} / {Number(row.original.vacancies) + Number(row.original.registration_count)}
+                </span>
+            )
+        },
         {
             accessorKey: "date",
             header: ({ column }) => (
@@ -48,20 +65,16 @@ export const getColumns = (
             }
         },
         {
-            accessorKey: "location",
-            header: () => <span className="text-sm font-medium text-left block">Location</span>,
-            cell: ({ row }) => (
-                <span className="text-sm text-slate-500">{row.getValue("location")}</span>
-            )
-        },
-        {
-            id: "registrations",
-            header: () => <span className="text-sm font-medium text-left block">Registrations</span>,
-            cell: ({ row }) => (
-                <span className="text-sm text-slate-500">
-                    {Number(row.original.registration_count)} / {row.original.vacancies}
-                </span>
-            )
+            accessorKey: "is_public",
+            header: () => <span className="text-sm font-medium text-left block">Visibility</span>,
+            cell: ({ row }) => {
+                const isPublic = row.getValue("is_public")
+                return (
+                    <span className={`inline-flex items-center text-xs font-medium px-3 py-1.5 rounded-full ${isPublic ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-slate-100 text-slate-500 border border-slate-200"}`}>
+                        {isPublic ? "Public" : "Private"}
+                    </span>
+                )
+            }
         },
         {
             accessorKey: "status",

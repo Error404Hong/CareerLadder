@@ -517,6 +517,21 @@ class Users {
             throw error;
         }
     }
+
+    static async getAllStudent() {
+        try {
+            const query = `SELECT u.*, sp.* FROM users u 
+            LEFT JOIN student_profiles sp ON sp.clerk_id = u.clerk_id
+            WHERE u.role = 1 AND status = 1
+            ORDER BY u.created_at DESC
+            `;
+            const result = await pool.query(query);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[Model] Error fetching all students");
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;

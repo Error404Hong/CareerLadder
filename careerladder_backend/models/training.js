@@ -4,8 +4,16 @@ const logger = require("../utils/logger");
 class Training {
     static async getAllTrainingPrograms() {
         try {
-            const query =
-                "SELECT * FROM training_programs WHERE status = 'open' OR status = 'ongoing' ORDER BY created_at DESC";
+            const query = `
+            SELECT training_programs.*, 
+            company_profiles.company_name,
+            company_profiles.website
+            FROM training_programs 
+            LEFT JOIN users ON users.clerk_id = training_programs.company_id
+            LEFT JOIN company_profiles ON company_profiles.company_id = users.clerk_id
+            WHERE training_programs.status = 'open' 
+            ORDER BY training_programs.created_at DESC
+            `;
             const result = await pool.query(query);
             return result.rows ?? [];
         } catch (error) {
@@ -71,9 +79,12 @@ class Training {
                     training_programs.meeting_url,
                     training_programs.is_public,
                     training_programs.status AS program_status,
-                    training_programs.expected_outcome
+                    training_programs.expected_outcome,
+                    company_profiles.company_name,
+                    company_profiles.website
                 FROM training_registration
                 LEFT JOIN training_programs ON training_programs.id = training_registration.training_id
+                LEFT JOIN company_profiles ON company_profiles.company_id = training_programs.company_id
                 WHERE training_registration.clerk_id = $1
                 ORDER BY training_registration.registered_at DESC
             `;
@@ -149,7 +160,9 @@ class Training {
 
     static async getProgramById(programid) {
         try {
-            const query = `SELECT * FROM training_programs WHERE id = $1`;
+            const query = `SELECT tp.*, COUNT(tr.id) AS registration_count FROM training_programs tp
+            LEFT JOIN training_registration tr ON tr.training_id = tp.id
+            WHERE tp.id = $1  GROUP BY tp.id`;
             const result = await pool.query(query, [programid]);
             return result.rows[0] ?? null;
         } catch (error) {
@@ -208,6 +221,23 @@ class Training {
             await pool.query(query, [programid]);
         } catch (error) {
             logger.error("[MODEL] Failed to delete training program");
+            throw error;
+        }
+    }
+
+    static async getProgramRegistration(programid) {
+        try {
+            const query = `
+            SELECT tr.* FROM training_programs tp
+            LEFT JOIN training_registration tr ON tr.training_id = tp.id
+            WHERE tp.id = $1 
+            ORDER BY tr.registered_at DESC
+            `;
+
+            const result = await pool.query(query, [programid]);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to get program registration");
             throw error;
         }
     }

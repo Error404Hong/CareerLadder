@@ -31,7 +31,7 @@ export function TrainingRegistrationCard({ training, onView }: Props) {
                         </div>
                     </div>
                     <h3 className="font-semibold text-[#0f172a] text-sm leading-snug mb-1">{training.title}</h3>
-                    <p className="text-sm text-[#2563eb] mb-3">{training.company_id}</p>
+                    <p className="text-sm text-[#2563eb] mb-3">{training.company_name}</p>
                     <p className="text-sm text-slate-400 leading-relaxed line-clamp-2 mb-4 min-h-8">{training.description}</p>
                     <div className="flex flex-col gap-2 mb-4">
                         <div className="flex items-center gap-1.5 text-sm text-slate-400">
@@ -44,7 +44,7 @@ export function TrainingRegistrationCard({ training, onView }: Props) {
                         </div>
                         <div className="flex items-center gap-1.5 text-sm text-slate-400">
                             <Calendar size={11} className="shrink-0" />
-                            <span className="text-[11px] text-slate-400">Registered: {new Date(training.registered_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</span>
+                            <span>Registered: {new Date(training.registered_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</span>
                         </div>
                     </div>
                     <div className="mt-auto">

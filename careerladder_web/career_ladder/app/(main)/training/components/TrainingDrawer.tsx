@@ -65,12 +65,19 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
                     <DrawerHeader className="border-b border-slate-300 px-6 py-5 space-y-0">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex flex-col gap-4">
-                                <Image src="/careerladder-logo.png" width={160} height={60} alt="Company Logo" />
+                                <div>
+                                    <Image
+                                        src={training!.company_logo_url}
+                                        width={150}
+                                        height={100}
+                                        alt="Company Logo"
+                                    />
+                                </div>
                                 <div>
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {training?.title}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb]  mt-0.5">{training?.company_id}</p>
+                                    <p className="text-sm text-[#2563eb]  mt-0.5">{training?.company_name}</p>
                                 </div>
                             </div>
                             <div className="flex items-end gap-1.5 shrink-0">

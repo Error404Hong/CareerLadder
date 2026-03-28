@@ -31,6 +31,10 @@ export type TrainingRegistration = {
     is_public: boolean
     program_status: string
     expected_outcome: string
+    company_email: string
+    company_logo_url: string
+    company_name: string
+    website: string
 }
 
 export const registrationStatusConfig: Record<string, { label: string; className: string }> = {
@@ -54,6 +58,7 @@ export default function Registrations() {
             try {
                 const result = await getTrainingRegistrations(user.id)
                 if (result.success) {
+                    console.log("dataL ", result.data)
                     setRegisteredTraining(result.data)
                 } else {
                     toast.error("Failed to fetch registered training programs. Please try again")

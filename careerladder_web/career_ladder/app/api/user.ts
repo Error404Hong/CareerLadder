@@ -429,3 +429,13 @@ export const updateCompanyDesciption = async (
         throw error;
     }
 };
+
+export const getAllStudent = async () => {
+    try {
+        const response = await axiosInstance.get("/users/getAllStudent");
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get all students");
+        throw error;
+    }
+};

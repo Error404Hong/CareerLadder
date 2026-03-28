@@ -1,6 +1,7 @@
 const Users = require("../models/users");
 const sendResponse = require("../utils/responseHelper");
 const logger = require("../utils/logger");
+const { clerkClient } = require("@clerk/express");
 
 const addNewUser = async (req, res) => {
     try {
@@ -663,6 +664,50 @@ const updateCompanyDesciption = async (req, res) => {
     }
 };
 
+const getAllStudent = async (req, res) => {
+    try {
+        const allUsers = await Users.getAllStudent();
+
+        const result = await Promise.all(
+            allUsers.map(async (user) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        user.clerk_id,
+                    );
+
+                    return {
+                        ...user,
+                        firstName: clerkUser.firstName,
+                        lastName: clerkUser.lastName,
+                        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                        profileImage: clerkUser.imageUrl,
+                    };
+                } catch {
+                    return {
+                        ...user,
+                        firstName: null,
+                        lastName: null,
+                        email: null,
+                        profileImage: null,
+                    };
+                }
+            }),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Fetched all students successfully",
+            result,
+        );
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to fetch all students");
+        return sendResponse(res, 500, "Failed to fetch all students", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -688,4 +733,5 @@ module.exports = {
     updateCompanyProfile,
     getCompanyProfile,
     updateCompanyDesciption,
+    getAllStudent,
 };

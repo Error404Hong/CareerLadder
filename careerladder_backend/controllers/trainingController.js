@@ -1,19 +1,40 @@
 const Training = require("../models/training");
 const sendResponse = require("../utils/responseHelper");
 const logger = require("../utils/logger");
+const { clerkClient } = require("@clerk/express");
 
 const getAllTrainingPrograms = async (req, res) => {
     try {
         const result = await Training.getAllTrainingPrograms();
 
-        if (!result)
-            return sendResponse(res, 404, "Failed to fetch training programs");
+        const enriched = await Promise.all(
+            result.map(async (res) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        res.company_id,
+                    );
+
+                    return {
+                        ...res,
+                        company_logo_url: clerkUser.imageUrl,
+                        company_email:
+                            clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return {
+                        ...res,
+                        company_logo_url: null,
+                        company_email: null,
+                    };
+                }
+            }),
+        );
 
         return sendResponse(
             res,
             200,
             "Traning programs fetched successfully",
-            result,
+            enriched,
         );
     } catch (error) {
         logger.error(
@@ -63,11 +84,34 @@ const getTrainingRegByUser = async (req, res) => {
     try {
         const result = await Training.getTrainingRegByUser(clerkid);
 
+        const enriched = await Promise.all(
+            result.map(async (res) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        res.company_id,
+                    );
+
+                    return {
+                        ...res,
+                        company_logo_url: clerkUser.imageUrl,
+                        company_email:
+                            clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return {
+                        ...res,
+                        company_logo_url: null,
+                        company_email: null,
+                    };
+                }
+            }),
+        );
+
         return sendResponse(
             res,
             200,
             "Training registrations fetched successfully",
-            result,
+            enriched,
         );
     } catch (error) {
         logger.error("[CONTROLLER] Failed to get training registrations");
@@ -212,6 +256,48 @@ const deleteProgramById = async (req, res) => {
     }
 };
 
+const getProgramRegistration = async (req, res) => {
+    const { programid } = req.params;
+    if (!programid) return sendResponse(res, 400, "Program id is required");
+
+    try {
+        const result = await Training.getProgramRegistration(programid);
+
+        const enriched = await Promise.all(
+            result.map(async (res) => {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(
+                        res.clerk_id,
+                    );
+
+                    return {
+                        ...res,
+                        firstName: clerkUser.firstName,
+                        lastName: clerkUser.lastName,
+                        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+                        profileImage: clerkUser.imageUrl,
+                    };
+                } catch {
+                    return {
+                        ...res,
+                        firstName: null,
+                        lastName: null,
+                        email: null,
+                        profileImage: null,
+                    };
+                }
+            }),
+        );
+
+        return sendResponse(res, 200, "Registration fetched", enriched);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to get program registration");
+        return sendResponse(res, 500, "Failed to get program registration", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllTrainingPrograms,
     registerTraining,
@@ -221,4 +307,5 @@ module.exports = {
     getProgramById,
     updateProgramById,
     deleteProgramById,
+    getProgramRegistration,
 };

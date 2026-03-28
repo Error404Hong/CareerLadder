@@ -27,6 +27,7 @@ const {
     updateCompanyProfile,
     getCompanyProfile,
     updateCompanyDesciption,
+    getAllStudent,
 } = require("../controllers/usersController");
 
 router.post("/addNewUser", addNewUser);
@@ -70,5 +71,6 @@ router.delete("/deleteLanguage/:id", deleteLanguage);
 router.put("/updateCompanyProfile/:companyid", updateCompanyProfile);
 router.get("/getCompanyProfile/:companyid", getCompanyProfile);
 router.put("/updateDescription/:companyid", updateCompanyDesciption);
+router.get("/getAllStudent", getAllStudent);
 
 module.exports = router;
