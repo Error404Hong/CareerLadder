@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import { Student } from "@/types"
 import { registerTraining } from "@/app/api/training"
+import { createNotification } from "@/app/api/notifications"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -49,6 +50,18 @@ export function InviteDialog({ open, onOpenChange, students, isLoadingStudents, 
             const allSuccess = results.every((r) => r.success)
             if (allSuccess) {
                 toast.success(`${selectedCount} participant${selectedCount !== 1 ? "s" : ""} added successfully`)
+                await Promise.all(
+                    selectedStudents.map((s) =>
+                        createNotification(
+                            s.clerk_id,
+                            "training_invited",
+                            "Training Program Invitation",
+                            `You have been invited to join a training program. Please check your registrations.`,
+                            "training",
+                            programId,
+                        )
+                    )
+                )
                 handleOpenChange(false)
                 onSuccess()
             } else {

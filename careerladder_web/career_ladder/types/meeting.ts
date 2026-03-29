@@ -21,6 +21,9 @@ export type Meeting = {
     applicant_name: string | null;
     applicant_email: string | null;
     applicant_image: string | null;
+
+    company_email: string;
+    company_logo_url: string;
     // enriched from DB join
     company_name?: string | null;
     major?: string | null;

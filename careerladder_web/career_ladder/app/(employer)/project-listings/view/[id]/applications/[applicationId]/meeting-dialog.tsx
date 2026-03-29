@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator"
 
 import { Application, Project } from "@/types"
 import { scheduleMeeting } from "@/app/api/meetings"
+import { createNotification } from "@/app/api/notifications"
 
 type Props = {
     open: boolean
@@ -68,6 +69,14 @@ export function MeetingDialog({ open, onOpenChange, application, project }: Prop
 
         if (scheduleRes.success) {
             toast.success("Meeting has been scheduled successfully")
+            await createNotification(
+                application!.clerk_id,
+                "interview_scheduled",
+                "Interview Scheduled",
+                `An interview has been scheduled for your application to "${project?.title}". Please check your meetings.`,
+                "project",
+                project!.id,
+            )
             onOpenChange(false);
         } else {
             toast.error("Failed to schedule meeting.")

@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { Application, Job } from "@/types"
 import { getApplicantsProfile, updateApplicationStatus, getJobById, updateJobStatus, updateJobVacancies } from "@/app/api/job"
+import { createNotification } from "@/app/api/notifications"
 
 import Image from "next/image"
 import { MeetingDialog } from "./meeting-dialog"
@@ -17,6 +18,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User } from "lucide-react"
+
+const notificationConfig: Record<string, { title: string; message: (title: string) => string }> = {
+    reviewed: { title: "Application Reviewed", message: (title) => `Your application for the job "${title}" has been reviewed by the company.` },
+    shortlisted: { title: "Application Shortlisted", message: (title) => `Congratulations! Your application for the job "${title}" has been shortlisted. Please look out for an upcoming meeting invitation for your interview.` },
+    accepted: { title: "Application Accepted", message: (title) => `Congratulations! Your application for the job "${title}" has been accepted.` },
+    rejected: { title: "Application Rejected", message: (title) => `Your application for the job "${title}" was not successful this time. Keep trying!` },
+}
 
 const allowedTransitions: Record<string, string[]> = {
     pending: ["pending", "reviewed", "shortlisted", "accepted", "rejected"],
@@ -77,6 +85,18 @@ export default function ApplicationDetails() {
             if (res.success) {
                 setApplication(prev => prev ? { ...prev, status: selectedStatus } : prev)
                 toast.success("Application status updated successfully");
+
+                const notifConfig = notificationConfig[selectedStatus]
+                if (notifConfig && application?.clerk_id) {
+                    await createNotification(
+                        application.clerk_id,
+                        `job_${selectedStatus}`,
+                        notifConfig.title,
+                        notifConfig.message(jobData?.title ?? ""),
+                        "job",
+                        id,
+                    )
+                }
 
                 if (selectedStatus === "shortlisted") {
                     setMeetingDialogOpen(true);

@@ -2,6 +2,12 @@ const Training = require("../models/training");
 const sendResponse = require("../utils/responseHelper");
 const logger = require("../utils/logger");
 const { clerkClient } = require("@clerk/express");
+const { StreamClient } = require("@stream-io/node-sdk");
+
+const streamClient = new StreamClient(
+    process.env.STREAM_API_KEY,
+    process.env.STREAM_API_SECRET,
+);
 
 const getAllTrainingPrograms = async (req, res) => {
     try {
@@ -155,6 +161,23 @@ const createNewProgram = async (req, res) => {
     if (!company_id) return sendResponse(res, 400, "Company id is required");
 
     try {
+        await streamClient.upsertUsers([{ id: company_id, role: "user" }]);
+
+        const roomName = `training-${company_id}-${Date.now()}`;
+        const call = streamClient.video.call("default", roomName);
+        await call.create({
+            data: {
+                created_by_id: company_id,
+                members: [{ user_id: company_id, role: "host" }],
+                custom: {
+                    title: title ?? "Training Program",
+                    description: description ?? "",
+                },
+            },
+        });
+
+        const meeting_url = `${process.env.FRONTEND_URL}/room/${roomName}`;
+
         const result = await Training.createNewProgram(
             company_id,
             title,
@@ -166,6 +189,7 @@ const createNewProgram = async (req, res) => {
             time,
             duration,
             vacancies,
+            meeting_url,
             is_public,
             application_deadline,
         );

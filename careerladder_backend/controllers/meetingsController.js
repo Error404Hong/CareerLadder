@@ -158,11 +158,34 @@ const getMeetingsByApplicant = async (req, res) => {
 
     try {
         const meetings = await Meetings.getMeetingsByApplicant(applicantId);
+
+        const enriched = await Promise.all(
+            meetings.map(async (meeting) => {
+                try {
+                    const user = await clerkClient.users.getUser(
+                        meeting.company_id,
+                    );
+
+                    return {
+                        ...meeting,
+                        company_logo_url: user.imageUrl,
+                        company_email:
+                            user.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return {
+                        ...meeting,
+                        company_logo_url: null,
+                        company_email: null,
+                    };
+                }
+            }),
+        );
         return sendResponse(
             res,
             200,
             "Meetings fetched successfully",
-            meetings,
+            enriched,
         );
     } catch (error) {
         logger.error("[CONTROLLER] Failed to get meetings: ", error.message);

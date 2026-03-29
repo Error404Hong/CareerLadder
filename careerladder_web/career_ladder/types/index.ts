@@ -9,3 +9,4 @@ export * from "./projectPayment";
 export * from "./training";
 export * from "./trainingRegistration";
 export * from "./student";
+export * from "./notification";

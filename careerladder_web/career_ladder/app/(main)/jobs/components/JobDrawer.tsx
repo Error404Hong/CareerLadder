@@ -25,6 +25,7 @@ import { useForm, Controller } from "react-hook-form"
 
 import { getStudentProfile } from "@/app/api/user"
 import { applyJob } from "@/app/api/job"
+import { createNotification } from "@/app/api/notifications"
 
 const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_FILE_TYPE = ['application/pdf']
@@ -126,6 +127,26 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                         resetDialog();
                         return
                     }
+
+                    await Promise.all([
+                        createNotification(
+                            user!.id,
+                            "job_applied",
+                            "Job Application Submitted",
+                            `You have successfully applied for ${job?.title} at ${job?.company_name}`,
+                            "job",
+                            job!.id
+                        ),
+                        createNotification(
+                            job!.company_id,
+                            "application_received",
+                            "New Job Application",
+                            `A student has applied for a job opening: ${job?.title}`,
+                            "job",
+                            job!.id
+                        )
+                    ])
+
                     setCurrentPhase(4);
                     setProgressValue(100);
                 } else {

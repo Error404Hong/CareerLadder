@@ -100,7 +100,8 @@ class Meetings {
                     WHEN meetings.reference_type = 'project' THEN projects.title
                     ELSE NULL
                 END AS reference_title,
-                company_profiles.company_name
+                company_profiles.company_name,
+                company_profiles.company_id
             FROM meetings
             LEFT JOIN jobs ON jobs.id = meetings.reference_id::uuid AND meetings.reference_type = 'job'
             LEFT JOIN projects ON projects.id = meetings.reference_id::uuid AND meetings.reference_type = 'project'

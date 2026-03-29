@@ -9,6 +9,7 @@ import { Application, Project } from "@/types"
 import { getApplicantsProfile, updateApplicationStatus } from "@/app/api/job"
 import { getProjectById, updateProjectVacancies, updateProjectStatus } from "@/app/api/project"
 import { calculatePayable, createProjectPayment } from "@/app/api/payment"
+import { createNotification } from "@/app/api/notifications"
 
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,11 +25,11 @@ import { MeetingDialog } from "./meeting-dialog"
 import { PaymentDialog } from "./payment-dialog"
 
 const allowedTransitions: Record<string, string[]> = {
-    pending:     ["pending", "reviewed", "shortlisted", "accepted", "rejected"],
-    reviewed:    ["reviewed", "shortlisted", "accepted", "rejected"],
+    pending: ["pending", "reviewed", "shortlisted", "accepted", "rejected"],
+    reviewed: ["reviewed", "shortlisted", "accepted", "rejected"],
     shortlisted: ["shortlisted", "accepted", "rejected"],
-    accepted:    ["accepted"],
-    rejected:    ["rejected"],
+    accepted: ["accepted"],
+    rejected: ["rejected"],
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -73,6 +74,25 @@ export default function ApplicantsProfile() {
         getApplication()
     }, [applicationId, id])
 
+    const notificationConfig: Record<string, { title: string; message: (title: string) => string }> = {
+        reviewed: {
+            title: "Application Reviewed",
+            message: (title) => `Your application for the project "${title}" has been reviewed by the company.`,
+        },
+        shortlisted: {
+            title: "Application Shortlisted",
+            message: (title) => `Congratulations! Your application for the project "${title}" has been shortlisted. Please look out for an upcoming meeting invitation for your interview.`,
+        },
+        accepted: {
+            title: "Application Accepted",
+            message: (title) => `Congratulations! Your application for the project "${title}" has been accepted.`,
+        },
+        rejected: {
+            title: "Application Rejected",
+            message: (title) => `Your application for the project "${title}" was not successful this time. Keep trying!`,
+        },
+    }
+
     const handleUpdateStatus = async () => {
         if (!selectedStatus || selectedStatus === application?.status) return
         setIsUpdating(true)
@@ -80,6 +100,18 @@ export default function ApplicantsProfile() {
             const res = await updateApplicationStatus(applicationId, selectedStatus)
             if (res.success) {
                 setApplication(prev => prev ? { ...prev, status: selectedStatus } : prev)
+
+                const notifConfig = notificationConfig[selectedStatus]
+                if (notifConfig) {
+                    await createNotification(
+                        application!.clerk_id,
+                        "application_status_changed",
+                        notifConfig.title,
+                        notifConfig.message(projectData?.title ?? ""),
+                        "project",
+                        id,
+                    )
+                }
 
                 if (selectedStatus === "shortlisted") {
                     toast.success("Application status updated successfully")
@@ -89,7 +121,6 @@ export default function ApplicantsProfile() {
 
                 if (selectedStatus === "accepted") {
                     const vacancyRes = await updateProjectVacancies(id)
-
 
                     if (!vacancyRes.success) {
                         toast.error("Status updated but failed to update vacancies")
@@ -118,7 +149,6 @@ export default function ApplicantsProfile() {
                     toast.success("Application status updated successfully")
 
                     if (vacancyRes.data.vacancies === 0) {
-
                         const calculatedRes = await calculatePayable(id);
                         const updStatus = await updateProjectStatus(id, "closed");
 
@@ -134,6 +164,9 @@ export default function ApplicantsProfile() {
                     }
                 }
 
+                if (selectedStatus === "reviewed" || selectedStatus === "rejected") {
+                    toast.success("Application status updated successfully")
+                }
 
             } else {
                 toast.error("Failed to update status")

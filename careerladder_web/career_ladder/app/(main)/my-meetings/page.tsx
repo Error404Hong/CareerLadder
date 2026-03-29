@@ -38,6 +38,7 @@ export default function MyMeetings() {
             try {
                 const fetchRes = await getMeetingsByApplicant(user.id)
                 if (fetchRes.success) {
+                    console.log("Meeting: ", fetchRes.data);
                     setMeetings(fetchRes.data)
                 } else {
                     toast.error("Failed to fetch meetings. Please try again")

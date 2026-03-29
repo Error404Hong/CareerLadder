@@ -24,7 +24,7 @@ export default function TrainingPage() {
             try {
                 const result = await getAllTraining()
                 if (result.success) {
-                    console.log("BITHL", result.data);
+                    console.log("Training Data: ", result.data);
                     setTrainingList(result.data)
                 } else {
                     toast.error("Failed to fetch training programs. Please try again")
@@ -34,7 +34,7 @@ export default function TrainingPage() {
             }
         }
         fetchTrainingPrograms()
-    }, [trainingList])
+    }, [])
 
     const filtered = trainingList
         .filter(t =>

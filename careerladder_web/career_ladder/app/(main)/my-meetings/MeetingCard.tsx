@@ -2,12 +2,16 @@
 
 import { Meeting } from "@/types"
 import { format } from "date-fns"
+import Image from "next/image"
 
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, Clock, Video, Copy, Briefcase, Building2 } from "lucide-react"
-
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Calendar, Clock, Video, Copy, Briefcase, Building2, MoreHorizontal, Calendar1, Mail } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { createNotification } from "@/app/api/notifications"
 
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -18,71 +22,123 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 }
 
 export function MeetingCard({ meeting }: { meeting: Meeting }) {
-    return (
-        <Card className="rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="px-5 py-3 flex flex-col gap-4">
 
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex flex-col gap-1">
-                        <p className="text-sm font-semibold text-[#0f172a]">{meeting.title}</p>
+    const handleRescheduleRequest = async () => {
+        try {
+            await createNotification(
+                meeting.company_id,
+                "meeting_reschedule_request",
+                "Meeting Reschedule Requested",
+                `A student has requested to reschedule the meeting "${meeting.title}" scheduled on ${format(new Date(meeting.scheduled_at), "d MMM yyyy, hh:mm a")}.`,
+                meeting.reference_type,
+                meeting.reference_id,
+            )
+            toast.success("Reschedule request sent to the company.")
+        } catch {
+            toast.error("Failed to send reschedule request. Please try again.")
+        }
+    }
+
+    return (
+        <Card className="rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="px-5 py-4 flex flex-col gap-3.5">
+                {/* Header row */}
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                        <p className="text-base font-semibold text-[#0f172a] leading-snug">{meeting.title}</p>
                         {meeting.reference_title && (
                             <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                                <Briefcase size={11} />
-                                <span>{meeting.reference_title}</span>
+                                <Briefcase size={12} className="shrink-0" />
+                                <span className="truncate">{meeting.reference_title}</span>
                             </div>
                         )}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${statusConfig[meeting.status]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
+                                {statusConfig[meeting.status]?.label ?? meeting.status}
+                            </span>
+                            <Badge className={`text-[11px] px-2.5 py-1 rounded-full capitalize font-normal ${meeting.reference_type === "job" ? "bg-blue-50 text-blue-600 border border-blue-100" : "bg-violet-50 text-violet-600 border border-violet-100"}`}>
+                                {meeting.reference_type}
+                            </Badge>
+                        </div>
                     </div>
-                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full shrink-0 ${statusConfig[meeting.status]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
-                        {statusConfig[meeting.status]?.label ?? meeting.status}
-                    </span>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="cursor-pointer text-slate-400 hover:text-[#0f172a] transition-colors p-1 rounded-lg hover:bg-slate-100 shrink-0">
+                                <MoreHorizontal size={16} />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuItem className="cursor-pointer gap-2 text-sm" onClick={handleRescheduleRequest}>
+                                <Calendar1 size={13} /> Request Reschedule
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
+
+                <Separator />
 
                 {/* Company */}
                 {meeting.company_name && (
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                            <Building2 size={13} className="text-slate-300" />
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
+                            {meeting.company_logo_url ? (
+                                <Image src={meeting.company_logo_url} alt={meeting.company_name} width={32} height={32} className="object-cover w-full h-full" />
+                            ) : (
+                                <Building2 size={14} className="text-slate-300" />
+                            )}
                         </div>
-                        <p className="text-xs font-medium text-[#0f172a]">{meeting.company_name}</p>
+                        <div className="flex flex-col gap-0.5">
+                            <p className="text-xs font-medium text-[#0f172a]">{meeting.company_name}</p>
+                            {meeting.company_email && (
+                                <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                                    <Mail size={10} className="shrink-0" />
+                                    <span>{meeting.company_email}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
                 {/* Date + Time */}
-                <div className="flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                        <Calendar size={12} className="text-slate-300" />
-                        {format(new Date(meeting.scheduled_at), "d MMM yyyy")}
+                <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <Calendar size={12} className="text-slate-400 shrink-0" />
+                        {format(new Date(meeting.scheduled_at), "EEEE, d MMMM yyyy")}
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                        <Clock size={12} className="text-slate-300" />
-                        {format(new Date(meeting.scheduled_at), "hh:mm a")} · {meeting.duration} mins
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <Clock size={12} className="text-slate-400 shrink-0" />
+                        {format(new Date(meeting.scheduled_at), "hh:mm a")}
+                        <span className="text-slate-400">·</span>
+                        <span>{meeting.duration} mins</span>
                     </div>
                 </div>
 
+                <Separator />
+
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex items-center gap-2">
                     <Button
                         variant="outline"
                         size="sm"
-                        className="cursor-pointer flex-1 gap-1.5 text-xs"
+                        className="cursor-pointer flex-1 gap-1.5 p-4.5"
                         onClick={() => {
                             navigator.clipboard.writeText(meeting.meeting_url)
                             toast.success("Link copied!")
                         }}
                     >
-                        <Copy size={12} /> Copy Link
+                        <Copy size={13} /> Copy Link
                     </Button>
                     <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
                         <Button
                             size="sm"
-                            className="cursor-pointer w-full gap-1.5 text-xs"
+                            className="cursor-pointer w-full gap-1.5 p-4.5"
                             disabled={meeting.status === "cancelled" || meeting.status === "completed"}
                         >
-                            <Video size={12} /> Join
+                            <Video size={13} /> Join Meeting
                         </Button>
                     </a>
                 </div>
+
             </CardContent>
         </Card>
     )

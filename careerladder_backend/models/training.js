@@ -125,14 +125,15 @@ class Training {
         time,
         duration,
         vacancies,
+        meeting_url,
         is_public,
         application_deadline,
     ) {
         try {
             const query = `
-            INSERT INTO training_programs(company_id, title, description, prerequisites, expected_outcome, location, date, time, duration, 
-            vacancies, meeting_url, is_public, application_deadline, status) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'meeting url', $11, $12, 'open') RETURNING *
+            INSERT INTO training_programs(company_id, title, description, prerequisites, expected_outcome, location, date, time, duration,
+            vacancies, meeting_url, is_public, application_deadline, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'open') RETURNING *
             `;
 
             const values = [
@@ -146,6 +147,7 @@ class Training {
                 time,
                 duration,
                 vacancies,
+                meeting_url,
                 is_public,
                 application_deadline,
             ];

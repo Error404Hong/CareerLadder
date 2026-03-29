@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 
 import { useState } from "react"
 import { registerTraining } from "@/app/api/training"
+import { createNotification } from "@/app/api/notifications"
 
 
 type Props = {
@@ -35,17 +36,37 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
         const id = user!.id;
 
         try {
+            console.log("Registering for training: ", training);
+
+            const sendConfirmationToUser = await createNotification(
+                id,
+                "training_registered",
+                "Training Registration Confirmed",
+                `You have successfully registered for training program - ${training?.title}`,
+                "training",
+                training!.id
+            )
+
+            const notifyCompany = await createNotification(
+                training!.company_id,
+                "training_registered",
+                "New Training Registration",
+                `A student has registered for your training program: ${training?.title}`,
+                "training",
+                training!.id
+            )
+
             const registerRes = await registerTraining(id, training!.id);
 
-            if (registerRes.success) {
+
+            if (registerRes.success && notifyCompany.success && sendConfirmationToUser.success) {
                 if (registerRes.message === "You have already registered for this training") {
                     toast.error("You have already registered for this training")
                     setOpenDialog(false);
                     return
                 }
-
                 toast.success("You have successfully registered into the training programs");
-                setOpenDialog(false);
+                setOpenDialog(false)
             } else {
                 toast.error("Failed to register into training program.");
                 setOpenDialog(false);
@@ -66,12 +87,7 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex flex-col gap-4">
                                 <div>
-                                    <Image
-                                        src={training!.company_logo_url}
-                                        width={150}
-                                        height={100}
-                                        alt="Company Logo"
-                                    />
+                                    {training?.company_logo_url && <Image src={training!.company_logo_url} width={150} height={100} alt="Company Logo" />}
                                 </div>
                                 <div>
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
@@ -194,7 +210,7 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-medium">Organizer</span>
-                            <span className="text-xs font-medium">{training?.company_id}</span>
+                            <span className="text-xs font-medium">{training?.company_name}</span>
                         </div>
                     </div>
 

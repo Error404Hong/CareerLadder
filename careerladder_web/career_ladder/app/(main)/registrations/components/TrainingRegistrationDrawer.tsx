@@ -71,9 +71,13 @@ export function TrainingRegistrationDrawer({ open, onOpenChange, training }: Pro
                         </div>
                         <div className="flex items-center gap-4">
                             <Link2 size={13} className="text-slate-400" />
-                            <a href={training?.meeting_url} target="_blank" rel="noreferrer" className="text-sm text-[#2563eb] hover:underline">
-                                {training?.meeting_url ?? "Not provided"}
-                            </a>
+                            {training?.meeting_url ? (
+                                <a href={training.meeting_url} target="_blank" rel="noreferrer" className="text-sm text-[#2563eb] hover:underline">
+                                    Join Meeting
+                                </a>
+                            ) : (
+                                <p className="text-sm text-slate-400">Not provided</p>
+                            )}
                         </div>
                     </div>
 

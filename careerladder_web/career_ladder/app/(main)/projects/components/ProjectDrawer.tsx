@@ -24,6 +24,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { applyProjects } from "@/app/api/project"
+import { createNotification } from "@/app/api/notifications"
 
 const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_FILE_TYPE = ['application/pdf']
@@ -120,6 +121,26 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                         setApplyDialogOpen(false)
                         return
                     }
+
+                    await Promise.all([
+                        createNotification(
+                            user!.id,
+                            "project_applied",
+                            "Application Submitted",
+                            `You have successfully applied for ${project!.title} at ${project!.company_name}.`,
+                            "project",
+                            project!.id,
+                        ),
+                        createNotification(
+                            project!.company_id,
+                            "application_received",
+                            "New Project Application",
+                            `A student has applied for your project: ${project!.title}.`,
+                            "project",
+                            project!.id,
+                        ),
+                    ])
+
                     setCurrentPhase(3)
                     setProgressValue(100)
                 } else {
