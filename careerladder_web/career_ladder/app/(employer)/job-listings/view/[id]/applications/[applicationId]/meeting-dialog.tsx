@@ -1,7 +1,7 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { CalendarIcon, Video } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 
-import { Application, Job } from "@/types"
-import { scheduleMeeting } from "@/app/api/meetings"
+import { Application, Job, Meeting } from "@/types"
+import { scheduleMeeting, rescheduleMeeting } from "@/app/api/meetings"
 import { createNotification } from "@/app/api/notifications"
 
 type Props = {
@@ -26,9 +26,10 @@ type Props = {
     onOpenChange: (open: boolean) => void
     application: Application | null
     job: Job | null
+    existingMeeting?: Meeting | null
 }
 
-export function MeetingDialog({ open, onOpenChange, application, job }: Props) {
+export function MeetingDialog({ open, onOpenChange, application, job, existingMeeting }: Props) {
     const { user } = useUser();
     const [title, setTitle] = useState("")
     const [date, setDate] = useState<Date | undefined>()
@@ -36,12 +37,31 @@ export function MeetingDialog({ open, onOpenChange, application, job }: Props) {
     const [description, setDescription] = useState("");
     const [duration, setDuration] = useState("60")
 
+    const isReschedule = !!existingMeeting
+
+    // Pre-fill form when rescheduling
+    useEffect(() => {
+        if (existingMeeting && open) {
+            setTitle(existingMeeting.title ?? "")
+            setDescription(existingMeeting.description ?? "")
+            setDuration(String(existingMeeting.duration ?? 60))
+            if (existingMeeting.scheduled_at) {
+                const d = new Date(existingMeeting.scheduled_at)
+                setDate(d)
+                const h = String(d.getHours()).padStart(2, "0")
+                const m = String(d.getMinutes()).padStart(2, "0")
+                setTime(`${h}:${m}`)
+            }
+        }
+    }, [existingMeeting, open])
+
     const handleOpenChange = (val: boolean) => {
         if (!val) {
             setTitle("")
             setDate(undefined)
             setTime("10:00")
             setDuration("60")
+            setDescription("")
         }
         onOpenChange(val)
     }
@@ -53,6 +73,33 @@ export function MeetingDialog({ open, onOpenChange, application, job }: Props) {
 
         const pad = (n: number) => String(n).padStart(2, "0")
         const localISO = `${scheduledAt.getFullYear()}-${pad(scheduledAt.getMonth() + 1)}-${pad(scheduledAt.getDate())}T${pad(parseInt(hours))}:${pad(parseInt(minutes))}:00+08:00`
+
+        if (isReschedule) {
+            const res = await rescheduleMeeting(
+                existingMeeting!.id,
+                user!.id,
+                application!.clerk_id,
+                title,
+                description ?? "",
+                localISO,
+                parseInt(duration)
+            )
+            if (res.success) {
+                toast.success("Meeting rescheduled successfully")
+                await createNotification(
+                    application!.clerk_id,
+                    "interview_scheduled",
+                    "Interview Rescheduled",
+                    `Your interview for "${job?.title}" has been rescheduled. Please check your meetings.`,
+                    "job",
+                    job!.id,
+                )
+                onOpenChange(false)
+            } else {
+                toast.error("Failed to reschedule meeting.")
+            }
+            return
+        }
 
         const scheduleRes = await scheduleMeeting(
             application!.id,
@@ -87,9 +134,9 @@ export function MeetingDialog({ open, onOpenChange, application, job }: Props) {
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
-                    <DialogTitle>Schedule Interview</DialogTitle>
+                    <DialogTitle>{isReschedule ? "Reschedule Interview" : "Schedule Interview"}</DialogTitle>
                     <DialogDescription>
-                        Set a date and time for the interview with{" "}
+                        {isReschedule ? "Update the date and time for the interview with" : "Set a date and time for the interview with"}{" "}
                         <span className="font-medium text-[#0f172a]">
                             {application?.first_name} {application?.last_name}
                         </span>
@@ -222,7 +269,7 @@ export function MeetingDialog({ open, onOpenChange, application, job }: Props) {
                         disabled={!date || !time || !title}
                         onClick={() => handleScheduleMeeting()}
                     >
-                        <Video size={14} /> Schedule Meeting
+                        <Video size={14} /> {isReschedule ? "Reschedule Meeting" : "Schedule Meeting"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -157,15 +157,15 @@ export default function MeetingRoom() {
             </div>
 
             {/* Video Room */}
-            <div className="flex-1">
+            <div className="flex-1 bg-[#0f172a]">
                 <StreamVideo client={client}>
                     <StreamCall call={call}>
                         <StreamTheme>
-                            <div className="flex flex-col h-full">
-                                <div className="flex-1">
+                            <div className="flex flex-col h-full bg-[#0f172a]">
+                                <div className="flex-1 bg-[#0f172a]">
                                     <SpeakerLayout />
                                 </div>
-                                <CallControls onLeave={() => router.back()} />
+                                <CallControls onLeave={() => { window.close(); router.back() }} />
                             </div>
                         </StreamTheme>
                     </StreamCall>

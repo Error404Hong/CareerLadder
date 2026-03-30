@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     scheduled: { label: "Scheduled", className: "bg-blue-100 text-blue-700 border border-blue-200" },
-    ongoing: { label: "Ongoing", className: "bg-green-100 text-green-700 border border-green-200" },
+    reschedule_requested: { label: "Reschedule Requested", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
     completed: { label: "Completed", className: "bg-slate-100 text-slate-600 border border-slate-200" },
     cancelled: { label: "Cancelled", className: "bg-red-100 text-red-600 border border-red-200" },
 }
@@ -129,11 +129,17 @@ export function MeetingCard({ meeting, onCancel }: Props) {
                     >
                         <Copy size={12} /> Copy Link
                     </Button>
-                    <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
-                        <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
-                            <Video size={12} /> Join
+                    {meeting.status === "scheduled" ? (
+                        <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
+                            <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
+                                <Video size={12} /> Join
+                            </Button>
+                        </a>
+                    ) : (
+                        <Button size="sm" className="flex-1 gap-1.5 p-4.5 cursor-pointer  text-xs" disabled>
+                            <Video size={13} /> Join Meeting
                         </Button>
-                    </a>
+                    )}
                 </div>
             </CardContent>
         </Card>

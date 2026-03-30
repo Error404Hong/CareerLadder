@@ -5,11 +5,12 @@ import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
-import { Application, Project } from "@/types"
+import { Application, Project, Meeting } from "@/types"
 import { getApplicantsProfile, updateApplicationStatus } from "@/app/api/job"
 import { getProjectById, updateProjectVacancies, updateProjectStatus } from "@/app/api/project"
 import { calculatePayable, createProjectPayment } from "@/app/api/payment"
 import { createNotification } from "@/app/api/notifications"
+import { getApplicantMeetingById, updateMeetingStatus } from "@/app/api/meetings"
 
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,8 +19,11 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { MapPin, Briefcase, Link, ExternalLink, User } from "lucide-react"
+import { MapPin, Briefcase, Link, ExternalLink, User, Video, Copy, Calendar, Clock, CalendarClock, MoreHorizontal, Plus, CalendarSync } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { format } from "date-fns"
 
 import { MeetingDialog } from "./meeting-dialog"
 import { PaymentDialog } from "./payment-dialog"
@@ -40,6 +44,13 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     rejected: { label: "Rejected", className: "bg-red-100 text-red-600 border border-red-200" },
 }
 
+const meetingStatusConfig: Record<string, { label: string; className: string }> = {
+    scheduled: { label: "Scheduled", className: "bg-blue-100 text-blue-700 border border-blue-200" },
+    reschedule_requested: { label: "Reschedule Requested", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
+    completed: { label: "Completed", className: "bg-slate-100 text-slate-600 border border-slate-200" },
+    cancelled: { label: "Cancelled", className: "bg-red-100 text-red-600 border border-red-200" },
+}
+
 export default function ApplicantsProfile() {
     const { user } = useUser();
     const params = useParams()
@@ -52,8 +63,23 @@ export default function ApplicantsProfile() {
     const [selectedStatus, setSelectedStatus] = useState<string>("")
     const [projectData, setProjectData] = useState<Project | null>(null);
     const [meetingDialogOpen, setMeetingDialogOpen] = useState(false)
+    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [totalVacancies, setTotalVacancies] = useState(0);
+    const [meetings, setMeetings] = useState<Meeting[]>([])
+
+    const fetchMeetings = async (clerkId?: string) => {
+        const cid = clerkId ?? application?.clerk_id
+        if (!cid) return
+        try {
+            const res = await getApplicantMeetingById(id, "project", cid)
+            if (res.success) {
+                setMeetings(Array.isArray(res.data) ? res.data : res.data ? [res.data] : [])
+            }
+        } catch {
+            // silently fail
+        }
+    }
 
     useEffect(() => {
         const getApplication = async () => {
@@ -64,6 +90,7 @@ export default function ApplicantsProfile() {
                     setProjectData(projectRes.data)
                     setApplication(fetchRes.data)
                     setSelectedStatus(fetchRes.data.status)
+                    fetchMeetings(fetchRes.data.clerk_id)
                 } else {
                     toast.error("Failed to fetch application")
                 }
@@ -71,8 +98,20 @@ export default function ApplicantsProfile() {
                 setIsLoading(false)
             }
         }
+
         getApplication()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [applicationId, id])
+
+    const handleCancelMeeting = async (meetingId: string) => {
+        const res = await updateMeetingStatus(meetingId, "cancelled")
+        if (res.success) {
+            setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, status: "cancelled" } : m))
+            toast.success("Meeting cancelled")
+        } else {
+            toast.error("Failed to cancel meeting")
+        }
+    }
 
     const notificationConfig: Record<string, { title: string; message: (title: string) => string }> = {
         reviewed: {
@@ -101,13 +140,13 @@ export default function ApplicantsProfile() {
             if (res.success) {
                 setApplication(prev => prev ? { ...prev, status: selectedStatus } : prev)
 
-                const notifConfig = notificationConfig[selectedStatus]
-                if (notifConfig) {
+                const notifCfg = notificationConfig[selectedStatus]
+                if (notifCfg) {
                     await createNotification(
                         application!.clerk_id,
                         "application_status_changed",
-                        notifConfig.title,
-                        notifConfig.message(projectData?.title ?? ""),
+                        notifCfg.title,
+                        notifCfg.message(projectData?.title ?? ""),
                         "project",
                         id,
                     )
@@ -181,6 +220,7 @@ export default function ApplicantsProfile() {
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
                 <Skeleton className="h-4 w-64 rounded" />
                 <Skeleton className="h-32 w-full rounded-lg" />
+                <Skeleton className="h-10 w-72 rounded" />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     <div className="lg:col-span-2 flex flex-col gap-5">
                         <Skeleton className="h-48 w-full rounded-lg" />
@@ -226,216 +266,330 @@ export default function ApplicantsProfile() {
                         </BreadcrumbList>
                     </Breadcrumb>
 
-                    {/* Hero Card */}
-                    <div className="flex flex-col gap-3">
-                        <div className="bg-white rounded-lg border border-slate-200 shadow-sm px-6 py-5">
-                            <div className="flex items-start justify-between gap-4 flex-wrap">
+                    {/* Project Info Banner */}
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm px-6 py-5">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                            <div className="flex flex-col gap-1">
+                                <p className="text-xs text-slate-400 uppercase tracking-widest">Project</p>
+                                <p className="text-lg font-bold text-[#0f172a]">{projectData?.title}</p>
+                                <div className="flex items-center gap-2 flex-wrap mt-1">
+                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${projectData?.status === "open" ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-600 border border-red-200"}`}>
+                                        {projectData?.status === "open" ? "Open" : "Closed"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-6 flex-wrap">
                                 <div className="flex flex-col gap-1">
-                                    <p className="text-xs text-slate-400 uppercase tracking-widest">Project</p>
-                                    <p className="text-lg font-bold text-[#0f172a]">{projectData?.title}</p>
-                                    <div className="flex items-center gap-2 flex-wrap mt-1">
-                                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${projectData?.status === "open" ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-600 border border-red-200"}`}>
-                                            {projectData?.status === "open" ? "Open" : "Closed"}
-                                        </span>
-                                    </div>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-widest">Allowance</p>
+                                    <p className="text-sm font-semibold text-[#0f172a]">RM {Number(projectData?.allowance).toLocaleString()}</p>
                                 </div>
-
-                                <div className="flex items-center gap-6 flex-wrap">
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-[11px] text-slate-400 uppercase tracking-widest">Allowance</p>
-                                        <p className="text-sm font-semibold text-[#0f172a]">
-                                            RM {Number(projectData?.allowance).toLocaleString()}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-[11px] text-slate-400 uppercase tracking-widest">Vacancies</p>
-                                        <p className="text-sm font-semibold text-[#0f172a]">{projectData?.vacancies} open</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-[11px] text-slate-400 uppercase tracking-widest">Skills Required</p>
-                                        <div className="flex flex-wrap gap-1">
-                                            {projectData?.skills_required.map((skill) => (
-                                                <Badge key={skill} variant="secondary" className="text-[11px] px-2 py-0.5">
-                                                    {skill}
-                                                </Badge>
-                                            ))}
-                                        </div>
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-widest">Vacancies</p>
+                                    <p className="text-sm font-semibold text-[#0f172a]">{projectData?.vacancies} open</p>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-widest">Skills Required</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {projectData?.skills_required.map((skill) => (
+                                            <Badge key={skill} variant="secondary" className="text-[11px] px-2 py-0.5">{skill}</Badge>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <Card className="rounded-lg border border-slate-200 shadow-sm overflow-hidden p-0">
-                            <div className="h-16 bg-[#0f172a] relative">
-                                <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-[#2563eb]/10" />
-                            </div>
-                            <CardContent className="px-6 pb-5">
-                                <div className="flex items-end justify-between -mt-8 mb-4 flex-wrap gap-4">
-                                    <div className="flex items-end gap-4">
-                                        <div className="w-16 h-16 rounded-full border-4 border-white bg-slate-100 shadow-md flex items-center justify-center shrink-0 relative z-10 overflow-hidden">
-                                            {application?.image_url ? (
-                                                <Image src={application.image_url} alt="profile" height={100} width={100} className="rounded-full" />
-                                            ) : (
-                                                <User size={24} className="text-slate-300" />
-                                            )}
-                                        </div>
-                                        <div className="pb-1">
-                                            <h1 className="text-xl font-bold text-[#0f172a]">
-                                                {application?.first_name} {application?.last_name}
-                                            </h1>
-                                            <p className="text-sm text-slate-400">{application?.email}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 pb-1">
-                                        <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusConfig[application?.status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
-                                            {statusConfig[application?.status ?? ""]?.label ?? application?.status}
-                                        </span>
-                                        <p className="text-xs text-slate-400">
-                                            Applied {new Date(application?.applied_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
                     </div>
 
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-                        {/* Left */}
-                        <div className="lg:col-span-2 flex flex-col gap-5">
-
-                            {/* Profile Summary */}
-                            <Card className="rounded-lg border border-slate-200 shadow-sm">
-                                <CardHeader className="px-5 border-b border-slate-200">
-                                    <CardTitle className="text-base font-semibold text-[#0f172a]">Profile Summary</CardTitle>
-                                </CardHeader>
-                                <CardContent className="px-6 py-3">
-                                    <p className="text-sm text-slate-500 leading-relaxed">
-                                        {application?.profile_summary ?? "No profile summary provided."}
+                    {/* Applicant Hero Card */}
+                    <Card className="rounded-lg border border-slate-200 shadow-sm overflow-hidden p-0">
+                        <div className="h-16 bg-[#0f172a] relative">
+                            <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-[#2563eb]/10" />
+                        </div>
+                        <CardContent className="px-6 pb-5">
+                            <div className="flex items-end justify-between -mt-8 mb-4 flex-wrap gap-4">
+                                <div className="flex items-end gap-4">
+                                    <div className="w-16 h-16 rounded-full border-4 border-white bg-slate-100 shadow-md flex items-center justify-center shrink-0 relative z-10 overflow-hidden">
+                                        {application?.image_url ? (
+                                            <Image src={application.image_url} alt="profile" height={100} width={100} className="rounded-full" />
+                                        ) : (
+                                            <User size={24} className="text-slate-300" />
+                                        )}
+                                    </div>
+                                    <div className="pb-1">
+                                        <h1 className="text-xl font-bold text-[#0f172a]">{application?.first_name} {application?.last_name}</h1>
+                                        <p className="text-sm text-slate-400">{application?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 pb-1">
+                                    <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusConfig[application?.status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
+                                        {statusConfig[application?.status ?? ""]?.label ?? application?.status}
+                                    </span>
+                                    <p className="text-xs text-slate-400">
+                                        Applied {new Date(application?.applied_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
                                     </p>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                            {/* Cover Letter */}
-                            <Card className="rounded-lg border border-slate-200 shadow-sm">
-                                <CardHeader className="px-5 border-b border-slate-200">
-                                    <CardTitle className="text-base font-semibold text-[#0f172a]">Cover Letter</CardTitle>
-                                </CardHeader>
-                                <CardContent className="px-6 py-3">
-                                    {application?.cover_letter ? (
-                                        <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-line">{application.cover_letter}</p>
-                                    ) : (
-                                        <p className="text-sm text-slate-400 italic">No cover letter provided.</p>
-                                    )}
-                                </CardContent>
-                            </Card>
+                    {/* Tabs */}
+                    <Tabs defaultValue="details">
+                        <TabsList className="mb-2 bg-slate-100 p-1 rounded-lg">
+                            <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500">
+                                Application Details
+                            </TabsTrigger>
+                            <TabsTrigger value="meetings" className="gap-2 rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500">
+                                Meetings
+                                <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{meetings.length}</Badge>
+                            </TabsTrigger>
+                        </TabsList>
 
-                            {/* Skills Fulfilled */}
-                            <Card className="rounded-lg border border-slate-200 shadow-sm">
-                                <CardHeader className="px-5 border-b border-slate-200">
-                                    <CardTitle className="text-base font-semibold text-[#0f172a]">Matched Skills</CardTitle>
-                                    <CardDescription>Skills the applicant has that match the project requirements</CardDescription>
-                                </CardHeader>
-                                <CardContent className="px-6 py-3">
-                                    {application?.skills_fulfilled?.length ? (
-                                        <div className="flex flex-wrap gap-2">
-                                            {application.skills_fulfilled.map((skill) => (
-                                                <Badge key={skill} variant="secondary" className="px-3 py-1.5 text-sm">
-                                                    {skill}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-slate-400 italic">No matched skills.</p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
+                        {/* Tab 1: Application Details */}
+                        <TabsContent value="details">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-                        {/* Right */}
-                        <div className="flex flex-col gap-5">
+                                {/* Left */}
+                                <div className="lg:col-span-2 flex flex-col gap-5">
+                                    <Card className="rounded-lg border border-slate-200 shadow-sm">
+                                        <CardHeader className="px-5 border-b border-slate-200">
+                                            <CardTitle className="text-base font-semibold text-[#0f172a]">Profile Summary</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="px-6 py-3">
+                                            <p className="text-sm text-slate-500 leading-relaxed">
+                                                {application?.profile_summary ?? "No profile summary provided."}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
 
-                            {/* Overview */}
-                            <Card className="rounded-lg border border-slate-200 shadow-sm">
-                                <CardHeader className="px-5 border-b border-slate-200">
-                                    <CardTitle className="text-base font-semibold text-[#0f172a]">Overview</CardTitle>
-                                </CardHeader>
-                                <CardContent className="px-6 py-3 flex flex-col gap-3">
-                                    <div className="flex items-center gap-2 text-sm text-slate-500">
-                                        <MapPin size={13} className="text-slate-300 shrink-0" />
-                                        {application?.location ?? "—"}
-                                    </div>
-                                    <Separator />
-                                    <div className="flex items-center gap-2 text-sm text-slate-500">
-                                        <Briefcase size={13} className="text-slate-300 shrink-0" />
-                                        {application?.major ?? "—"}
-                                    </div>
-                                    {application?.linkedin_url && (
-                                        <>
+                                    <Card className="rounded-lg border border-slate-200 shadow-sm">
+                                        <CardHeader className="px-5 border-b border-slate-200">
+                                            <CardTitle className="text-base font-semibold text-[#0f172a]">Cover Letter</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="px-6 py-3">
+                                            {application?.cover_letter ? (
+                                                <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-line">{application.cover_letter}</p>
+                                            ) : (
+                                                <p className="text-sm text-slate-400 italic">No cover letter provided.</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="rounded-lg border border-slate-200 shadow-sm">
+                                        <CardHeader className="px-5 border-b border-slate-200">
+                                            <CardTitle className="text-base font-semibold text-[#0f172a]">Matched Skills</CardTitle>
+                                            <CardDescription>Skills the applicant has that match the project requirements</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="px-6 py-3">
+                                            {application?.skills_fulfilled?.length ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {application.skills_fulfilled.map((skill) => (
+                                                        <Badge key={skill} variant="secondary" className="px-3 py-1.5 text-sm">{skill}</Badge>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-slate-400 italic">No matched skills.</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Right */}
+                                <div className="flex flex-col gap-5">
+                                    <Card className="rounded-lg border border-slate-200 shadow-sm">
+                                        <CardHeader className="px-5 border-b border-slate-200">
+                                            <CardTitle className="text-base font-semibold text-[#0f172a]">Overview</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="px-6 py-3 flex flex-col gap-3">
+                                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                                                <MapPin size={13} className="text-slate-300 shrink-0" />
+                                                {application?.location ?? "—"}
+                                            </div>
                                             <Separator />
-                                            <a
-                                                href={application.linkedin_url.startsWith("http") ? application.linkedin_url : `https://${application.linkedin_url}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="flex items-center gap-2 text-sm text-[#2563eb] hover:underline"
+                                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                                                <Briefcase size={13} className="text-slate-300 shrink-0" />
+                                                {application?.major ?? "—"}
+                                            </div>
+                                            {application?.linkedin_url && (
+                                                <>
+                                                    <Separator />
+                                                    <a
+                                                        href={application.linkedin_url.startsWith("http") ? application.linkedin_url : `https://${application.linkedin_url}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="flex items-center gap-2 text-sm text-[#2563eb] hover:underline"
+                                                    >
+                                                        <Link size={13} className="shrink-0" />
+                                                        LinkedIn Profile
+                                                        <ExternalLink size={11} />
+                                                    </a>
+                                                </>
+                                            )}
+                                            {application?.resume_url && (
+                                                <>
+                                                    <Separator />
+                                                    <a href={application.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-[#2563eb] hover:underline">
+                                                        <Link size={13} className="shrink-0" />
+                                                        Resume
+                                                        <ExternalLink size={11} />
+                                                    </a>
+                                                </>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="rounded-lg border border-slate-200 shadow-sm">
+                                        <CardHeader className="px-5 border-b border-slate-200">
+                                            <CardTitle className="text-base font-semibold text-[#0f172a]">Update Status</CardTitle>
+                                            <CardDescription>Change the application status</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="px-6 py-3 flex flex-col gap-3">
+                                            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select status" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {(["pending", "reviewed", "shortlisted", "accepted", "rejected"] as const).map((s) => {
+                                                        const allowed = allowedTransitions[application?.status ?? "pending"] ?? []
+                                                        return (
+                                                            <SelectItem key={s} value={s} disabled={!allowed.includes(s)}>
+                                                                {statusConfig[s].label}
+                                                            </SelectItem>
+                                                        )
+                                                    })}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                className="cursor-pointer w-full"
+                                                disabled={isUpdating || selectedStatus === application?.status}
+                                                onClick={handleUpdateStatus}
                                             >
-                                                <Link size={13} className="shrink-0" />
-                                                LinkedIn Profile
-                                                <ExternalLink size={11} />
-                                            </a>
-                                        </>
-                                    )}
-                                    {application?.resume_url && (
-                                        <>
-                                            <Separator />
-                                            <a href={application.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-[#2563eb] hover:underline">
-                                                <Link size={13} className="shrink-0" />
-                                                Resume
-                                                <ExternalLink size={11} />
-                                            </a>
-                                        </>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                                {isUpdating ? "Updating..." : "Update Status"}
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+                        </TabsContent>
 
-                            {/* Update Status */}
-                            <Card className="rounded-lg border border-slate-200 shadow-sm">
-                                <CardHeader className="px-5 border-b border-slate-200">
-                                    <CardTitle className="text-base font-semibold text-[#0f172a]">Update Status</CardTitle>
-                                    <CardDescription>Change the application status</CardDescription>
-                                </CardHeader>
-                                <CardContent className="px-6 py-3 flex flex-col gap-3">
-                                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {(["pending", "reviewed", "shortlisted", "accepted", "rejected"] as const).map((s) => {
-                                                const allowed = allowedTransitions[application?.status ?? "pending"] ?? []
-                                                return (
-                                                    <SelectItem key={s} value={s} disabled={!allowed.includes(s)}>
-                                                        {statusConfig[s].label}
-                                                    </SelectItem>
-                                                )
-                                            })}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        className="cursor-pointer w-full"
-                                        disabled={isUpdating || selectedStatus === application?.status}
-                                        onClick={handleUpdateStatus}
-                                    >
-                                        {isUpdating ? "Updating..." : "Update Status"}
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
+                        {/* Tab 2: Meetings */}
+                        <TabsContent value="meetings">
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-sm text-slate-500">{meetings.length} meeting{meetings.length !== 1 ? "s" : ""} scheduled</p>
+                                <Button
+                                    size="sm"
+                                    className="cursor-pointer gap-1.5 text-xs"
+                                    onClick={() => setMeetingDialogOpen(true)}
+                                >
+                                    <Plus size={13} /> Schedule New Meeting
+                                </Button>
+                            </div>
+
+                            {meetings.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                                        <CalendarClock size={20} className="text-slate-400" />
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-500">No meetings scheduled</p>
+                                    <p className="text-xs text-slate-400">Meetings will appear here once scheduled with this applicant.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {meetings.map(m => {
+                                        const cfg = meetingStatusConfig[m.status] ?? { label: m.status, className: "bg-slate-100 text-slate-500 border border-slate-200" }
+                                        return (
+                                            <Card key={m.id} className="rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                                <CardContent className="px-5 pt-5 pb-4 flex flex-col gap-4">
+
+                                                    {/* Header */}
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                                                            <p className="text-sm font-semibold text-[#0f172a] leading-snug">{m.title}</p>
+                                                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full w-fit ${cfg.className}`}>
+                                                                {cfg.label}
+                                                            </span>
+                                                        </div>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="cursor-pointer text-slate-400 hover:text-[#0f172a] transition-colors p-0.5 rounded shrink-0">
+                                                                    <MoreHorizontal size={16} />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-58">
+                                                                {m.status === "reschedule_requested" && (
+                                                                    <DropdownMenuItem
+                                                                        className="cursor-pointer gap-2 text-sm"
+                                                                        onClick={() => { setSelectedMeeting(m); setMeetingDialogOpen(true) }}
+                                                                    >
+                                                                        <CalendarSync size={13} /> Schedule Reschedule
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    className="cursor-pointer gap-2 text-sm text-red-500 focus:text-red-500"
+                                                                    onClick={() => handleCancelMeeting(m.id)}
+                                                                >
+                                                                    Cancel Meeting
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+
+                                                    {/* Date + Time */}
+                                                    {m.scheduled_at && !isNaN(new Date(m.scheduled_at).getTime()) && (
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                                                <Calendar size={12} className="text-slate-300 shrink-0" />
+                                                                {format(new Date(m.scheduled_at), "EEEE, d MMMM yyyy")}
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                                                <Clock size={12} className="text-slate-300 shrink-0" />
+                                                                {format(new Date(m.scheduled_at), "hh:mm a")} · {m.duration} mins
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Actions */}
+                                                    <div className="flex items-center gap-2 pt-1">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="cursor-pointer flex-1 gap-1.5 text-xs"
+                                                            onClick={() => { navigator.clipboard.writeText(m.meeting_url); toast.success("Link copied!") }}
+                                                        >
+                                                            <Copy size={12} /> Copy Link
+                                                        </Button>
+                                                        {m.status === "scheduled" ? (
+                                                            <a href={m.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
+                                                                <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
+                                                                    <Video size={12} /> Join
+                                                                </Button>
+                                                            </a>
+                                                        ) : (
+                                                            <Button size="sm" className="flex-1 gap-1.5 text-xs" disabled>
+                                                                <Video size={12} /> Join
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
 
-            <MeetingDialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} application={application} project={projectData} />
+            <MeetingDialog
+                open={meetingDialogOpen}
+                onOpenChange={(val) => {
+                    setMeetingDialogOpen(val)
+                    if (!val) { setSelectedMeeting(null); fetchMeetings() }
+                }}
+                application={application}
+                project={projectData}
+                existingMeeting={selectedMeeting}
+            />
             <PaymentDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen} project={projectData} total_vacancies={totalVacancies} />
         </>
     )

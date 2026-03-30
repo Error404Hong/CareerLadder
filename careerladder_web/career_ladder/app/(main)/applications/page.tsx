@@ -1,6 +1,7 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { getJobApplications } from "@/app/api/job"
 import { getProjectApplications } from "@/app/api/project"
@@ -18,6 +19,7 @@ import { projectColumns, type ProjectApplication } from "./columns/projectColumn
 
 export default function Applications() {
     const { user } = useUser()
+    const router = useRouter()
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [jobApplication, setJobApplication] = useState<JobApplication[]>([])
     const [projectApplication, setProjectApplication] = useState<ProjectApplication[]>([])
@@ -46,6 +48,14 @@ export default function Applications() {
 
         getApplications()
     }, [user])
+
+    const job_columns = jobColumns((jApplication) => {
+        router.push(`/applications/jobs/${jApplication.listing_id}`)
+    })
+
+    const project_columns = projectColumns((pApplication) => {
+        router.push(`/applications/projects/${pApplication.listing_id}`)
+    })
 
     return (
         <div className="min-h-screen bg-slate-100">
@@ -112,7 +122,7 @@ export default function Applications() {
                                     </div>
                                 ) : (
                                     <DataTable
-                                        columns={jobColumns}
+                                        columns={job_columns}
                                         data={jobApplication}
                                         searchPlaceholder="Search jobs..."
                                         emptyIcon={<Briefcase size={32} className="text-slate-200" />}
@@ -139,7 +149,7 @@ export default function Applications() {
                                     </div>
                                 ) : (
                                     <DataTable
-                                        columns={projectColumns}
+                                        columns={project_columns}
                                         data={projectApplication}
                                         searchPlaceholder="Search projects..."
                                         emptyIcon={<FileText size={32} className="text-slate-200" />}

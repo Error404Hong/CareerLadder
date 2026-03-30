@@ -49,7 +49,6 @@ export const navItems = [
         icon: <Video size={16} />,
         children: [
             { label: "Upcoming Meetings", href: "/meetings" },
-            { label: "Recordings", href: "/meetings/recodings" },
         ],
     },
     {

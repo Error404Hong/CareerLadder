@@ -131,6 +131,40 @@ class Meetings {
         }
     }
 
+    static async rescheduleMeeting(
+        id,
+        title,
+        description,
+        meeting_url,
+        room_name,
+        scheduled_at,
+        duration,
+    ) {
+        try {
+            const query = `
+                UPDATE meetings
+                SET title = $1, description = $2, meeting_url = $3, room_name = $4,
+                    scheduled_at = $5, duration = $6, status = 'scheduled', updated_at = NOW()
+                WHERE id = $7
+                RETURNING *
+            `;
+            const values = [
+                title,
+                description,
+                meeting_url,
+                room_name,
+                scheduled_at,
+                duration,
+                id,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to reschedule meeting: ", error);
+            throw error;
+        }
+    }
+
     static async deleteMeeting(id) {
         try {
             const query = `DELETE FROM meetings WHERE id = $1 RETURNING *`;
@@ -161,6 +195,28 @@ class Meetings {
             return result.rows[0] ?? null;
         } catch (error) {
             logger.error("[MODEL] Failed to get meeting by room name: ", error);
+            throw error;
+        }
+    }
+
+    static async getApplicantMeetingById(
+        reference_id,
+        reference_type,
+        applicant_id,
+    ) {
+        try {
+            const query = `
+            SELECT * FROM meetings
+            WHERE reference_id = $1 AND reference_type = $2
+            AND applicant_id = $3
+            ORDER BY created_at DESC
+            `;
+
+            const values = [reference_id, reference_type, applicant_id];
+            const result = await pool.query(query, values);
+            return result.rows ?? [];
+        } catch (error) {
+            logger.error("[MODEL] Failed to get applicant meeting by id");
             throw error;
         }
     }

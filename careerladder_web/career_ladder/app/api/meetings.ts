@@ -80,6 +80,31 @@ export const getMeetingsByApplicant = async (applicantId: string) => {
     }
 };
 
+export const rescheduleMeeting = async (
+    id: string,
+    company_id: string,
+    applicant_id: string,
+    title: string,
+    description: string,
+    scheduled_at: string,
+    duration: number,
+) => {
+    try {
+        const response = await axiosInstance.put(`/meetings/rescheduleMeeting/${id}`, {
+            company_id,
+            applicant_id,
+            title,
+            description,
+            scheduled_at,
+            duration,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error rescheduling meeting: ", error);
+        throw error;
+    }
+};
+
 export const updateMeetingStatus = async (id: string, status: string) => {
     try {
         const response = await axiosInstance.put(
@@ -113,6 +138,22 @@ export const getMeetingByRoomName = async (roomName: string) => {
         return response.data;
     } catch (error) {
         console.error("Error fetching meeting by room name: ", error);
+        throw error;
+    }
+};
+
+export const getApplicantMeetingById = async (
+    reference_id: string,
+    reference_type: string,
+    applicant_id: string,
+) => {
+    try {
+        const response = await axiosInstance.get(
+            `/meetings/getApplicantMeetingById/${reference_id}/${reference_type}/${applicant_id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error getting applicant meeting by id: ", error);
         throw error;
     }
 };

@@ -222,6 +222,75 @@ const updateMeetingStatus = async (req, res) => {
     }
 };
 
+const rescheduleMeeting = async (req, res) => {
+    const { id } = req.params;
+    const {
+        company_id,
+        applicant_id,
+        title,
+        description,
+        scheduled_at,
+        duration,
+    } = req.body;
+
+    if (!id) return sendResponse(res, 400, "Meeting ID is required");
+    if (!scheduled_at)
+        return sendResponse(res, 400, "Scheduled date is required");
+
+    try {
+        await streamClient.upsertUsers([
+            { id: company_id, role: "user" },
+            { id: applicant_id, role: "user" },
+        ]);
+
+        const roomName = `cl-rs-${id.replace(/-/g, "")}-${Date.now()}`;
+        const call = streamClient.video.call("default", roomName);
+        await call.create({
+            data: {
+                created_by_id: company_id,
+                members: [
+                    { user_id: company_id, role: "host" },
+                    { user_id: applicant_id, role: "user" },
+                ],
+                custom: {
+                    title: title ?? "Interview",
+                    description: description ?? "",
+                    scheduled_at,
+                },
+            },
+        });
+
+        const meeting_url = `${process.env.FRONTEND_URL}/room/${roomName}`;
+
+        const meeting = await Meetings.rescheduleMeeting(
+            id,
+            title ?? "Interview",
+            description ?? null,
+            meeting_url,
+            roomName,
+            scheduled_at,
+            duration || 60,
+        );
+
+        if (!meeting)
+            return sendResponse(res, 400, "Failed to reschedule meeting");
+        return sendResponse(
+            res,
+            200,
+            "Meeting rescheduled successfully",
+            meeting,
+        );
+    } catch (error) {
+        console.log(
+            "[CONTROLLER] Failed to reschedule meeting: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to reschedule meeting", {
+            error: error.message,
+        });
+    }
+};
+
 const deleteMeeting = async (req, res) => {
     const { id } = req.params;
     if (!id) return sendResponse(res, 400, "Meeting ID is required");
@@ -277,8 +346,32 @@ const getMeetingByRoomName = async (req, res) => {
     }
 };
 
+const getApplicantMeetingById = async (req, res) => {
+    const { referenceid, referencetype, applicantid } = req.params;
+
+    if (!referenceid) return sendResponse(res, 400, "Reference Id is required");
+    if (!referencetype)
+        return sendResponse(res, 400, "Reference type is required");
+    if (!applicantid) return sendResponse(res, 400, "Applicant id is required");
+
+    try {
+        const result = await Meetings.getApplicantMeetingById(
+            referenceid,
+            referencetype,
+            applicantid,
+        );
+        return sendResponse(res, 200, "Applicant meetings fetched", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to get applicant meeting by id");
+        return sendResponse(res, 500, "Failed to get applicant meeting by id", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     scheduleMeeting,
+    rescheduleMeeting,
     getMeetingByApplication,
     getMeetingsByCompany,
     getMeetingsByApplicant,
@@ -286,4 +379,5 @@ module.exports = {
     deleteMeeting,
     getStreamToken,
     getMeetingByRoomName,
+    getApplicantMeetingById,
 };

@@ -138,3 +138,58 @@
         font-family: var(--font-inter), sans-serif;
     }
 }
+
+/* Stream Video SDK — force dark backgrounds */
+.str-video,
+.str-video__call,
+.str-video__speaker-layout,
+.str-video__speaker-layout__wrapper,
+.str-video__paginated-grid-layout,
+.str-video__stage,
+.str-video__stage-main,
+[class*="str-video__speaker"],
+[class*="str-video__stage"],
+[class*="str-video__layout"],
+[class*="str-video__call"]:not([class*="str-video__call-controls"]) {
+    background-color: #0f172a !important;
+}
+
+.str-video__call-controls {
+    background-color: #0f172a !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* Participant name, labels, and menu text */
+[class*="str-video__participant-details"],
+[class*="str-video__participant__name"],
+[class*="str-video__participant-box"] span,
+[class*="str-video__participant-box"] p,
+[class*="str-video__menu"] li,
+[class*="str-video__menu"] button,
+[class*="str-video__menu"] span,
+[class*="str-video__generic-menu"] li,
+[class*="str-video__generic-menu"] button,
+[class*="str-video__generic-menu"] span,
+[class*="str-video__base-button__menu"] li,
+[class*="str-video__base-button__menu"] button,
+[class*="str-video__base-button__menu"] span {
+    color: #ffffff !important;
+}
+
+/* Menu/dropdown backgrounds */
+[class*="str-video__menu"],
+[class*="str-video__generic-menu"],
+[class*="str-video__base-button__menu"] {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+[class*="str-video__menu"] li:hover,
+[class*="str-video__menu"] button:hover,
+[class*="str-video__generic-menu"] li:hover,
+[class*="str-video__generic-menu"] button:hover,
+[class*="str-video__base-button__menu"] li:hover,
+[class*="str-video__base-button__menu"] button:hover {
+    background-color: #334155 !important;
+}
+

@@ -11,29 +11,43 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Calendar, Clock, Video, Copy, Briefcase, Building2, MoreHorizontal, Calendar1, Mail } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useState } from "react"
 import { createNotification } from "@/app/api/notifications"
+import { updateMeetingStatus } from "@/app/api/meetings"
 
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     scheduled: { label: "Scheduled", className: "bg-blue-100 text-blue-700 border border-blue-200" },
-    ongoing: { label: "Ongoing", className: "bg-green-100 text-green-700 border border-green-200" },
+    reschedule_requested: { label: "Reschedule Requested", className: "bg-yellow-100 text-yellow-700 border border-yellow-200" },
     completed: { label: "Completed", className: "bg-slate-100 text-slate-600 border border-slate-200" },
     cancelled: { label: "Cancelled", className: "bg-red-100 text-red-600 border border-red-200" },
 }
 
 export function MeetingCard({ meeting }: { meeting: Meeting }) {
+    const [status, setStatus] = useState(meeting.status)
 
     const handleRescheduleRequest = async () => {
         try {
-            await createNotification(
-                meeting.company_id,
-                "meeting_reschedule_request",
-                "Meeting Reschedule Requested",
-                `A student has requested to reschedule the meeting "${meeting.title}" scheduled on ${format(new Date(meeting.scheduled_at), "d MMM yyyy, hh:mm a")}.`,
-                meeting.reference_type,
-                meeting.reference_id,
-            )
-            toast.success("Reschedule request sent to the company.")
+            if (status === "reschedule_requested") {
+                toast.warning("Your request was already submitted earlier")
+            } else {
+                const notifyCompany = await createNotification(
+                    meeting.company_id,
+                    "meeting_reschedule_request",
+                    "Meeting Reschedule Requested",
+                    `A student has requested to reschedule the meeting "${meeting.title}"${meeting.scheduled_at && !isNaN(new Date(meeting.scheduled_at).getTime()) ? ` scheduled on ${format(new Date(meeting.scheduled_at), "d MMM yyyy, hh:mm a")}` : ""}.`,
+                    meeting.reference_type,
+                    meeting.reference_id,
+                )
+
+                const updStatus = await updateMeetingStatus(meeting.id, "reschedule_requested");
+
+                if (notifyCompany.success && updStatus.success) {
+                    setStatus("reschedule_requested")
+                    toast.success("Reschedule request sent to the company.")
+                }
+            }
+
         } catch {
             toast.error("Failed to send reschedule request. Please try again.")
         }
@@ -53,10 +67,10 @@ export function MeetingCard({ meeting }: { meeting: Meeting }) {
                             </div>
                         )}
                         <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${statusConfig[meeting.status]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
-                                {statusConfig[meeting.status]?.label ?? meeting.status}
+                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${statusConfig[status]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
+                                {statusConfig[status]?.label ?? status}
                             </span>
-                            <Badge className={`text-[11px] px-2.5 py-1 rounded-full capitalize font-normal ${meeting.reference_type === "job" ? "bg-blue-50 text-blue-600 border border-blue-100" : "bg-violet-50 text-violet-600 border border-violet-100"}`}>
+                            <Badge className={`text-[11px] px-2.5 py-1 rounded-full capitalize font-normal ${meeting.reference_type === "job" ? "bg-blue-100 text-blue-600 border border-blue-100" : "bg-violet-100 text-violet-600 border border-violet-100"}`}>
                                 {meeting.reference_type}
                             </Badge>
                         </div>
@@ -100,18 +114,20 @@ export function MeetingCard({ meeting }: { meeting: Meeting }) {
                 )}
 
                 {/* Date + Time */}
-                <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <Calendar size={12} className="text-slate-400 shrink-0" />
-                        {format(new Date(meeting.scheduled_at), "EEEE, d MMMM yyyy")}
+                {meeting.scheduled_at && !isNaN(new Date(meeting.scheduled_at).getTime()) && (
+                    <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <Calendar size={12} className="text-slate-400 shrink-0" />
+                            {format(new Date(meeting.scheduled_at), "EEEE, d MMMM yyyy")}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <Clock size={12} className="text-slate-400 shrink-0" />
+                            {format(new Date(meeting.scheduled_at), "hh:mm a")}
+                            <span className="text-slate-400">·</span>
+                            <span>{meeting.duration} mins</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <Clock size={12} className="text-slate-400 shrink-0" />
-                        {format(new Date(meeting.scheduled_at), "hh:mm a")}
-                        <span className="text-slate-400">·</span>
-                        <span>{meeting.duration} mins</span>
-                    </div>
-                </div>
+                )}
 
                 <Separator />
 
@@ -128,15 +144,17 @@ export function MeetingCard({ meeting }: { meeting: Meeting }) {
                     >
                         <Copy size={13} /> Copy Link
                     </Button>
-                    <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
-                        <Button
-                            size="sm"
-                            className="cursor-pointer w-full gap-1.5 p-4.5"
-                            disabled={meeting.status === "cancelled" || meeting.status === "completed"}
-                        >
+                    {status === "scheduled" ? (
+                        <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
+                            <Button size="sm" className="cursor-pointer w-full gap-1.5 p-4.5">
+                                <Video size={13} /> Join Meeting
+                            </Button>
+                        </a>
+                    ) : (
+                        <Button size="sm" className="flex-1 gap-1.5 p-4.5" disabled>
                             <Video size={13} /> Join Meeting
                         </Button>
-                    </a>
+                    )}
                 </div>
 
             </CardContent>

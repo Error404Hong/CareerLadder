@@ -40,7 +40,7 @@ export default function AllMeetings() {
     }, [user])
 
     const scheduled = meetings.filter(m => m.status === "scheduled")
-    const ongoing = meetings.filter(m => m.status === "ongoing")
+    const rescheduleRequested = meetings.filter(m => m.status === "reschedule_requested")
     const completed = meetings.filter(m => m.status === "completed")
     const cancelled = meetings.filter(m => m.status === "cancelled")
 
@@ -100,9 +100,9 @@ export default function AllMeetings() {
                             Scheduled
                             <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{scheduled.length}</Badge>
                         </TabsTrigger>
-                        <TabsTrigger value="ongoing" className="gap-2">
-                            Ongoing
-                            <Badge className="ml-1 text-[11px] bg-green-50 text-green-600 border border-green-100 rounded-full px-2 py-0">{ongoing.length}</Badge>
+                        <TabsTrigger value="reschedule_requested" className="gap-2">
+                            Reschedule Requested
+                            <Badge className="ml-1 text-[11px] bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full px-2 py-0">{rescheduleRequested.length}</Badge>
                         </TabsTrigger>
                         <TabsTrigger value="completed" className="gap-2">
                             Completed
@@ -115,7 +115,7 @@ export default function AllMeetings() {
                     </TabsList>
 
                     <TabsContent value="scheduled">{renderGrid(scheduled, "scheduled")}</TabsContent>
-                    <TabsContent value="ongoing">{renderGrid(ongoing, "ongoing")}</TabsContent>
+                    <TabsContent value="reschedule_requested">{renderGrid(rescheduleRequested, "reschedule requested")}</TabsContent>
                     <TabsContent value="completed">{renderGrid(completed, "completed")}</TabsContent>
                     <TabsContent value="cancelled">{renderGrid(cancelled, "cancelled")}</TabsContent>
                 </Tabs>
