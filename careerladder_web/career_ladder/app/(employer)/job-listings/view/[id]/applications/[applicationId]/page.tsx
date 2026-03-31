@@ -1,13 +1,15 @@
 "use client"
 
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { useUser } from "@clerk/nextjs"
 
 import { Application, Job, Meeting } from "@/types"
 import { getApplicantsProfile, updateApplicationStatus, getJobById, updateJobStatus, updateJobVacancies } from "@/app/api/job"
 import { createNotification } from "@/app/api/notifications"
 import { getApplicantMeetingById, updateMeetingStatus } from "@/app/api/meetings"
+import { createChannel } from "@/app/api/chat"
 
 import Image from "next/image"
 import { MeetingDialog } from "./meeting-dialog"
@@ -19,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User, Video, Copy, Calendar, CalendarClock, MoreHorizontal, Plus, CalendarSync } from "lucide-react"
+import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User, Video, Copy, Calendar, CalendarClock, MoreHorizontal, Plus, CalendarSync, MessageSquare } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { format } from "date-fns"
 
@@ -55,6 +57,8 @@ const meetingStatusConfig: Record<string, { label: string; className: string }> 
 
 export default function ApplicationDetails() {
     const params = useParams()
+    const router = useRouter()
+    const { user } = useUser()
     const id = params.id as string
     const applicationId = params.applicationId as string
 
@@ -101,6 +105,16 @@ export default function ApplicationDetails() {
         getApplication()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [applicationId, id])
+
+    const handleMessage = async () => {
+        if (!user || !application) return
+        try {
+            await createChannel(user.id, application.clerk_id)
+            router.push("/messages")
+        } catch {
+            toast.error("Failed to open chat")
+        }
+    }
 
     const handleCancelMeeting = async (meetingId: string) => {
         const res = await updateMeetingStatus(meetingId, "cancelled")
@@ -273,13 +287,16 @@ export default function ApplicationDetails() {
                                         <p className="text-sm text-slate-400">{application?.email}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 pb-1">
+                                <div className="flex items-center gap-3 pb-1">
                                     <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusConfig[application?.status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
                                         {statusConfig[application?.status ?? ""]?.label ?? application?.status}
                                     </span>
                                     <p className="text-xs text-slate-400">
                                         Applied {new Date(application?.applied_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
                                     </p>
+                                    <Button size="sm" className="cursor-pointer gap-1.5 text-xs" onClick={handleMessage}>
+                                        <MessageSquare size={13} /> Message
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>

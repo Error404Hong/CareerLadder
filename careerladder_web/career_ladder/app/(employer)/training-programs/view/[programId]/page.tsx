@@ -8,7 +8,7 @@ import { getProgramById, getProgramRegistration } from "@/app/api/training"
 import { getAllStudent } from "@/app/api/user"
 
 import { toast } from "sonner"
-import { Users, CalendarDays, MapPin, Clock, Globe, Lock, UserPlus } from "lucide-react"
+import { Users, CalendarDays, MapPin, Clock, Globe, Lock, UserPlus, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -44,8 +44,6 @@ export default function ViewProgramDetails() {
                 if (fetchRes.success && fetchRegistration.success) {
                     setProgramData(fetchRes.data);
                     setRegistration(fetchRegistration.data)
-                    console.log(fetchRegistration.data)
-                    console.log(fetchRes.data)
                 } else {
                     toast.error("Failed to fetch program details.")
                 }
@@ -132,11 +130,20 @@ export default function ViewProgramDetails() {
                     </Breadcrumb>
 
                     {/* Header */}
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight">{programData?.title}</h1>
-                        <p className="text-sm text-slate-400 mt-1">
-                            Created on {new Date(programData?.created_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}
-                        </p>
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight">{programData?.title}</h1>
+                            <p className="text-sm text-slate-400 mt-1">
+                                Created on {new Date(programData?.created_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}
+                            </p>
+                        </div>
+                        {programData?.meeting_url && programData?.status === "open" && (
+                            <a href={programData.meeting_url} target="_blank" rel="noreferrer">
+                                <Button className="cursor-pointer gap-1.5">
+                                    <Video size={14} /> Join Session
+                                </Button>
+                            </a>
+                        )}
                     </div>
 
                     {/* Stats Card */}

@@ -121,7 +121,7 @@ const getJobsByCompany = async (req, res) => {
         return sendResponse(res, 200, "Job listings fetched", result);
     } catch (error) {
         logger.error("[CONTROLLER Failed to get job listings");
-        return sendResponse(req, 500, "Failed to get job listings", {
+        return sendResponse(res, 500, "Failed to get job listings", {
             error: error.message,
         });
     }

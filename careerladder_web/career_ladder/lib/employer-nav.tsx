@@ -1,4 +1,4 @@
-import { LayoutDashboard, Briefcase, FileText, Users, DollarSign, Star, Video, Backpack } from "lucide-react"
+import { LayoutDashboard, Briefcase, FileText, Users, DollarSign, Star, Video, Backpack, MessageSquare } from "lucide-react"
 
 export const navItems = [
     {
@@ -59,6 +59,12 @@ export const navItems = [
             { label: "Overview", href: "/finance" },
             { label: "Withdrawals", href: "/dashboard/finance/withdrawals" },
         ],
+    },
+    {
+        label: "Messages",
+        href: "/messages",
+        icon: <MessageSquare size={16} />,
+        children: [],
     },
     {
         label: "Reviews",

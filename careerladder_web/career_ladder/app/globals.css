@@ -193,3 +193,228 @@
     background-color: #334155 !important;
 }
 
+
+/* ===== Stream Chat - Custom Design ===== */
+
+/* Base font size */
+.str-chat,
+.str-chat * {
+    font-size: 13px !important;
+    font-family: inherit !important;
+}
+
+/* Channel list sidebar — bg increased ~10% darker */
+.str-chat__channel-list {
+    background-color: #f1f5f9 !important;
+    border-right: 1px solid #e2e8f0 !important;
+}
+
+/* Channel search */
+.str-chat__channel-search {
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 12px !important;
+}
+.str-chat__channel-search input {
+    font-size: 14px !important;
+    color: #0f172a !important;
+}
+.str-chat__channel-search input:focus {
+    border-color: #2563eb !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.1) !important;
+}
+
+/* Channel preview item */
+.str-chat__channel-preview-messenger {
+    padding: 10px 14px !important;
+    border-radius: 8px !important;
+    margin: 2px 8px !important;
+    transition: background-color 0.15s !important;
+}
+.str-chat__channel-preview-messenger:hover {
+    background-color: #e2e8f0 !important;
+}
+.str-chat__channel-preview-messenger--active {
+    background-color: #dbeafe !important;
+    border-left: 3px solid #2563eb !important;
+}
+.str-chat__channel-preview-messenger--name {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+}
+.str-chat__channel-preview-messenger--last-message {
+    font-size: 11px !important;
+    color: #64748b !important;
+}
+
+/* Avatar */
+.str-chat__avatar {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 11px !important;
+    border-radius: 50% !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+/* Channel header */
+.str-chat__channel-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 12px 16px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+}
+.str-chat__channel-header-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+}
+.str-chat__header-livestream-left--subtitle {
+    font-size: 11px !important;
+    color: #64748b !important;
+}
+
+/* Message list */
+.str-chat__list {
+    background-color: #ffffff !important;
+    padding: 12px 16px !important;
+}
+.str-chat__message-text {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    border-radius: 12px !important;
+}
+
+/* Sent messages (right side) */
+.str-chat__message--me .str-chat__message-bubble {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border-radius: 12px 12px 2px 12px !important;
+}
+.str-chat__message--me .str-chat__message-text * {
+    color: #ffffff !important;
+}
+
+/* Received messages (left side) */
+.str-chat__message-bubble {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-radius: 12px 12px 12px 2px !important;
+}
+
+/* Message metadata (timestamp) */
+.str-chat__message-metadata,
+.str-chat__message-simple__actions {
+    font-size: 10px !important;
+    color: #94a3b8 !important;
+}
+
+/* Message input */
+.str-chat__message-input {
+    background-color: #f1f5f9 !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding: 10px 14px !important;
+}
+.str-chat__message-input-inner {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    background-color: #ffffff !important;
+    padding: 8px 12px !important;
+    gap: 8px !important;
+}
+/* 1. Visible border on focus */
+.str-chat__message-input-inner:focus-within {
+    border-color: #0f172a !important;
+    box-shadow: 0 0 0 2px rgba(15,23,42,0.08) !important;
+    background-color: #ffffff !important;
+}
+.str-chat__message-textarea {
+    font-size: 13px !important;
+    color: #0f172a !important;
+    background: transparent !important;
+}
+.str-chat__message-textarea::placeholder {
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+}
+
+/* 3. Attachment / emoji icons — navy with no bg */
+.str-chat__message-input .str-chat__fileupload-wrapper button,
+.str-chat__message-input .str-chat__emoji-picker-icon,
+.str-chat__message-input [class*="str-chat__input-flat"] button,
+.str-chat__message-input button:not(.str-chat__send-button) {
+    color: #0f172a !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+.str-chat__message-input button:not(.str-chat__send-button) svg {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+    width: 15px !important;
+    height: 15px !important;
+}
+
+/* Send button — circle */
+.str-chat__send-button {
+    background-color: #0f172a !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    color: #ffffff !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: unset !important;
+    flex-shrink: 0 !important;
+    margin-left: 6px !important;
+}
+.str-chat__send-button svg {
+    width: 14px !important;
+    height: 14px !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+.str-chat__send-button:hover {
+    background-color: #1e293b !important;
+}
+
+/* 2. Edit message — Cancel (red) and Send (blue) buttons with gap */
+.str-chat__edit-message-form-options {
+    display: flex !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
+}
+.str-chat__edit-message-cancel {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+}
+.str-chat__edit-message-cancel:hover {
+    background-color: #dc2626 !important;
+}
+.str-chat__edit-message-send {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+}
+.str-chat__edit-message-send:hover {
+    background-color: #1d4ed8 !important;
+}
+
+/* Empty state */
+.str-chat__channel-list-empty {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+}
+

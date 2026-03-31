@@ -4,7 +4,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { Toaster } from "sonner"
 import { navItems } from "@/lib/nav"
-import { Bell, User, DollarSign } from "lucide-react"
+import { Bell, User, DollarSign, MessageCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useUser } from "@clerk/nextjs"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
@@ -35,6 +36,7 @@ export default function MainLayout({
   children: React.ReactNode
 }>) {
   const { user } = useUser()
+  const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -152,6 +154,12 @@ export default function MainLayout({
             </SignedOut>
 
             <SignedIn>
+              <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-[#0f172a] transition-colors cursor-pointer"
+                onClick={() => router.push("/my-messages")}
+              >
+                <MessageCircle size={15} />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#2563eb] rounded-full" />
+              </button>
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-[#0f172a] transition-colors cursor-pointer">
