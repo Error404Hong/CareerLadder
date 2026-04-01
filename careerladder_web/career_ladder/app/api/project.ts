@@ -194,3 +194,15 @@ export const updateProjectStatus = async (
         throw error;
     }
 };
+
+export const getProjectApplicantsById = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getProjectApplicantsById/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error getting project details");
+        throw error;
+    }
+};

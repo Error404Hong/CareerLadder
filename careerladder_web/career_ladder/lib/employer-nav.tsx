@@ -1,4 +1,4 @@
-import { LayoutDashboard, Briefcase, FileText, Users, DollarSign, Star, Video, Backpack, MessageSquare } from "lucide-react"
+import { LayoutDashboard, Briefcase, FileText, Users, DollarSign, Star, Video, Backpack, MessageSquare, FolderOpen } from "lucide-react"
 
 export const navItems = [
     {
@@ -64,6 +64,12 @@ export const navItems = [
         label: "Messages",
         href: "/messages",
         icon: <MessageSquare size={16} />,
+        children: [],
+    },
+    {
+        label: "Workspace",
+        href: "/workspace",
+        icon: <FolderOpen size={16} />,
         children: [],
     },
     {

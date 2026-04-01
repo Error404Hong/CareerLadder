@@ -14,6 +14,7 @@ const {
     getAllProjectApplicationByCompany,
     updateProjectVacancies,
     updateProjectStatus,
+    getProjectApplicantsById,
 } = require("../controllers/projectsController");
 
 router.get("/getAllProjects", getAllProjects);
@@ -33,5 +34,6 @@ router.get("/getProjectApplications/:id", getProjectApplicationsById);
 router.get("/getProjectAppByCom/:companyid", getAllProjectApplicationByCompany);
 router.put("/updateProjectVacancies/:projectid", updateProjectVacancies);
 router.put("/updateProjectStatus/:projectid", updateProjectStatus);
+router.get("/getProjectApplicantsById/:projectid", getProjectApplicantsById);
 
 module.exports = router;

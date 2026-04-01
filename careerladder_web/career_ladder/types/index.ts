@@ -10,3 +10,5 @@ export * from "./training";
 export * from "./trainingRegistration";
 export * from "./student";
 export * from "./notification";
+export * from "./projectApplicant";
+export * from "./task";

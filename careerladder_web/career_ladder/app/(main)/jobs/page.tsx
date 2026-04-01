@@ -67,7 +67,7 @@ export default function Jobs() {
 
                     <div className="flex items-end justify-between gap-6 flex-wrap">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">Opening Job Positions</h1>
+                            <h1 className="text-xl font-bold">Opening Job Positions</h1>
                             <p className="text-sm text-slate-400 mt-1">
                                 {loading ? "Loading..." : `${filtered.length} job${filtered.length !== 1 ? "s" : ""} available`}
                             </p>

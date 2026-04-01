@@ -23,8 +23,8 @@ export const navItems = [
         links: [],
     },
     {
-        label: "Collaboration Space",
-        href: "/collaboration",
+        label: "Workspace",
+        href: "/my-workspace",
         links: [],
     },
 ];

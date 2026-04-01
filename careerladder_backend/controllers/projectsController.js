@@ -356,6 +356,37 @@ const updateProjectStatus = async (req, res) => {
     }
 };
 
+const getProjectApplicantsById = async (req, res) => {
+    const { projectid } = req.params;
+
+    if (!projectid) return sendResponse(res, 400, "Project id is required");
+
+    try {
+        const projects = await Projects.getProjectApplicantsById(projectid);
+
+        const result = await Promise.all(
+            projects.map(async (p) => {
+                const user = await clerkClient.users.getUser(p.clerk_id);
+
+                return {
+                    ...p,
+                    first_name: user.firstName,
+                    last_name: user.lastName,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                    profile_image: user.imageUrl,
+                };
+            }),
+        );
+
+        return sendResponse(res, 200, "Project details fetched", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to get project details");
+        return sendResponse(res, 500, "Failed to get project details", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllProjects,
     applyProjects,
@@ -369,4 +400,5 @@ module.exports = {
     getAllProjectApplicationByCompany,
     updateProjectVacancies,
     updateProjectStatus,
+    getProjectApplicantsById,
 };

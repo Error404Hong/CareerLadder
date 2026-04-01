@@ -18,7 +18,7 @@ export function AppSidebar() {
             <SidebarHeader className="px-4 py-4 border-b border-slate-100">
                 <Link href="/dashboard">
                     <Image
-                        src="/careerladder-logo.png"
+                        src="/careerladder-logo-v2.png"
                         alt="logo"
                         width={200}
                         height={60}

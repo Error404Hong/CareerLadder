@@ -310,6 +310,23 @@ class Projects {
             throw error;
         }
     }
+
+    static async getProjectApplicantsById(projectid) {
+        try {
+            const query = `
+            SELECT users.clerk_id FROM projects 
+            LEFT JOIN applications ON applications.listing_id = projects.id
+            LEFT JOIN users ON users.clerk_id = applications.clerk_id
+            WHERE projects.id = $1
+            `;
+
+            const result = await pool.query(query, [projectid]);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get project details: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Projects;

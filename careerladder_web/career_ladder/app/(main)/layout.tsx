@@ -85,12 +85,12 @@ export default function MainLayout({
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/90 backdrop-blur-md h-16 shadow-md">
+      <header className="sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
           <Link href="/home" className="flex items-center gap-2 shrink-0">
             <Image
-              src="/careerladder-logo.png"
+              src="/careerladder-logo-v2.png"
               alt="logo"
               width={188}
               height={100}

@@ -32,6 +32,8 @@ export default function ViewProject() {
                 } else {
                     toast.error("Failed to fetch project. Please try again")
                 }
+            } catch {
+                toast.error("Something went wrong. Please try again")
             } finally {
                 setIsLoading(false)
             }
