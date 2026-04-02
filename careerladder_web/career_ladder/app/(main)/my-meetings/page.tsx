@@ -102,20 +102,20 @@ export default function MyMeetings() {
 
             <div className="max-w-7xl mx-auto px-6 py-8">
                 <Tabs defaultValue="scheduled">
-                    <TabsList className="mb-6">
-                        <TabsTrigger value="scheduled" className="gap-2">
+                    <TabsList className="mb-6" variant="line">
+                        <TabsTrigger value="scheduled" className="gap-2 cursor-pointer">
                             Scheduled
                             <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{scheduled.length}</Badge>
                         </TabsTrigger>
-                        <TabsTrigger value="reschedule_requested" className="gap-2">
+                        <TabsTrigger value="reschedule_requested" className="gap-2 cursor-pointer">
                             Reschedule Requested
                             <Badge className="ml-1 text-[11px] bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full px-2 py-0">{rescheduleRequested.length}</Badge>
                         </TabsTrigger>
-                        <TabsTrigger value="completed" className="gap-2">
+                        <TabsTrigger value="completed" className="gap-2 cursor-pointer">
                             Completed
                             <Badge className="ml-1 text-[11px] bg-slate-100 text-slate-500 border border-slate-200 rounded-full px-2 py-0">{completed.length}</Badge>
                         </TabsTrigger>
-                        <TabsTrigger value="cancelled" className="gap-2">
+                        <TabsTrigger value="cancelled" className="gap-2 cursor-pointer">
                             Cancelled
                             <Badge className="ml-1 text-[11px] bg-red-50 text-red-500 border border-red-100 rounded-full px-2 py-0">{cancelled.length}</Badge>
                         </TabsTrigger>

@@ -90,15 +90,15 @@ export default function Applications() {
 
             <div className="max-w-7xl mx-auto px-6 py-8">
                 <Tabs defaultValue="jobs">
-                    <TabsList className="mb-6">
-                        <TabsTrigger value="jobs" className="gap-2 p-4 bg-gray-200">
+                    <TabsList className="mb-6" variant="line">
+                        <TabsTrigger value="jobs" className="gap-2 p-4 bg-gray-200 cursor-pointer">
                             <Briefcase size={13} />
                             Jobs
                             <Badge className="ml-1 text-[11px] bg-slate-100 text-slate-500 border border-slate-200 rounded-full px-2 py-0">
                                 {jobApplication.length}
                             </Badge>
                         </TabsTrigger>
-                        <TabsTrigger value="projects" className="gap-2 p-4 bg-gray-200">
+                        <TabsTrigger value="projects" className="gap-2 p-4 bg-gray-200 cursor-pointer">
                             <FileText size={13} />
                             Projects
                             <Badge className="ml-1 text-[11px] bg-slate-00 text-slate-500 border border-slate-200 rounded-full px-2 py-0">

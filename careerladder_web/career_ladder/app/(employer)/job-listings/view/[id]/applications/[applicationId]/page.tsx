@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User, Video, Copy, Calendar, CalendarClock, MoreHorizontal, Plus, CalendarSync, MessageSquare } from "lucide-react"
+import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User, Video, Copy, Calendar, CalendarClock, MoreHorizontal, Plus, CalendarSync, MessageSquare, ListCollapse } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { format } from "date-fns"
 
@@ -304,12 +304,12 @@ export default function ApplicationDetails() {
 
                     {/* Tabs */}
                     <Tabs defaultValue="details">
-                        <TabsList className="mb-2 bg-slate-100 p-1 rounded-lg">
-                            <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500">
-                                Application Details
+                        <TabsList className="mb-4" variant="line">
+                            <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
+                                <ListCollapse /> Application Details
                             </TabsTrigger>
-                            <TabsTrigger value="meetings" className="gap-2 rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500">
-                                Meetings
+                            <TabsTrigger value="meetings" className="gap-2 rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
+                                <Video /> Meetings
                                 <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{meetings.length}</Badge>
                             </TabsTrigger>
                         </TabsList>
