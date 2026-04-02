@@ -123,7 +123,7 @@ export default function Registrations() {
 
                     <div className="flex items-end justify-between gap-6 flex-wrap">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">My Training Registrations</h1>
+                            <h1 className="text-xl font-bold">My Training Registrations</h1>
                             <p className="text-sm text-slate-400 mt-1">
                                 {isLoading ? "Loading..." : `${registeredTraining.length} program${registeredTraining.length !== 1 ? "s" : ""} registered`}
                             </p>

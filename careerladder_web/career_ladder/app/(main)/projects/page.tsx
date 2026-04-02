@@ -63,7 +63,7 @@ export default function Projects() {
 
                     <div className="flex items-end justify-between gap-6 flex-wrap">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">Project Listings</h1>
+                            <h1 className="text-xl font-bold">Project Listings</h1>
                             <p className="text-sm text-slate-400 mt-1">
                                 {loading ? "Loading..." : `${filtered.length} open project${filtered.length !== 1 ? "s" : ""} available`}
                             </p>

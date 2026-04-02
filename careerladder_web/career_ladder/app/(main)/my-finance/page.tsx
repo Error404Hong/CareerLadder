@@ -102,7 +102,7 @@ export default function MyFinance() {
                 </Breadcrumb>
 
                 <div>
-                    <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">My Finance</h1>
+                    <h1 className="text-xl font-bold">My Finance</h1>
                     <p className="text-sm text-slate-400 mt-1">Track your allowances, escrow status, and earnings</p>
                 </div>
 

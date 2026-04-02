@@ -91,7 +91,7 @@ export default function MyMeetings() {
 
                     <div className="flex items-end justify-between gap-6 flex-wrap">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">My Meetings</h1>
+                            <h1 className="text-xl font-bold">My Meetings</h1>
                             <p className="text-sm text-slate-400 mt-1">
                                 {isLoading ? "Loading..." : `${meetings.length} total meeting${meetings.length !== 1 ? "s" : ""}`}
                             </p>

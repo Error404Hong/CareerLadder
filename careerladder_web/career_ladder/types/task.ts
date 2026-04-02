@@ -7,7 +7,6 @@ export type Task = {
     board_column: "todo" | "in_progress" | "review" | "done";
     priority: "low" | "medium" | "high";
     due_date: string | null;
-    position: number;
     created_at: string;
     updated_at: string;
 };

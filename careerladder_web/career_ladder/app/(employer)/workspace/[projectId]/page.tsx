@@ -9,12 +9,18 @@ import { getTasksByProject } from "@/app/api/task"
 import { getProjectApplicantsById, getProjectById } from "@/app/api/project"
 
 import { toast } from "sonner"
-import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardDescription, CardFooter, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { KanbanSquare, Users, Video, MessageSquare } from "lucide-react"
+import { KanbanSquare, Users, Video, MessageSquare, FolderOpen, CalendarDays, Clock, Banknote, Wrench, UserCheck } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 
+import Image from "next/image"
 import { KanbanBoard } from "./components/KanbanBoard"
+import { ProjectOverview } from "./components/ProjectOverview"
+import { TeamMembersOverview } from "./components/TeamMembersOverview"
+
 
 export default function ProjectCollabPage() {
     const { user } = useUser()
@@ -24,6 +30,7 @@ export default function ProjectCollabPage() {
     const [tasks, setTasks] = useState<Task[]>([])
     const [project, setProject] = useState<Project | null>(null)
     const [projectApplicants, setProjectApplicants] = useState<ProjectApplicant[]>([])
+    const [activeTab, setActiveTab] = useState("task_overview")
 
     useEffect(() => {
         if (!user) return
@@ -38,6 +45,8 @@ export default function ProjectCollabPage() {
                     setProjectApplicants(pApplicants.data)
                     setProject(projectRes.data)
                     setTasks(tasksRes.data)
+
+                    console.log("Members: ", pApplicants.data);
                 } else {
                     toast.error("Failed to fetch project details")
                 }
@@ -72,19 +81,28 @@ export default function ProjectCollabPage() {
             <div className="max-w-6xl mx-auto px-6 pb-8">
                 <Card className="rounded-sm">
                     <CardContent className="px-5">
-                        <Tabs defaultValue="overview">
-                            <TabsList variant="line" className="gap-8">
-                                <TabsTrigger value="overview" className="cursor-pointer"><KanbanSquare />Project Overview</TabsTrigger>
+                        <Tabs value={activeTab} onValueChange={setActiveTab}>
+                            <TabsList variant="line" className="gap-6">
+                                <TabsTrigger value="task_overview" className="cursor-pointer"><KanbanSquare />Task Overview</TabsTrigger>
+                                <TabsTrigger value="project_overview" className="cursor-pointer"><FolderOpen />Project Overview</TabsTrigger>
                                 <TabsTrigger value="discussion" className="cursor-pointer"><MessageSquare />Discussion</TabsTrigger>
                                 <TabsTrigger value="meeting" className="cursor-pointer"><Video />Meetings</TabsTrigger>
                                 <TabsTrigger value="team" className="cursor-pointer"><Users />Team / Members</TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="overview">
+                            <TabsContent value="task_overview">
                                 <KanbanBoard
                                     tasks={tasks}
                                     setTasks={setTasks}
                                     projectApplicants={projectApplicants}
+                                    projectId={projectId}
+                                />
+                            </TabsContent>
+
+                            <TabsContent value="project_overview">
+                                <ProjectOverview
+                                    project={project!}
+                                    onTabChange={() => setActiveTab("team")}
                                 />
                             </TabsContent>
 
@@ -95,6 +113,12 @@ export default function ProjectCollabPage() {
                             </TabsContent>
 
                             <TabsContent value="team">
+                                <TeamMembersOverview
+                                    ownerImageUrl={user?.imageUrl ?? ""}
+                                    ownerName={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`}
+                                    ownerEmail={user?.primaryEmailAddress?.emailAddress ?? ""}
+                                    projectApplicants={projectApplicants}
+                                />
                             </TabsContent>
                         </Tabs>
                     </CardContent>

@@ -112,7 +112,7 @@ export default function ViewJobApplicationDetails() {
 
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">{job?.title}</h1>
+                            <h1 className="text-xl font-bold">{job?.title}</h1>
                             <p className="text-sm text-slate-400">{application?.company_name}</p>
                         </div>
                         <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusCfg.className}`}>

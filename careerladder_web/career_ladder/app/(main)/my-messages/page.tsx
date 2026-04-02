@@ -72,7 +72,7 @@ export default function MessagesPage() {
 
                     <div className="flex items-end justify-between gap-6 flex-wrap">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">All Messages</h1>
+                            <h1 className="text-xl font-bold">All Messages</h1>
                             <p className="text-sm text-slate-400 mt-1">Stay in touch with employers and manage your conversations</p>
                         </div>
                     </div>
