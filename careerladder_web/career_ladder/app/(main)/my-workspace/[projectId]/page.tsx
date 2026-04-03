@@ -5,7 +5,7 @@ import { useParams } from "next/navigation"
 import { useState, useEffect } from "react"
 
 import { Project, Task } from "@/types"
-import { getProjectById } from "@/app/api/project"
+import { getProjectById, getProjectMembers, getProjectOwner } from "@/app/api/project"
 import { getStudentTasks } from "@/app/api/task"
 
 import { toast } from "sonner"
@@ -15,8 +15,23 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { KanbanSquare, Users, Video, MessageSquare, FolderOpen } from "lucide-react"
 import { KanbanBoard } from "./components/KanbanBoard"
 import { ProjectOverview } from "./components/ProjectOverview"
+import { TeamMembersOverview } from "./components/TeamMembersOverview"
+import { DiscussionTab } from "./components/DiscussionTab"
 
+export type Owner = {
+    company_id: string
+    company_name: string
+    email: string
+    profile_image: string
+}
 
+export type Member = {
+    clerk_id: string
+    email: string
+    first_name: string
+    last_name: string
+    profile_image: string
+}
 
 export default function ProjectDetails() {
     const { user } = useUser();
@@ -25,6 +40,8 @@ export default function ProjectDetails() {
 
     const [project, setProject] = useState<Project | null>(null)
     const [task, setTasks] = useState<Task[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
+    const [owner, setOwner] = useState<Owner | null>(null);
 
     useEffect(() => {
         if (!user) return;
@@ -33,12 +50,18 @@ export default function ProjectDetails() {
             try {
                 const projectRes = await getProjectById(projectId);
                 const taskRes = await getStudentTasks(user.id, projectId);
+                const memberRes = await getProjectMembers(projectId);
+                const ownerRes = await getProjectOwner(projectId);
 
-                if (projectRes.success && taskRes.success) {
+                if (projectRes.success && taskRes.success && memberRes.success && ownerRes.success) {
                     setProject(projectRes.data);
                     setTasks(taskRes.data);
+                    setOwner(ownerRes.data[0]);
+                    setMembers(memberRes.data);
                     // console.log("Tasks: ", taskRes.data);
-                    console.log("Details: ", projectRes.data);
+                    // console.log("Details: ", projectRes.data);
+                    console.log("members: ", memberRes.data);
+                    console.log("owner:", ownerRes.data)
                 } else {
                     toast.error("Failed to fetch project details");
                 }
@@ -93,6 +116,24 @@ export default function ProjectDetails() {
 
                             <TabsContent value="project_overview">
                                 {project && <ProjectOverview project={project} />}
+                            </TabsContent>
+
+                            <TabsContent value="discussion">
+                                {owner && user && project && (
+                                    <DiscussionTab
+                                        projectId={projectId}
+                                        projectTitle={project.title}
+                                        userId={user.id}
+                                        userName={`${user.firstName} ${user.lastName}`}
+                                        userImage={user.imageUrl}
+                                        ownerCompanyId={owner.company_id}
+                                        memberIds={members.map(m => m.clerk_id)}
+                                    />
+                                )}
+                            </TabsContent>
+
+                            <TabsContent value="team">
+                                {owner && <TeamMembersOverview owner={owner} members={members} currentUserId={user?.id ?? ""} />}
                             </TabsContent>
                         </Tabs>
                     </CardContent>

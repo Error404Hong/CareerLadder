@@ -327,6 +327,38 @@ class Projects {
             throw error;
         }
     }
+
+    static async getProjectMembers(projectid) {
+        try {
+            const query = `
+            SELECT applications.clerk_id FROM projects
+            LEFT JOIN applications ON applications.listing_id = projects.id
+            WHERE projects.id = $1 AND applications.status = 'accepted' 
+            `;
+
+            const result = await pool.query(query, [projectid]);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get project members: ", error);
+            throw error;
+        }
+    }
+
+    static async getProjectOwner(projectid) {
+        try {
+            const query = `
+            SELECT projects.company_id, company_profiles.company_name FROM projects
+            LEFT JOIN company_profiles ON company_profiles.company_id = projects.company_id
+            WHERE projects.id = $1
+            `;
+
+            const result = await pool.query(query, [projectid]);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get project owner: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Projects;

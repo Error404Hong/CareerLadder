@@ -12,7 +12,7 @@ interface ProjectOverviewProps {
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
     return (
-        <Card className="mt-2 p-6 rounded-sm border-none shadow-none">
+        <Card className="mt-2 p-4 rounded-sm border-none shadow-none">
             <CardHeader className="px-0 pt-0">
                 <CardTitle className="font-semibold text-lg">Project Overview</CardTitle>
                 <CardDescription>
@@ -22,9 +22,9 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
 
             <Separator />
 
-            <CardContent className="px-0 pt-6 flex flex-col gap-6">
+            <CardContent className="px-0 pt-2 flex flex-col gap-6">
                 {/* Title */}
-                <h2 className="text-xl font-bold text-slate-800">{project.title}</h2>
+                <h2 className="text-lg font-bold text-slate-800">{project.title}</h2>
 
                 {/* Description */}
                 <div className="flex flex-col gap-1.5">

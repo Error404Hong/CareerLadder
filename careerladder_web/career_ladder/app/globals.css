@@ -418,3 +418,22 @@
     color: #94a3b8 !important;
 }
 
+/* Read receipt / seen avatars — smaller */
+.str-chat__message-read-by .str-chat__avatar,
+.str-chat__message-read-by .str-chat__avatar img,
+.str-chat__message-read-by-others .str-chat__avatar,
+.str-chat__message-read-by-others .str-chat__avatar img,
+.str-chat__message-status .str-chat__avatar,
+.str-chat__message-status .str-chat__avatar img,
+.str-chat__avatar--circle.str-chat__read-by-count,
+[class*="read-by"] .str-chat__avatar,
+[class*="read-by"] .str-chat__avatar img {
+    width: 25px !important;
+    height: 25px !important;
+    min-width: 25px !important;
+    min-height: 25px !important;
+    font-size: 8px !important;
+    line-height: 16px !important;
+}
+
+

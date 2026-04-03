@@ -20,6 +20,7 @@ import Image from "next/image"
 import { KanbanBoard } from "./components/KanbanBoard"
 import { ProjectOverview } from "./components/ProjectOverview"
 import { TeamMembersOverview } from "./components/TeamMembersOverview"
+import { DiscussionTab } from "./components/DiscussionTab"
 
 
 export default function ProjectCollabPage() {
@@ -107,6 +108,16 @@ export default function ProjectCollabPage() {
                             </TabsContent>
 
                             <TabsContent value="discussion">
+                                {project && user && (
+                                    <DiscussionTab
+                                        projectId={projectId}
+                                        projectTitle={project.title}
+                                        userId={user.id}
+                                        userName={`${user.firstName} ${user.lastName}`}
+                                        userImage={user.imageUrl}
+                                        memberIds={projectApplicants.map(a => a.clerk_id)}
+                                    />
+                                )}
                             </TabsContent>
 
                             <TabsContent value="meeting">

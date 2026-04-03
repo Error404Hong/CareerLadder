@@ -206,3 +206,27 @@ export const getProjectApplicantsById = async (projectid: string) => {
         throw error;
     }
 };
+
+export const getProjectMembers = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getMembers/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error getting project members");
+        throw error;
+    }
+};
+
+export const getProjectOwner = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getOwner/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error getting project owner");
+        throw error;
+    }
+};

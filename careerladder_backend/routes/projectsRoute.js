@@ -15,6 +15,8 @@ const {
     updateProjectVacancies,
     updateProjectStatus,
     getProjectApplicantsById,
+    getProjectMembers,
+    getProjectOwner,
 } = require("../controllers/projectsController");
 
 router.get("/getAllProjects", getAllProjects);
@@ -23,6 +25,8 @@ router.get(
     "/getUsersProjectApplications/:clerkid",
     getUsersProjectApplications,
 );
+router.get("/getMembers/:projectid", getProjectMembers);
+router.get("/getOwner/:projectid", getProjectOwner);
 
 // For Company / Employer
 router.get("/getCompanyProjects/:companyid", getProjectsByCompany);

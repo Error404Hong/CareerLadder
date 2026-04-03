@@ -387,6 +387,66 @@ const getProjectApplicantsById = async (req, res) => {
     }
 };
 
+const getProjectMembers = async (req, res) => {
+    const { projectid } = req.params;
+
+    if (!projectid) return sendResponse(res, 400, "Project id is required");
+
+    try {
+        const membersRes = await Projects.getProjectMembers(projectid);
+
+        const result = await Promise.all(
+            membersRes.map(async (member) => {
+                const user = await clerkClient.users.getUser(member.clerk_id);
+
+                return {
+                    ...member,
+                    first_name: user.firstName,
+                    last_name: user.lastName,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                    profile_image: user.imageUrl,
+                };
+            }),
+        );
+
+        return sendResponse(res, 200, "Members fetched success", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get project members: ", error);
+        return sendResponse(res, 500, "Failed to get project members", {
+            error: error.message,
+        });
+    }
+};
+
+const getProjectOwner = async (req, res) => {
+    const { projectid } = req.params;
+
+    if (!projectid) return sendResponse(res, 400, "Project id is required");
+
+    try {
+        const ownerRes = await Projects.getProjectOwner(projectid);
+
+        const result = await Promise.all(
+            ownerRes.map(async (owner) => {
+                const user = await clerkClient.users.getUser(owner.company_id);
+
+                return {
+                    ...owner,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                    profile_image: user.imageUrl,
+                };
+            }),
+        );
+
+        return sendResponse(res, 200, "Owner fetch success", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to get project owner");
+        return sendResponse(res, 500, "Failed to get project owner", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllProjects,
     applyProjects,
@@ -401,4 +461,6 @@ module.exports = {
     updateProjectVacancies,
     updateProjectStatus,
     getProjectApplicantsById,
+    getProjectMembers,
+    getProjectOwner,
 };
