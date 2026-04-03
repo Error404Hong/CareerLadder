@@ -105,6 +105,23 @@ class Tasks {
             throw error;
         }
     }
+
+    static async getStudentTasksByProject(clerkid, projectid) {
+        try {
+            const query = `
+            SELECT * FROM tasks WHERE assigned_to = $1 AND project_id::uuid = $2
+            ORDER BY board_column ASC, 
+            CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END ASC
+            `;
+
+            const values = [clerkid, projectid];
+            const result = await pool.query(query, values);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get student tasks: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Tasks;

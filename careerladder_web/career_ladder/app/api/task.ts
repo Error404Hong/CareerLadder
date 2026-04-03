@@ -89,3 +89,15 @@ export const moveTask = async (taskid: string, board_column: string) => {
         throw error;
     }
 };
+
+export const getStudentTasks = async (clerkid: string, projectid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/tasks/getStudentTasks/${clerkid}/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching student tasks: ", error);
+        throw error;
+    }
+};

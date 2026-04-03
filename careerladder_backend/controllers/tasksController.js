@@ -122,10 +122,31 @@ const moveTask = async (req, res) => {
     }
 };
 
+const getStudentTasksByProject = async (req, res) => {
+    const { clerkid, projectid } = req.params;
+
+    if (!clerkid || !projectid)
+        return sendResponse(res, 400, "IDs are required");
+
+    try {
+        const result = await Tasks.getStudentTasksByProject(clerkid, projectid);
+        return sendResponse(res, 200, "Tasks fetched successfully", result);
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to get student tasks: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to get student tasks", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getTasksByProject,
     createTask,
     updateTask,
     deleteTask,
     moveTask,
+    getStudentTasksByProject,
 };
