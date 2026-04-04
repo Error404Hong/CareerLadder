@@ -27,8 +27,8 @@ export default function AllMeetings() {
             try {
                 const fetchRes = await getMeetingsByCompany(user.id)
                 if (fetchRes.success) {
-                    console.log("Fetch: ", fetchRes.data)
-                    setMeetings(fetchRes.data)
+                    const filtered = fetchRes.data.filter((meeting: Meeting) => meeting.meeting_type !== 'internal_discussion')
+                    setMeetings(filtered)
                 } else {
                     toast.error("Failed to fetch meetings. Please try again")
                 }

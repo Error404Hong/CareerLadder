@@ -369,8 +369,90 @@ const getApplicantMeetingById = async (req, res) => {
     }
 };
 
+const scheduleInternalMeeting = async (req, res) => {
+    const {
+        company_id,
+        title,
+        description,
+        reference_type,
+        reference_id,
+        scheduled_at,
+        duration,
+    } = req.body;
+
+    if (!company_id) return sendResponse(res, 400, "Company ID is required");
+    if (!scheduled_at)
+        return sendResponse(res, 400, "Scheduled date is required");
+
+    try {
+        await streamClient.upsertUsers([{ id: company_id, role: "user" }]);
+
+        const roomName = `cl-internal-${reference_id}-${Date.now()}`;
+        const call = streamClient.video.call("default", roomName);
+        await call.create({
+            data: {
+                created_by_id: company_id,
+                members: [{ user_id: company_id, role: "host" }],
+                custom: {
+                    title: title ?? "Team Meeting",
+                    description: description ?? "",
+                    scheduled_at,
+                },
+            },
+        });
+
+        const meeting_url = `${process.env.FRONTEND_URL}/room/${roomName}`;
+
+        const meeting = await Meetings.scheduleInternalMeeting(
+            company_id,
+            meeting_url,
+            roomName,
+            title ?? "Team Meeting",
+            description ?? null,
+            reference_type ?? null,
+            reference_id ?? null,
+            scheduled_at,
+            duration || 60,
+        );
+
+        if (!meeting)
+            return sendResponse(res, 400, "Failed to schedule meeting");
+        return sendResponse(
+            res,
+            200,
+            "Meeting scheduled successfully",
+            meeting,
+        );
+    } catch (error) {
+        console.log(
+            "[CONTROLLER] Failed to schedule internal meeting: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to schedule meeting", {
+            error: error.message,
+        });
+    }
+};
+
+const getProjectInternalMeeting = async (req, res) => {
+    const { projectid } = req.params;
+
+    if (!projectid) return sendResponse(res, 400, "Project id is required");
+
+    try {
+        const result = await Meetings.getProjectInternalMeeting(projectid);
+        return sendResponse(res, 200, "Internal meetings fetched", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get internal meetings: ", error);
+        return sendResponse(res, 500, "Failed to get internal meetings", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     scheduleMeeting,
+    scheduleInternalMeeting,
     rescheduleMeeting,
     getMeetingByApplication,
     getMeetingsByCompany,
@@ -380,4 +462,5 @@ module.exports = {
     getStreamToken,
     getMeetingByRoomName,
     getApplicantMeetingById,
+    getProjectInternalMeeting,
 };

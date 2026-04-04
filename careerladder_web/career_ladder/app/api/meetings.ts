@@ -3,7 +3,7 @@ import axiosInstance from "./config";
 export const scheduleMeeting = async (
     application_id: string | null,
     company_id: string,
-    applicant_id: string,
+    applicant_id: string | null,
     title: string,
     description: string,
     meeting_type: string,
@@ -28,6 +28,33 @@ export const scheduleMeeting = async (
         return response.data;
     } catch (error) {
         console.error("Error scheduling meeting: ", error);
+        throw error;
+    }
+};
+
+export const scheduleInternalMeeting = async (
+    company_id: string,
+    title: string,
+    description: string,
+    reference_type: string,
+    reference_id: string,
+    scheduled_at: string,
+    duration: number,
+) => {
+    try {
+        const response = await axiosInstance.post("/meetings/scheduleInternalMeeting", {
+            company_id,
+            title,
+            description,
+            meeting_type: "internal_discussion",
+            reference_type,
+            reference_id,
+            scheduled_at,
+            duration,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error scheduling internal meeting: ", error);
         throw error;
     }
 };
@@ -90,14 +117,17 @@ export const rescheduleMeeting = async (
     duration: number,
 ) => {
     try {
-        const response = await axiosInstance.put(`/meetings/rescheduleMeeting/${id}`, {
-            company_id,
-            applicant_id,
-            title,
-            description,
-            scheduled_at,
-            duration,
-        });
+        const response = await axiosInstance.put(
+            `/meetings/rescheduleMeeting/${id}`,
+            {
+                company_id,
+                applicant_id,
+                title,
+                description,
+                scheduled_at,
+                duration,
+            },
+        );
         return response.data;
     } catch (error) {
         console.error("Error rescheduling meeting: ", error);
@@ -154,6 +184,18 @@ export const getApplicantMeetingById = async (
         return response.data;
     } catch (error) {
         console.error("Error getting applicant meeting by id: ", error);
+        throw error;
+    }
+};
+
+export const getProjectInternalMeeting = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/meetings/getInternalMeetings/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching project internal meeting: ", error);
         throw error;
     }
 };

@@ -4,9 +4,10 @@ import { useUser } from "@clerk/nextjs"
 import { useParams } from "next/navigation"
 import { useState, useEffect } from "react"
 
-import { Project, Task } from "@/types"
+import { Project, Task, Meeting } from "@/types"
 import { getProjectById, getProjectMembers, getProjectOwner } from "@/app/api/project"
 import { getStudentTasks } from "@/app/api/task"
+import { getProjectInternalMeeting } from "@/app/api/meetings"
 
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -17,6 +18,7 @@ import { KanbanBoard } from "./components/KanbanBoard"
 import { ProjectOverview } from "./components/ProjectOverview"
 import { TeamMembersOverview } from "./components/TeamMembersOverview"
 import { DiscussionTab } from "./components/DiscussionTab"
+import { TeamMeetingsTab } from "./components/TeamMeetingsTab"
 
 export type Owner = {
     company_id: string
@@ -42,6 +44,7 @@ export default function ProjectDetails() {
     const [task, setTasks] = useState<Task[]>([]);
     const [members, setMembers] = useState<Member[]>([]);
     const [owner, setOwner] = useState<Owner | null>(null);
+    const [meetings, setMeetings] = useState<Meeting[]>([])
 
     useEffect(() => {
         if (!user) return;
@@ -52,16 +55,14 @@ export default function ProjectDetails() {
                 const taskRes = await getStudentTasks(user.id, projectId);
                 const memberRes = await getProjectMembers(projectId);
                 const ownerRes = await getProjectOwner(projectId);
+                const meetingRes = await getProjectInternalMeeting(projectId)
 
-                if (projectRes.success && taskRes.success && memberRes.success && ownerRes.success) {
+                if (projectRes.success && taskRes.success && memberRes.success && ownerRes.success && meetingRes.success) {
                     setProject(projectRes.data);
                     setTasks(taskRes.data);
                     setOwner(ownerRes.data[0]);
                     setMembers(memberRes.data);
-                    // console.log("Tasks: ", taskRes.data);
-                    // console.log("Details: ", projectRes.data);
-                    console.log("members: ", memberRes.data);
-                    console.log("owner:", ownerRes.data)
+                    setMeetings(meetingRes.data);
                 } else {
                     toast.error("Failed to fetch project details");
                 }
@@ -130,6 +131,10 @@ export default function ProjectDetails() {
                                         memberIds={members.map(m => m.clerk_id)}
                                     />
                                 )}
+                            </TabsContent>
+
+                            <TabsContent value="meeting">
+                                <TeamMeetingsTab meetings={meetings} />
                             </TabsContent>
 
                             <TabsContent value="team">

@@ -220,6 +220,60 @@ class Meetings {
             throw error;
         }
     }
+
+    static async scheduleInternalMeeting(
+        company_id,
+        meeting_url,
+        room_name,
+        title,
+        description,
+        reference_type,
+        reference_id,
+        scheduled_at,
+        duration,
+    ) {
+        try {
+            const query = `
+                INSERT INTO meetings(
+                    company_id, meeting_url, room_name, title, description,
+                    meeting_type, reference_type, reference_id, scheduled_at, duration
+                )
+                VALUES($1, $2, $3, $4, $5, 'internal_discussion', $6, $7, $8, $9)
+                RETURNING *
+            `;
+            const values = [
+                company_id,
+                meeting_url,
+                room_name,
+                title,
+                description,
+                reference_type,
+                reference_id,
+                scheduled_at,
+                duration,
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to schedule internal meeting: ", error);
+            throw error;
+        }
+    }
+
+    static async getProjectInternalMeeting(projectid) {
+        try {
+            const query = `
+            SELECT * FROM meetings WHERE reference_type = 'project' AND reference_id = $1 
+            AND meeting_type = 'internal_discussion' ORDER BY scheduled_at ASC
+            `;
+
+            const result = await pool.query(query, [projectid]);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get internal meetings: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Meetings;

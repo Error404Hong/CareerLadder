@@ -4,23 +4,22 @@ import { useUser } from "@clerk/nextjs"
 import { useParams } from "next/navigation"
 import { useState, useEffect } from "react"
 
-import { ProjectApplicant, Project, Task } from "@/types"
+import { ProjectApplicant, Project, Task, Meeting } from "@/types"
 import { getTasksByProject } from "@/app/api/task"
 import { getProjectApplicantsById, getProjectById } from "@/app/api/project"
+import { getProjectInternalMeeting } from "@/app/api/meetings"
 
 import { toast } from "sonner"
-import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardHeader, CardDescription, CardFooter, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { KanbanSquare, Users, Video, MessageSquare, FolderOpen, CalendarDays, Clock, Banknote, Wrench, UserCheck } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { KanbanSquare, Users, Video, MessageSquare, FolderOpen } from "lucide-react"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 
-import Image from "next/image"
 import { KanbanBoard } from "./components/KanbanBoard"
 import { ProjectOverview } from "./components/ProjectOverview"
 import { TeamMembersOverview } from "./components/TeamMembersOverview"
 import { DiscussionTab } from "./components/DiscussionTab"
+import { TeamMeetingsTab } from "./components/TeamMeetingsTab"
 
 
 export default function ProjectCollabPage() {
@@ -31,6 +30,7 @@ export default function ProjectCollabPage() {
     const [tasks, setTasks] = useState<Task[]>([])
     const [project, setProject] = useState<Project | null>(null)
     const [projectApplicants, setProjectApplicants] = useState<ProjectApplicant[]>([])
+    const [meetings, setMeetings] = useState<Meeting[]>([]);
     const [activeTab, setActiveTab] = useState("task_overview")
 
     useEffect(() => {
@@ -41,13 +41,13 @@ export default function ProjectCollabPage() {
                 const pApplicants = await getProjectApplicantsById(projectId)
                 const projectRes = await getProjectById(projectId)
                 const tasksRes = await getTasksByProject(projectId)
+                const meetingRes = await getProjectInternalMeeting(projectId)
 
-                if (pApplicants.success && projectRes.success && tasksRes.success) {
+                if (pApplicants.success && projectRes.success && tasksRes.success && meetingRes.success) {
                     setProjectApplicants(pApplicants.data)
                     setProject(projectRes.data)
                     setTasks(tasksRes.data)
-
-                    console.log("Members: ", pApplicants.data);
+                    setMeetings(meetingRes.data);
                 } else {
                     toast.error("Failed to fetch project details")
                 }
@@ -121,6 +121,14 @@ export default function ProjectCollabPage() {
                             </TabsContent>
 
                             <TabsContent value="meeting">
+                                {user && (
+                                    <TeamMeetingsTab
+                                        projectId={projectId}
+                                        companyId={user.id}
+                                        meetings={meetings}
+                                        onMeetingScheduled={(meeting) => setMeetings(prev => [...prev, meeting])}
+                                    />
+                                )}
                             </TabsContent>
 
                             <TabsContent value="team">

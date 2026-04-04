@@ -1,7 +1,7 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { format } from "date-fns"
 import { CalendarIcon, Video } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -29,45 +29,59 @@ type Props = {
     existingMeeting?: Meeting | null
 }
 
+type FormState = {
+    title: string
+    description: string
+    duration: string
+    date: Date | undefined
+    time: string
+}
+
+const defaultForm: FormState = {
+    title: "",
+    description: "",
+    duration: "60",
+    date: undefined,
+    time: "10:00",
+}
+
 export function MeetingDialog({ open, onOpenChange, application, project, existingMeeting }: Props) {
     const { user } = useUser();
-    const [title, setTitle] = useState("")
-    const [date, setDate] = useState<Date | undefined>()
-    const [time, setTime] = useState("10:00");
-    const [description, setDescription] = useState("");
-    const [duration, setDuration] = useState("60")
+    const [form, setForm] = useState<FormState>(defaultForm)
+    const [prevMeetingId, setPrevMeetingId] = useState<string | null>(null)
 
     const isReschedule = !!existingMeeting
 
-    useEffect(() => {
-        if (existingMeeting && open) {
-            setTitle(existingMeeting.title ?? "")
-            setDescription(existingMeeting.description ?? "")
-            setDuration(String(existingMeeting.duration ?? 60))
-            if (existingMeeting.scheduled_at) {
-                const d = new Date(existingMeeting.scheduled_at)
-                setDate(d)
-                const h = String(d.getHours()).padStart(2, "0")
-                const m = String(d.getMinutes()).padStart(2, "0")
-                setTime(`${h}:${m}`)
-            }
+    const currentId = existingMeeting?.id ?? null
+    if (open && currentId !== prevMeetingId) {
+        setPrevMeetingId(currentId)
+        if (existingMeeting) {
+            const d = existingMeeting.scheduled_at ? new Date(existingMeeting.scheduled_at) : undefined
+            setForm({
+                title: existingMeeting.title ?? "",
+                description: existingMeeting.description ?? "",
+                duration: String(existingMeeting.duration ?? 60),
+                date: d,
+                time: d
+                    ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+                    : "10:00",
+            })
+        } else {
+            setForm(defaultForm)
         }
-    }, [existingMeeting, open])
+    }
 
     const handleOpenChange = (val: boolean) => {
         if (!val) {
-            setTitle("")
-            setDate(undefined)
-            setTime("10:00")
-            setDuration("60")
-            setDescription("")
+            setForm(defaultForm)
+            setPrevMeetingId(null)
         }
         onOpenChange(val)
     }
 
     const handleScheduleMeeting = async () => {
-        const [hours, minutes] = time.split(":")
-        const scheduledAt = new Date(date!)
+        const [hours, minutes] = form.time.split(":")
+        const scheduledAt = new Date(form.date!)
         scheduledAt.setHours(parseInt(hours), parseInt(minutes), 0, 0)
 
         const pad = (n: number) => String(n).padStart(2, "0")
@@ -78,10 +92,10 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
                 existingMeeting!.id,
                 user!.id,
                 application!.clerk_id,
-                title,
-                description ?? "",
+                form.title,
+                form.description,
                 localISO,
-                parseInt(duration)
+                parseInt(form.duration)
             )
             if (res.success) {
                 toast.success("Meeting rescheduled successfully")
@@ -104,13 +118,13 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
             application!.id,
             user!.id,
             application!.clerk_id,
-            title,
-            description ?? "",
+            form.title,
+            form.description,
             "interview",
             "project",
             project!.id,
             localISO,
-            parseInt(duration)
+            parseInt(form.duration)
         )
 
         if (scheduleRes.success) {
@@ -149,8 +163,8 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
                         <div className="flex flex-col gap-1.5">
                             <Label>Meeting Title</Label>
                             <Input
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                value={form.title}
+                                onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
                                 placeholder="e.g. Interview for DevOps Engineer"
                             />
                         </div>
@@ -158,8 +172,8 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
                         <div className="flex flex-col gap-1.5">
                             <Label>Agenda / Notes <span className="text-slate-400 text-xs">(Optional)</span></Label>
                             <Textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                value={form.description}
+                                onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
                                 placeholder="e.g. Technical Interview for position evaluation..."
                                 rows={3}
                             />
@@ -173,18 +187,18 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
                                         type="button"
                                         className={cn(
                                             "w-full flex items-center gap-2 px-3 h-9 rounded-md border border-input text-sm text-left",
-                                            !date && "text-slate-400"
+                                            !form.date && "text-slate-400"
                                         )}
                                     >
                                         <CalendarIcon size={13} className="text-slate-400 shrink-0" />
-                                        {date ? format(date, "d MMM yyyy") : "Pick a date"}
+                                        {form.date ? format(form.date, "d MMM yyyy") : "Pick a date"}
                                     </button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={date}
-                                        onSelect={setDate}
+                                        selected={form.date}
+                                        onSelect={(d) => setForm(f => ({ ...f, date: d }))}
                                         disabled={(date) => date < new Date()}
                                         initialFocus
                                     />
@@ -197,13 +211,13 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
                                 <Label>Time</Label>
                                 <Input
                                     type="time"
-                                    value={time}
-                                    onChange={(e) => setTime(e.target.value)}
+                                    value={form.time}
+                                    onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <Label>Duration</Label>
-                                <Select value={duration} onValueChange={setDuration}>
+                                <Select value={form.duration} onValueChange={(v) => setForm(f => ({ ...f, duration: v }))}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Duration" />
                                     </SelectTrigger>
@@ -252,7 +266,7 @@ export function MeetingDialog({ open, onOpenChange, application, project, existi
                     </Button>
                     <Button
                         className="cursor-pointer gap-1.5"
-                        disabled={!date || !time || !title}
+                        disabled={!form.date || !form.time || !form.title}
                         onClick={() => handleScheduleMeeting()}
                     >
                         <Video size={14} /> {isReschedule ? "Reschedule Meeting" : "Schedule Meeting"}
