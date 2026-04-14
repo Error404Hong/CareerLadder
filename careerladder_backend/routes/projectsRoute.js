@@ -17,6 +17,12 @@ const {
     getProjectApplicantsById,
     getProjectMembers,
     getProjectOwner,
+    completeProject,
+    addProjectReview,
+    getStudentReviewCount,
+    getStudentsReviewByProject,
+    rateStudentPerformance,
+    getCompanyReviews,
 } = require("../controllers/projectsController");
 
 router.get("/getAllProjects", getAllProjects);
@@ -28,7 +34,6 @@ router.get(
 router.get("/getMembers/:projectid", getProjectMembers);
 router.get("/getOwner/:projectid", getProjectOwner);
 
-// For Company / Employer
 router.get("/getCompanyProjects/:companyid", getProjectsByCompany);
 router.delete("/deleteCompanyProjects/:projectid", deleteProjectsByCompany);
 router.post("/createProject", createProject);
@@ -38,6 +43,15 @@ router.get("/getProjectApplications/:id", getProjectApplicationsById);
 router.get("/getProjectAppByCom/:companyid", getAllProjectApplicationByCompany);
 router.put("/updateProjectVacancies/:projectid", updateProjectVacancies);
 router.put("/updateProjectStatus/:projectid", updateProjectStatus);
+router.put("/completeProject/:projectid", completeProject);
 router.get("/getProjectApplicantsById/:projectid", getProjectApplicantsById);
+router.post("/addProjectReview", addProjectReview);
+router.get(
+    "/getStudentReviewCount/:project_id/:student_id",
+    getStudentReviewCount,
+);
+router.get("/getStudentsReviews/:projectid", getStudentsReviewByProject);
+router.post("/rateStudentPerformance", rateStudentPerformance);
+router.get("/getCompanyReviews/:companyid", getCompanyReviews);
 
 module.exports = router;

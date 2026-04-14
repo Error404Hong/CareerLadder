@@ -201,10 +201,10 @@ export default function ApplicantsProfile() {
 
                     if (vacancyRes.data.vacancies === 0) {
                         const calculatedRes = await calculatePayable(id);
-                        const updStatus = await updateProjectStatus(id, "closed");
+                        const updStatus = await updateProjectStatus(id, "in_progress");
 
                         if (updStatus.success) {
-                            setProjectData(prev => prev ? { ...prev, status: "closed", vacancies: 0 } : prev)
+                            setProjectData(prev => prev ? { ...prev, status: "In Progress", vacancies: 0 } : prev)
                         }
 
                         if (calculatedRes.success) {
@@ -285,8 +285,15 @@ export default function ApplicantsProfile() {
                                 <p className="text-xs text-slate-400 uppercase tracking-widest">Project</p>
                                 <p className="text-lg font-bold text-[#0f172a]">{projectData?.title}</p>
                                 <div className="flex items-center gap-2 flex-wrap mt-1">
-                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${projectData?.status === "open" ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-600 border border-red-200"}`}>
-                                        {projectData?.status === "open" ? "Open" : "Closed"}
+                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${
+                                        projectData?.status === "open"        ? "bg-green-100 text-green-700 border-green-200" :
+                                        projectData?.status === "in_progress" ? "bg-blue-100 text-blue-700 border-blue-200" :
+                                        projectData?.status === "completed"   ? "bg-purple-100 text-purple-700 border-purple-200" :
+                                                                                "bg-red-100 text-red-600 border-red-200"
+                                    }`}>
+                                        {projectData?.status === "open"        ? "Open" :
+                                         projectData?.status === "in_progress" ? "In Progress" :
+                                         projectData?.status === "completed"   ? "Completed" : "Closed"}
                                     </span>
                                 </div>
                             </div>

@@ -5,20 +5,23 @@ import { useParams } from "next/navigation"
 import { useState, useEffect } from "react"
 
 import { Project, Task, Meeting } from "@/types"
-import { getProjectById, getProjectMembers, getProjectOwner } from "@/app/api/project"
+import { getProjectById, getProjectMembers, getProjectOwner, getStudentReviewCount, addProjectReview } from "@/app/api/project"
 import { getStudentTasks } from "@/app/api/task"
 import { getProjectInternalMeeting } from "@/app/api/meetings"
+import { createNotification } from "@/app/api/notifications"
 
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { KanbanSquare, Users, Video, MessageSquare, FolderOpen } from "lucide-react"
+import { KanbanSquare, Users, Video, MessageSquare, FolderOpen, MessageSquareText } from "lucide-react"
 import { KanbanBoard } from "./components/KanbanBoard"
 import { ProjectOverview } from "./components/ProjectOverview"
 import { TeamMembersOverview } from "./components/TeamMembersOverview"
 import { DiscussionTab } from "./components/DiscussionTab"
 import { TeamMeetingsTab } from "./components/TeamMeetingsTab"
+import { ReviewTab, ReviewFormValues } from "./components/ReviewTab"
 
 export type Owner = {
     company_id: string
@@ -45,6 +48,7 @@ export default function ProjectDetails() {
     const [members, setMembers] = useState<Member[]>([]);
     const [owner, setOwner] = useState<Owner | null>(null);
     const [meetings, setMeetings] = useState<Meeting[]>([])
+    const [reviewCount, setReviewCount] = useState(0);
 
     useEffect(() => {
         if (!user) return;
@@ -63,6 +67,13 @@ export default function ProjectDetails() {
                     setOwner(ownerRes.data[0]);
                     setMembers(memberRes.data);
                     setMeetings(meetingRes.data);
+
+                    if (projectRes.data.status === "completed") {
+                        const getStudentReview = await getStudentReviewCount(projectId, user.id);
+                        if (getStudentReview.success) {
+                            setReviewCount(getStudentReview.data.count);
+                        }
+                    }
                 } else {
                     toast.error("Failed to fetch project details");
                 }
@@ -73,6 +84,33 @@ export default function ProjectDetails() {
 
         getProjectDetails();
     }, [user, projectId])
+
+    const submitReview = async (values: ReviewFormValues) => {
+        try {
+            const insertRes = await addProjectReview(projectId, user!.id, values.rating, values.review_text);
+
+            if (insertRes.success) {
+                toast.success("Review has been submitted successfully");
+                setReviewCount(1);
+
+                if (owner?.company_id) {
+                    await createNotification(
+                        owner.company_id,
+                        "project_review_received",
+                        "New Project Review Received",
+                        `${user!.firstName} ${user!.lastName} left a ${values.rating}-star review on "${project?.title}".`,
+                        "project",
+                        projectId,
+                    );
+                }
+            } else {
+                toast.error("Failed to submit review. Please try again");
+            }
+        } catch {
+            toast.error("Failed to submit review. Please try again");
+        }
+    }
+
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col">
             <div className="bg-white border-b border-slate-100">
@@ -92,7 +130,18 @@ export default function ProjectDetails() {
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
-                    <h1 className="text-xl font-bold">{project?.title ?? ""}</h1>
+                    <div className="flex items-center gap-3 mt-1">
+                        <h1 className="text-xl font-bold">{project?.title ?? ""}</h1>
+                        {project?.status && project.status !== "open" && (() => {
+                            const cfg: Record<string, { label: string; className: string }> = {
+                                in_progress: { label: "In Progress", className: "bg-blue-100 text-blue-700 border-blue-200" },
+                                completed: { label: "Completed", className: "bg-green-100 text-green-700 border-green-200" },
+                                closed: { label: "Closed", className: "bg-slate-100 text-slate-500 border-slate-200" },
+                            }
+                            const s = cfg[project.status]
+                            return s ? <Badge className={`text-xs px-2 py-0.5 border ${s.className}`}>{s.label}</Badge> : null
+                        })()}
+                    </div>
                     <p className="text-sm text-slate-400 mt-1">
                         Your hub for collaborating with companies, building projects, and gaining real experience.
                     </p>
@@ -109,10 +158,17 @@ export default function ProjectDetails() {
                                 <TabsTrigger value="discussion" className="cursor-pointer"><MessageSquare />Discussion</TabsTrigger>
                                 <TabsTrigger value="meeting" className="cursor-pointer"><Video />Meetings</TabsTrigger>
                                 <TabsTrigger value="team" className="cursor-pointer"><Users />Team / Members</TabsTrigger>
+                                {project?.status === "completed" && (
+                                    <TabsTrigger value="rating" className="cursor-pointer"><MessageSquareText />Rate Project Experience</TabsTrigger>
+                                )}
                             </TabsList>
 
                             <TabsContent value="task_overview">
-                                <KanbanBoard tasks={task} setTasks={setTasks} />
+                                <KanbanBoard
+                                    tasks={task}
+                                    setTasks={setTasks}
+                                    readOnly={project?.status === "completed" || project?.status === "closed"}
+                                />
                             </TabsContent>
 
                             <TabsContent value="project_overview">
@@ -139,6 +195,10 @@ export default function ProjectDetails() {
 
                             <TabsContent value="team">
                                 {owner && <TeamMembersOverview owner={owner} members={members} currentUserId={user?.id ?? ""} />}
+                            </TabsContent>
+
+                            <TabsContent value="rating">
+                                <ReviewTab reviewCount={reviewCount} onSubmit={submitReview} />
                             </TabsContent>
                         </Tabs>
                     </CardContent>

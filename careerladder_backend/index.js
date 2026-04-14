@@ -57,6 +57,9 @@ app.get("/", async (req, res) => {
     }
 });
 
+const { startProjectScheduler } = require("./scheduler/projectScheduler");
+startProjectScheduler();
+
 app.listen(port, () => {
     logger.info(`Server is running at http://localhost:${port}`);
 });

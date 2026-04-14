@@ -6,8 +6,10 @@ import { ArrowUpDown, Pencil, Trash2, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-    open: { label: "Open", className: "bg-green-100 text-green-700 border border-green-200" },
-    closed: { label: "Closed", className: "bg-red-100 text-red-600 border border-red-200" },
+    open:        { label: "Open",        className: "bg-green-100 text-green-700 border border-green-200" },
+    in_progress: { label: "In Progress", className: "bg-blue-100 text-blue-700 border border-blue-200" },
+    completed:   { label: "Completed",   className: "bg-purple-100 text-purple-700 border border-purple-200" },
+    closed:      { label: "Closed",      className: "bg-red-100 text-red-600 border border-red-200" },
 }
 
 export const getColumns = (

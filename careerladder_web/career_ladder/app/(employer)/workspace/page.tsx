@@ -25,7 +25,7 @@ export default function Workspace() {
             try {
                 const fetchRes = await getCompanyProjects(user.id)
                 if (fetchRes.success) {
-                    const filtered = fetchRes.data.filter((p: Project) => p.status === "closed")
+                    const filtered = fetchRes.data.filter((p: Project) => p.status === "in_progress" || p.status === "completed")
                     setProjects(filtered)
                 } else {
                     toast.error("Failed to fetch projects")

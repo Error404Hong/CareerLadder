@@ -74,7 +74,7 @@ export const navItems = [
     },
     {
         label: "Reviews",
-        href: "/dashboard/reviews",
+        href: "/reviews",
         icon: <Star size={16} />,
         children: [],
     },

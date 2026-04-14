@@ -1,4 +1,5 @@
 const Projects = require("../models/projects");
+const Notifications = require("../models/notifications");
 const sendResponse = require("../utils/responseHelper");
 const logger = require("../utils/logger");
 const { clerkClient } = require("@clerk/express");
@@ -447,6 +448,221 @@ const getProjectOwner = async (req, res) => {
     }
 };
 
+const completeProject = async (req, res) => {
+    const { projectid } = req.params;
+    if (!projectid) return sendResponse(res, 400, "Project ID is required");
+
+    try {
+        const project = await Projects.updateProjectStatus(
+            projectid,
+            "completed",
+        );
+        if (!project)
+            return sendResponse(res, 400, "Failed to complete project");
+
+        const members = await Projects.getProjectMembers(projectid);
+        const notifyIds = [
+            project.company_id,
+            ...members.map((m) => m.clerk_id),
+        ];
+
+        await Promise.all(
+            notifyIds.map((recipientId) =>
+                Notifications.createNotification(
+                    recipientId,
+                    "project_completed",
+                    "Project Completed",
+                    `The project "${project.title}" has been marked as completed by the employer.`,
+                    "project",
+                    project.id,
+                ),
+            ),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Project completed successfully",
+            project,
+        );
+    } catch (error) {
+        logger.error(
+            "[CONTROLLER] Failed to complete project: ",
+            error.message,
+        );
+        return sendResponse(res, 500, "Failed to complete project", {
+            error: error.message,
+        });
+    }
+};
+
+const addProjectReview = async (req, res) => {
+    const { project_id, student_id, rating, review_text } = req.body;
+
+    if (!project_id) return sendResponse(res, 400, "Project ID is required");
+    if (!student_id) return sendResponse(res, 400, "Student ID is required");
+
+    try {
+        const result = await Projects.addProjectReview(
+            project_id,
+            student_id,
+            rating,
+            review_text,
+        );
+        return sendResponse(
+            res,
+            200,
+            "Project review inserted successfully",
+            result,
+        );
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to add project review");
+        return sendResponse(res, 500, "Failed to add project review", {
+            error: error.message,
+        });
+    }
+};
+
+const getStudentReviewCount = async (req, res) => {
+    const { project_id, student_id } = req.params;
+
+    if (!project_id) return sendResponse(res, 400, "Project ID is required");
+    if (!student_id) return sendResponse(res, 400, "Student ID is required");
+
+    try {
+        const result = await Projects.getStudentReviewCount(
+            project_id,
+            student_id,
+        );
+        return sendResponse(res, 200, "Fetched student review count", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get student review count");
+        return sendResponse(res, 500, "Failed to get student review count", {
+            error: error.message,
+        });
+    }
+};
+
+const getStudentsReviewByProject = async (req, res) => {
+    const { projectid } = req.params;
+    if (!projectid) return sendResponse(res, 400, "Project ID is required");
+
+    try {
+        const reviews = await Projects.getStudentsReviewByProject(projectid);
+
+        const enrichedResults = await Promise.all(
+            reviews.map(async (studentReview) => {
+                const user = await clerkClient.users.getUser(
+                    studentReview.student_id,
+                );
+
+                return {
+                    ...studentReview,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                    profile_image: user.imageUrl,
+                    first_name: user.firstName,
+                    last_name: user.lastName,
+                };
+            }),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Fetched reviews successfully",
+            enrichedResults,
+        );
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get student reviews: ", error);
+        return sendResponse(res, 500, "Failed to get student reviews", {
+            error: error.message,
+        });
+    }
+};
+
+const rateStudentPerformance = async (req, res) => {
+    const {
+        student_id,
+        employer_id,
+        technical_skills,
+        communication,
+        teamwork,
+        problem_solving,
+        professionalism,
+        overall_rating,
+        comments,
+    } = req.body;
+
+    if (!student_id) return sendResponse(res, 400, "Student ID is required");
+    if (!employer_id) return sendResponse(res, 400, "Employer ID is required");
+
+    try {
+        const result = await Projects.rateStudentPerformance(
+            student_id,
+            employer_id,
+            technical_skills,
+            communication,
+            teamwork,
+            problem_solving,
+            professionalism,
+            overall_rating,
+            comments,
+        );
+
+        return sendResponse(res, 200, "Rated student successfully", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to rate student performance: ", error);
+
+        if (
+            error.message?.includes(
+                "duplicate key value violates unique constraint",
+            )
+        ) {
+            return sendResponse(res, 200, "duplicate_evaluation", {
+                error: error.message,
+            });
+        }
+
+        return sendResponse(res, 500, "Failed to rate student performance", {
+            error: error.message,
+        });
+    }
+};
+
+const getCompanyReviews = async (req, res) => {
+    const { companyid } = req.params;
+
+    if (!companyid) return sendResponse(res, 400, "Company ID is required");
+
+    try {
+        const result = await Projects.getCompanyReviews(companyid);
+
+        const enrichedResult = await Promise.all(
+            result.map(async (res) => {
+                const user = await clerkClient.users.getUser(res.student_id);
+
+                return {
+                    ...res,
+                    first_name: user.firstName,
+                    last_name: user.lastName,
+                    profile_image: user.imageUrl,
+                };
+            }),
+        );
+        return sendResponse(
+            res,
+            200,
+            "Fetched company reviews",
+            enrichedResult,
+        );
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get company reviews");
+        return sendResponse(res, 500, "Failed to get company reviews", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllProjects,
     applyProjects,
@@ -463,4 +679,10 @@ module.exports = {
     getProjectApplicantsById,
     getProjectMembers,
     getProjectOwner,
+    completeProject,
+    addProjectReview,
+    getStudentReviewCount,
+    getStudentsReviewByProject,
+    rateStudentPerformance,
+    getCompanyReviews,
 };

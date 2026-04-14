@@ -76,6 +76,8 @@ export function DataTable<TData, TValue>({
                             <SelectItem value="all">All Status</SelectItem>
                             <SelectItem value="open">Open</SelectItem>
                             <SelectItem value="closed">Closed</SelectItem>
+                            <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

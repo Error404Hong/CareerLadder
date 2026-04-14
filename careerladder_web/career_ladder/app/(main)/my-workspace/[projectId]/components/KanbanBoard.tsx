@@ -9,9 +9,10 @@ import { KanbanColumn } from "./KanbanColumn"
 interface KanbanBoardProps {
     tasks: Task[]
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>
+    readOnly?: boolean
 }
 
-export function KanbanBoard({ tasks, setTasks }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, setTasks, readOnly = false }: KanbanBoardProps) {
     const columns = {
         todo: tasks.filter(t => t.board_column === "todo"),
         in_progress: tasks.filter(t => t.board_column === "in_progress"),
@@ -22,6 +23,7 @@ export function KanbanBoard({ tasks, setTasks }: KanbanBoardProps) {
     return (
         <DragDropProvider
             onDragEnd={({ operation }) => {
+                if (readOnly) return
                 const { source, target } = operation
                 if (!source || !target) return
 

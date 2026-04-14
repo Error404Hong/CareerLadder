@@ -359,6 +359,115 @@ class Projects {
             throw error;
         }
     }
+
+    static async getExpiredProjects() {
+        try {
+            const query = `
+                SELECT * FROM projects
+                WHERE end_date::date < CURRENT_DATE
+                AND status NOT IN ('completed', 'closed')
+            `;
+            const result = await pool.query(query);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get expired projects: ", error);
+            throw error;
+        }
+    }
+
+    static async addProjectReview(project_id, student_id, rating, review_text) {
+        try {
+            const query = `
+                INSERT INTO project_reviews(project_id, student_id, rating, review_text)
+                VALUES($1, $2, $3, $4) RETURNING *
+            `;
+
+            const values = [project_id, student_id, rating, review_text];
+            const result = await pool.query(query, values);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to add project review: ", error);
+            throw error;
+        }
+    }
+
+    static async getStudentReviewCount(project_id, student_id) {
+        try {
+            const query =
+                "SELECT COUNT(*) FROM project_reviews WHERE project_id = $1 AND student_id = $2";
+            const result = await pool.query(query, [project_id, student_id]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to get student review count: ", error);
+            throw error;
+        }
+    }
+
+    static async getStudentsReviewByProject(project_id) {
+        try {
+            const query = "SELECT * FROM project_reviews WHERE project_id = $1";
+            const results = await pool.query(query, [project_id]);
+            return results.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get student reviews: ", error);
+            throw error;
+        }
+    }
+
+    static async rateStudentPerformance(
+        student_id,
+        employer_id,
+        technical_skills,
+        communication,
+        teamwork,
+        problem_solving,
+        professionalism,
+        overall_rating,
+        comments,
+    ) {
+        try {
+            const query = `
+                INSERT INTO student_performance(student_id, employer_id, technical_skills, communication, teamwork,
+                problem_solving, professionalism, overall_rating, comments)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
+            `;
+            const values = [
+                student_id,
+                employer_id,
+                technical_skills,
+                communication,
+                teamwork,
+                problem_solving,
+                professionalism,
+                overall_rating,
+                comments,
+            ];
+
+            const results = await pool.query(query, values);
+            return results.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to rate student performance: ", error);
+            throw error;
+        }
+    }
+
+    static async getCompanyReviews(company_id) {
+        try {
+            const query = `
+                SELECT project_reviews.*, projects.title FROM project_reviews 
+                LEFT JOIN projects ON projects.id = project_reviews.project_id
+                LEFT JOIN company_profiles ON company_profiles.company_id = projects.company_id
+                WHERE projects.company_id = $1
+                ORDER BY project_reviews.created_at DESC
+            `;
+
+            const results = await pool.query(query, [company_id]);
+            return results.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get company reviews: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Projects;

@@ -19,7 +19,7 @@ interface KanbanColumnProps {
     colId: string
     colTasks: Task[]
     projectApplicants: ProjectApplicant[]
-    onAddTask: (colId: string) => void
+    onAddTask?: (colId: string) => void
     onTaskDeleted: (taskId: string) => void
     onTaskUpdated: (updated: Task) => void
 }
@@ -39,7 +39,8 @@ export function KanbanColumn({ colId, colTasks, projectApplicants, onAddTask, on
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button size="sm" variant="secondary" className="cursor-pointer rounded-full"
-                            onClick={() => onAddTask(colId)}
+                            onClick={() => onAddTask?.(colId)}
+                            disabled={!onAddTask}
                         >
                             <Plus />
                         </Button>

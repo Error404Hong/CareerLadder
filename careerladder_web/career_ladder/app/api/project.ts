@@ -230,3 +230,112 @@ export const getProjectOwner = async (projectid: string) => {
         throw error;
     }
 };
+
+export const completeProject = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.put(
+            `/projects/completeProject/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error completing project");
+        throw error;
+    }
+};
+
+export const addProjectReview = async (
+    project_id: string,
+    student_id: string,
+    rating: number,
+    review_text: string,
+) => {
+    try {
+        const response = await axiosInstance.post(
+            "/projects/addProjectReview",
+            {
+                project_id,
+                student_id,
+                rating,
+                review_text,
+            },
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error("Error submitting project review");
+        throw error;
+    }
+};
+
+export const getStudentReviewCount = async (
+    project_id: string,
+    student_id: string,
+) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getStudentReviewCount/${project_id}/${student_id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error getting student review count");
+        throw error;
+    }
+};
+
+export const getStudentsReviews = async (projectid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getStudentsReviews/${projectid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get student reviews");
+        throw error;
+    }
+};
+
+export const rateStudentPerformance = async (
+    student_id: string,
+    employer_id: string,
+    technical_skills: number,
+    communication: number,
+    teamwork: number,
+    problem_solving: number,
+    professionalism: number,
+    overall_rating: number,
+    comments: string,
+) => {
+    try {
+        const response = await axiosInstance.post(
+            "/projects/rateStudentPerformance",
+            {
+                student_id,
+                employer_id,
+                technical_skills,
+                communication,
+                teamwork,
+                problem_solving,
+                professionalism,
+                overall_rating,
+                comments,
+            },
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error("Failed to rate student performance");
+        throw error;
+    }
+};
+
+export const getCompanyReviews = async (companyid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/projects/getCompanyReviews/${companyid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get company reviews: ", error);
+        throw error;
+    }
+};

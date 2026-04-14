@@ -12,3 +12,4 @@ export * from "./student";
 export * from "./notification";
 export * from "./projectApplicant";
 export * from "./task";
+export * from "./projectReview";

@@ -26,6 +26,7 @@ type Props = {
     companyId: string
     meetings: Meeting[]
     onMeetingScheduled: (meeting: Meeting) => void
+    readOnly?: boolean
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -193,7 +194,7 @@ function ScheduleMeetingDialog({
     )
 }
 
-export function TeamMeetingsTab({ projectId, companyId, meetings, onMeetingScheduled }: Props) {
+export function TeamMeetingsTab({ projectId, companyId, meetings, onMeetingScheduled, readOnly = false }: Props) {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const sorted = [...meetings].sort(
@@ -210,13 +211,15 @@ export function TeamMeetingsTab({ projectId, companyId, meetings, onMeetingSched
                             Centralize all internal project meetings, agendas, and discussions in one place.
                         </CardDescription>
                     </div>
-                    <Button
-                        size="sm"
-                        className="cursor-pointer gap-1.5 shrink-0"
-                        onClick={() => setDialogOpen(true)}
-                    >
-                        <Plus size={14} /> Schedule Meeting
-                    </Button>
+                    {!readOnly && (
+                        <Button
+                            size="sm"
+                            className="cursor-pointer gap-1.5 shrink-0"
+                            onClick={() => setDialogOpen(true)}
+                        >
+                            <Plus size={14} /> Schedule Meeting
+                        </Button>
+                    )}
                 </div>
             </CardHeader>
 

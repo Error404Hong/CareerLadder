@@ -13,9 +13,14 @@ export function ProjectCard({ project }: { project: Project }) {
             {/* Title + status */}
             <div className="flex items-start justify-between gap-3">
                 <h3 className="text-sm font-bold text-slate-800 leading-snug">{project.title}</h3>
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-600 border border-green-100 shrink-0">
-                    Active
-                </span>
+                {project.status === "completed"
+                    ? <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700 border border-green-200 shrink-0">
+                        Completed
+                    </span>
+                    :
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200 shrink-0">
+                        In Progress
+                    </span>}
             </div>
 
             {/* Description */}

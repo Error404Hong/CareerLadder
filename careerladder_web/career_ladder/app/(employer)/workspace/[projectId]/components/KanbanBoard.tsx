@@ -15,9 +15,10 @@ interface KanbanBoardProps {
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>
     projectApplicants: ProjectApplicant[]
     projectId: string
+    readOnly?: boolean
 }
 
-export function KanbanBoard({ tasks, setTasks, projectApplicants, projectId }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, setTasks, projectApplicants, projectId, readOnly = false }: KanbanBoardProps) {
 
     const [openDialog, setOpenDialog] = useState(false)
     const [selectedColumn, setSelectedColumn] = useState("todo")
@@ -65,6 +66,7 @@ export function KanbanBoard({ tasks, setTasks, projectApplicants, projectId }: K
         <>
             <DragDropProvider
                 onDragEnd={({ operation }) => {
+                    if (readOnly) return
                     const { source, target } = operation
                     if (!source || !target) return
 
@@ -94,7 +96,7 @@ export function KanbanBoard({ tasks, setTasks, projectApplicants, projectId }: K
                             colId={colId}
                             colTasks={colTasks}
                             projectApplicants={projectApplicants}
-                            onAddTask={(colId) => handleAddTask(colId)}
+                            onAddTask={readOnly ? undefined : (colId) => handleAddTask(colId)}
                             onTaskDeleted={(taskId) => setTasks(prev => prev.filter(t => t.id !== taskId))}
                             onTaskUpdated={(updated) => setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))}
                         />
@@ -102,13 +104,15 @@ export function KanbanBoard({ tasks, setTasks, projectApplicants, projectId }: K
                 </div>
             </DragDropProvider>
 
-            <CreateTaskDialog
-                open={openDialog}
-                onOpenChange={setOpenDialog}
-                projectApplicants={projectApplicants}
-                defaultColumn={selectedColumn}
-                onSubmit={onSubmit}
-            />
+            {!readOnly && (
+                <CreateTaskDialog
+                    open={openDialog}
+                    onOpenChange={setOpenDialog}
+                    projectApplicants={projectApplicants}
+                    defaultColumn={selectedColumn}
+                    onSubmit={onSubmit}
+                />
+            )}
         </>
     )
 }
