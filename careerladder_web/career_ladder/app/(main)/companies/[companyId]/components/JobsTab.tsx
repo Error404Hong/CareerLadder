@@ -1,3 +1,6 @@
+"use client"
+
+import { useRouter } from "next/navigation"
 import { Job } from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Users, DollarSign, Wifi, ChevronRight, Briefcase } from "lucide-react"
@@ -19,13 +22,16 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function JobCard({ job }: { job: Job }) {
+    const router = useRouter()
     const salaryMin = parseInt(job.salary_min)
     const salaryMax = parseInt(job.salary_max)
     const hasSalary = !isNaN(salaryMin) && !isNaN(salaryMax)
 
     return (
-        <a href="/jobs">
-            <div className="bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all duration-200 p-5 flex flex-col gap-4">
+        <div
+            onClick={() => router.push(`/jobs?search=${encodeURIComponent(job.title)}`)}
+            className="cursor-pointer bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all duration-200 p-5 flex flex-col gap-4"
+        >
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold text-slate-800 leading-snug">{job.title}</h3>
@@ -63,7 +69,6 @@ function JobCard({ job }: { job: Job }) {
                     </span>
                 </div>
             </div>
-        </a>
     )
 }
 

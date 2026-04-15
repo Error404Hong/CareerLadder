@@ -1,3 +1,6 @@
+"use client"
+
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { Project } from "@/types"
 import { Users, DollarSign, Clock, ChevronRight, FolderKanban } from "lucide-react"
@@ -19,13 +22,16 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function ProjectCard({ project }: { project: Project }) {
+    const router = useRouter()
     const allowance = parseFloat(project.allowance)
     const startDate = project.start_date ? format(new Date(project.start_date), "MMM d, yyyy") : null
     const endDate = project.end_date ? format(new Date(project.end_date), "MMM d, yyyy") : null
 
     return (
-        <a href="/projects">
-            <div className="bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all duration-200 p-5 flex flex-col gap-4">
+        <div
+            onClick={() => router.push(`/projects?search=${encodeURIComponent(project.title)}`)}
+            className="cursor-pointer bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all duration-200 p-5 flex flex-col gap-4"
+        >
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold text-slate-800 leading-snug">{project.title}</h3>
@@ -57,7 +63,6 @@ function ProjectCard({ project }: { project: Project }) {
                     )}
                 </div>
             </div>
-        </a>
     )
 }
 

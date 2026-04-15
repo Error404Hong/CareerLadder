@@ -26,6 +26,7 @@ import { useForm, Controller } from "react-hook-form"
 import { getStudentProfile } from "@/app/api/user"
 import { applyJob } from "@/app/api/job"
 import { createNotification } from "@/app/api/notifications"
+import Link from "next/link"
 
 const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_FILE_TYPE = ['application/pdf']
@@ -198,7 +199,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {job?.title}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb]">{job?.company_name}</p>
+                                    <Link href={`/companies/${job?.company_id}`}><p className="text-sm text-[#2563eb]">{job?.company_name}</p></Link>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end gap-1.5 shrink-0">

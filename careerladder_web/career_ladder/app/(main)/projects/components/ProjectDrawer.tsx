@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { applyProjects } from "@/app/api/project"
 import { createNotification } from "@/app/api/notifications"
+import Link from "next/link"
 
 const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_FILE_TYPE = ['application/pdf']
@@ -190,7 +191,7 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {project?.title.toUpperCase()}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb]">{project?.company_name}</p>
+                                    <Link href={`/companies/${project?.company_id}`}><p className="text-sm text-[#2563eb]">{project?.company_name}</p></Link>
                                 </div>
                             </div>
                             <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1 shrink-0 mt-1">

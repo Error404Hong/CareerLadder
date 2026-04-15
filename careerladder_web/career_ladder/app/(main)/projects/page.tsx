@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { getAllProjects } from "@/app/api/project"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -11,9 +12,10 @@ import { ProjectCard, type Project } from "./components/ProjectCard"
 import { ProjectCardSkeleton } from "./components/ProjectCardSkeleton"
 
 export default function Projects() {
+    const searchParams = useSearchParams()
     const [projectList, setProjectList] = useState<Project[]>([])
     const [loading, setLoading] = useState(true)
-    const [search, setSearch] = useState("")
+    const [search, setSearch] = useState(searchParams.get("search") ?? "")
     const [durationFilter, setDurationFilter] = useState("all")
 
     useEffect(() => {

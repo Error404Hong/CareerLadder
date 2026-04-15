@@ -1,13 +1,13 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs";
-import { getUserById } from "@/app/api/user";
+import { getUserById, getCompanyReviews as getCompanyReviewsAPI } from "@/app/api/user";
 import { getCompanyProjects, getProjectAppByCom, getCompanyReviews } from "@/app/api/project";
 import { getJobsByCompany, getAllJobAppByCom } from "@/app/api/job";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Project, ProjectApplication, ProjectReview, Job, JobApplication } from "@/types";
+import { Project, ProjectApplication, ProjectReview, Job, JobApplication, CompanyReview } from "@/types";
 import { format, parseISO } from "date-fns";
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -101,6 +101,7 @@ export default function Dashboard() {
     const [projects, setProjects]         = useState<Project[]>([]);
     const [projApps, setProjApps]         = useState<ProjectApplication[]>([]);
     const [reviews, setReviews]           = useState<ProjectReview[]>([]);
+    const [companyReviews, setCompanyReviews] = useState<CompanyReview[]>([]);
     const [jobs, setJobs]                 = useState<Job[]>([]);
     const [jobApps, setJobApps]           = useState<JobApplication[]>([]);
 
@@ -111,10 +112,11 @@ export default function Dashboard() {
             const userData = await getUserById(user.id);
             if (userData.data.profile_completed == '0') setOpenDialog(true);
 
-            const [projRes, projAppRes, revRes, jobRes, jobAppRes] = await Promise.all([
+            const [projRes, projAppRes, revRes, cRevRes, jobRes, jobAppRes] = await Promise.all([
                 getCompanyProjects(user.id),
                 getProjectAppByCom(user.id),
                 getCompanyReviews(user.id),
+                getCompanyReviewsAPI(user.id),
                 getJobsByCompany(user.id),
                 getAllJobAppByCom(user.id),
             ]);
@@ -122,6 +124,7 @@ export default function Dashboard() {
             if (projRes.success)    setProjects(projRes.data);
             if (projAppRes.success) setProjApps(projAppRes.data);
             if (revRes.success)     setReviews(revRes.data);
+            if (cRevRes.success)    setCompanyReviews(cRevRes.data);
             if (jobRes.success)     setJobs(jobRes.data);
             if (jobAppRes.success)  setJobApps(jobAppRes.data);
         };
@@ -155,14 +158,19 @@ export default function Dashboard() {
     })
     const projAppTrend = Object.entries(projAppsByMonth).slice(-6).map(([month, count]) => ({ month, count }))
 
-    const ratingDist = [5, 4, 3, 2, 1].map(star => ({
-        star: `${star}★`,
-        count: reviews.filter(r => r.rating === star).length,
-    }))
-
     const recentProjects = [...projects]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 5)
+
+    // ── Derived: Company Reviews (for Job Listings section) ───────────────────
+
+    const avgCompanyRating = companyReviews.length
+        ? (companyReviews.reduce((s, r) => s + r.rating, 0) / companyReviews.length).toFixed(1) : "—"
+
+    const companyRatingDist = [5, 4, 3, 2, 1].map(star => ({
+        star: `${star}★`,
+        count: companyReviews.filter(r => r.rating === star).length,
+    }))
 
     // ── Derived: Jobs ─────────────────────────────────────────────────────────
 
@@ -336,7 +344,7 @@ export default function Dashboard() {
                         <StatCard icon={<Briefcase size={18} />} label="Total Job Listings"  value={jobs.length}     color="#0891b2" borderColor="#0891b2" />
                         <StatCard icon={<Clock size={18} />}     label="Active Listings"     value={activeJobs}      color="#16a34a" borderColor="#16a34a" sub="Open" />
                         <StatCard icon={<FileText size={18} />}  label="Job Applications"    value={jobApps.length}  color="#e11d48" borderColor="#e11d48" />
-                        <StatCard icon={<Star size={18} />}      label="Average Rating"      value={avgRating}       color="#d97706" borderColor="#f59e0b" sub={`${reviews.length} reviews`} />
+                        <StatCard icon={<Star size={18} />}      label="Average Rating"      value={avgCompanyRating} color="#d97706" borderColor="#f59e0b" sub={`${companyReviews.length} reviews`} />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -449,12 +457,12 @@ export default function Dashboard() {
                     {/* Rating distribution — full width bottom */}
                     <Card className="rounded-sm border border-slate-100 shadow-sm">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-semibold text-slate-700">Student Review Rating Distribution</CardTitle>
-                            <CardDescription className="text-xs text-slate-400">Breakdown of all project reviews left by students</CardDescription>
+                            <CardTitle className="text-sm font-semibold text-slate-700">Company Review Rating Distribution</CardTitle>
+                            <CardDescription className="text-xs text-slate-400">Breakdown of all company reviews left by students</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <ChartContainer config={ratingChartConfig} className="h-40 w-full">
-                                <BarChart data={ratingDist} layout="vertical" barSize={14}>
+                                <BarChart data={companyRatingDist} layout="vertical" barSize={14}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
                                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                                     <YAxis type="category" dataKey="star" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={28} />

@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator"
 import { useState } from "react"
 import { registerTraining } from "@/app/api/training"
 import { createNotification } from "@/app/api/notifications"
+import Link from "next/link"
 
 
 type Props = {
@@ -93,7 +94,7 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
                                     <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
                                         {training?.title}
                                     </DrawerTitle>
-                                    <p className="text-sm text-[#2563eb]  mt-0.5">{training?.company_name}</p>
+                                    <Link href={`/companies/${training?.company_id}`}><p className="text-sm text-[#2563eb]  mt-0.5">{training?.company_name}</p></Link>
                                 </div>
                             </div>
                             <div className="flex items-end gap-1.5 shrink-0">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
@@ -12,9 +13,10 @@ import { JobCardSkeleton } from "./components/JobCardSkeleton"
 
 
 export default function Jobs() {
+    const searchParams = useSearchParams()
     const [jobList, setJobList] = useState<Jobs[]>([]);
     const [loading, setLoading] = useState(true)
-    const [search, setSearch] = useState("")
+    const [search, setSearch] = useState(searchParams.get("search") ?? "")
     const [employmentFilter, setEmploymentFilter] = useState("all")
     const [remoteFilter, setRemoteFilter] = useState("all")
 
