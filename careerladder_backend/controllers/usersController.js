@@ -634,9 +634,16 @@ const getCompanyProfile = async (req, res) => {
 
     try {
         const result = await Users.getCompanyProfile(companyid);
-        return sendResponse(res, 200, "Company profile fetched", result);
+        const user = await clerkClient.users.getUser(companyid);
+
+        const enriched = {
+            ...result,
+            email: user.emailAddresses[0]?.emailAddress ?? "",
+            image_url: user.imageUrl,
+        };
+        return sendResponse(res, 200, "Company profile fetched", enriched);
     } catch (error) {
-        logger.error("[CONTROLLER] Failed to fetch company profile");
+        console.log("[CONTROLLER] Failed to fetch company profile: ", error);
         return sendResponse(res, 500, "Failed to fetch company profile", {
             error: error.message,
         });
@@ -708,6 +715,100 @@ const getAllStudent = async (req, res) => {
     }
 };
 
+const getAllCompany = async (req, res) => {
+    try {
+        const companies = await Users.getAllCompany();
+
+        const enrichedProfiles = await Promise.all(
+            companies.map(async (company) => {
+                const user = await clerkClient.users.getUser(
+                    company.company_id,
+                );
+
+                return {
+                    ...company,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                    image_url: user.imageUrl,
+                };
+            }),
+        );
+
+        return sendResponse(res, 200, "Companies fetched", enrichedProfiles);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get all company:", error);
+        return sendResponse(res, 500, "Failed to get all company", {
+            error: error.message,
+        });
+    }
+};
+
+const writeReview = async (req, res) => {
+    const { company_id, student_id, rating, review_text } = req.body;
+
+    if (!company_id || !student_id)
+        return sendResponse(res, 400, "Failed due to missing ids");
+
+    try {
+        const result = await Users.writeReview(
+            company_id,
+            student_id,
+            rating,
+            review_text,
+        );
+        return sendResponse(res, 200, "Review written successfully", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to write review: ", error);
+
+        if (
+            error.message.includes(
+                "duplicate key value violates unique constraint",
+            )
+        ) {
+            return sendResponse(res, 200, "duplicated_review", {
+                error: error.message,
+            });
+        }
+
+        return sendResponse(res, 500, "Failed to write review", {
+            error: error.message,
+        });
+    }
+};
+
+const getReviewsByCompany = async (req, res) => {
+    const { companyid } = req.params;
+    if (!companyid) return sendResponse(res, 400, "Company ID is required");
+
+    try {
+        const reviews = await Users.getReviewsByCompany(companyid);
+
+        const enrichedResults = await Promise.all(
+            reviews.map(async (review) => {
+                const user = await clerkClient.users.getUser(review.student_id);
+
+                return {
+                    ...review,
+                    first_name: user.firstName,
+                    last_name: user.lastName,
+                    profile_image: user.imageUrl,
+                };
+            }),
+        );
+
+        return sendResponse(
+            res,
+            200,
+            "Fetched company reviews",
+            enrichedResults,
+        );
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get company reviews");
+        return sendResponse(res, 500, "Failed to get company reviews", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -734,4 +835,7 @@ module.exports = {
     getCompanyProfile,
     updateCompanyDesciption,
     getAllStudent,
+    getAllCompany,
+    writeReview,
+    getReviewsByCompany,
 };

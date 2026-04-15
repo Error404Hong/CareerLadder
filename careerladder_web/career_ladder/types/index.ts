@@ -13,3 +13,5 @@ export * from "./notification";
 export * from "./projectApplicant";
 export * from "./task";
 export * from "./projectReview";
+export * from "./companyProfile";
+export * from "./companyReview";

@@ -439,3 +439,46 @@ export const getAllStudent = async () => {
         throw error;
     }
 };
+
+export const getAllCompany = async () => {
+    try {
+        const response = await axiosInstance.get("/users/getAllCompany");
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch all company: ", error);
+        throw error;
+    }
+};
+
+export const writeReview = async (
+    company_id: string,
+    student_id: string,
+    rating: number,
+    review_text: string,
+) => {
+    try {
+        const response = await axiosInstance.post("/users/writeReview", {
+            company_id,
+            student_id,
+            rating,
+            review_text,
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("Failed to write review: ", error);
+        throw error;
+    }
+};
+
+export const getCompanyReviews = async (companyid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/users/getCompanyReviews/${companyid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get company reviews: ", error);
+        throw error;
+    }
+};

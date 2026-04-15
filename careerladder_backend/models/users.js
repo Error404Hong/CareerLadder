@@ -532,6 +532,70 @@ class Users {
             throw error;
         }
     }
+
+    static async getAllCompany() {
+        try {
+            const query = `
+                SELECT 
+                    users.clerk_id,
+                    cp.*,
+                    COALESCE(r.avg_rating, 0)  AS avg_rating,
+                    COALESCE(r.review_count, 0) AS review_count
+                FROM users
+                LEFT JOIN company_profiles cp ON cp.company_id = users.clerk_id
+                LEFT JOIN (
+                    SELECT 
+                        p.company_id,
+                        ROUND(AVG(pr.rating), 1) AS avg_rating,
+                        COUNT(pr.id)             AS review_count
+                    FROM projects p
+                    LEFT JOIN project_reviews pr ON pr.project_id = p.id
+                    GROUP BY p.company_id
+                ) r ON r.company_id = users.clerk_id
+                WHERE users.status = 1
+                AND users.role   = 2
+            `;
+
+            const result = await pool.query(query);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Error fetching all companies: ", error);
+            throw error;
+        }
+    }
+
+    static async writeReview(company_id, student_id, rating, review_text) {
+        try {
+            const query = `
+            INSERT INTO company_reviews(company_id, student_id, rating, review_text)
+            VALUES($1, $2, $3, $4) RETURNING *
+            `;
+
+            const values = [company_id, student_id, rating, review_text];
+            const results = await pool.query(query, values);
+            return results.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Error writing reviews for companies: ", error);
+            throw error;
+        }
+    }
+
+    static async getReviewsByCompany(companyid) {
+        try {
+            const query = `
+            SELECT company_reviews.* FROM company_reviews
+            LEFT JOIN company_profiles ON company_profiles.company_id = company_reviews.company_id
+            WHERE company_reviews.company_id = $1
+            ORDER BY company_reviews.created_at DESC
+            `;
+
+            const results = await pool.query(query, [companyid]);
+            return results.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get company reviews: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;
