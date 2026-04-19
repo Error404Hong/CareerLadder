@@ -15,4 +15,5 @@ export type CompanyProfile = {
     review_count: string;
     created_at: string;
     updated_at: string;
+    status: number;
 };

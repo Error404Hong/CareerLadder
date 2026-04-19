@@ -538,6 +538,7 @@ class Users {
             const query = `
                 SELECT 
                     users.clerk_id,
+                    users.status,
                     cp.*,
                     COALESCE(r.avg_rating, 0)  AS avg_rating,
                     COALESCE(r.review_count, 0) AS review_count
