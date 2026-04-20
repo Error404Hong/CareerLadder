@@ -9,4 +9,7 @@ export type ProjectReview = {
     last_name: string;
     email: string;
     profile_image: string;
+    project_title?: string;
+    company_name?: string;
+    company_id?: string;
 };

@@ -23,6 +23,8 @@ const {
     getStudentsReviewByProject,
     rateStudentPerformance,
     getCompanyReviews,
+    getAllProjectReviews,
+    deleteProjectReview,
 } = require("../controllers/projectsController");
 
 router.get("/getAllProjects", getAllProjects);
@@ -53,5 +55,7 @@ router.get(
 router.get("/getStudentsReviews/:projectid", getStudentsReviewByProject);
 router.post("/rateStudentPerformance", rateStudentPerformance);
 router.get("/getCompanyReviews/:companyid", getCompanyReviews);
+router.get("/getAllProjectReviews", getAllProjectReviews);
+router.delete("/deleteProjectReview/:reviewid", deleteProjectReview);
 
 module.exports = router;

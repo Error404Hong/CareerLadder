@@ -471,6 +471,26 @@ export const writeReview = async (
     }
 };
 
+export const getAllCompanyReviews = async () => {
+    try {
+        const response = await axiosInstance.get("/users/getAllCompanyReviews");
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get all company reviews: ", error);
+        throw error;
+    }
+};
+
+export const deleteCompanyReview = async (reviewid: string) => {
+    try {
+        const response = await axiosInstance.delete(`/users/deleteCompanyReview/${reviewid}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to delete company review: ", error);
+        throw error;
+    }
+};
+
 export const getCompanyReviews = async (companyid: string) => {
     try {
         const response = await axiosInstance.get(
@@ -479,6 +499,18 @@ export const getCompanyReviews = async (companyid: string) => {
         return response.data;
     } catch (error) {
         console.error("Failed to get company reviews: ", error);
+        throw error;
+    }
+};
+
+export const getStudentPerformance = async (clerkid: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/users/getStudentPerformance/${clerkid}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get student performance: ", error);
         throw error;
     }
 };

@@ -31,6 +31,9 @@ const {
     getAllCompany,
     writeReview,
     getReviewsByCompany,
+    getAllCompanyReviews,
+    deleteCompanyReview,
+    getStudentPerformance,
 } = require("../controllers/usersController");
 
 router.post("/addNewUser", addNewUser);
@@ -78,5 +81,8 @@ router.get("/getAllStudent", getAllStudent);
 router.get("/getAllCompany", getAllCompany);
 router.post("/writeReview", writeReview);
 router.get("/getCompanyReviews/:companyid", getReviewsByCompany);
+router.get("/getAllCompanyReviews", getAllCompanyReviews);
+router.delete("/deleteCompanyReview/:reviewid", deleteCompanyReview);
+router.get("/getStudentPerformance/:clerkid", getStudentPerformance);
 
 module.exports = router;

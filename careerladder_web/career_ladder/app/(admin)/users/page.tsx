@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Building2, GraduationCap } from "lucide-react";
 import { DataTable } from "./data-table"
 import { getStudentColumns } from "./student-columns"
 import { getCompanyColumns } from "./company-columns"
@@ -42,8 +43,8 @@ export default function UsersPage() {
         fetchAllUsers()
     }, [])
 
-    const studentColumns = getStudentColumns((id) => router.push(`/admin-dashboard/users/${id}`))
-    const companyColumns = getCompanyColumns((id) => router.push(`/admin-dashboard/users/company/${id}`))
+    const studentColumns = getStudentColumns((id) => router.push(`/users/user/${id}`))
+    const companyColumns = getCompanyColumns((id) => router.push(`/users/company/${id}`))
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -84,14 +85,16 @@ export default function UsersPage() {
                                 View, manage, and monitor user accounts in one place
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="px-5 py-4">
+                        <CardContent className="px-5">
                             <Tabs defaultValue="students">
                                 <TabsList variant="line" className="mb-4">
-                                    <TabsTrigger value="students">
+                                    <TabsTrigger value="students" className="cursor-pointer">
+                                        <GraduationCap />
                                         Students
                                         <span className="ml-1.5 text-xs text-slate-400">({students.length})</span>
                                     </TabsTrigger>
-                                    <TabsTrigger value="companies">
+                                    <TabsTrigger value="companies" className="cursor-pointer">
+                                        <Building2 />
                                         Companies
                                         <span className="ml-1.5 text-xs text-slate-400">({companies.length})</span>
                                     </TabsTrigger>

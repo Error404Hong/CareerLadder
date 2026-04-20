@@ -1,0 +1,5 @@
+export type { Education } from "@/types/education"
+export type { Experience } from "@/types/experience"
+export type { Performance } from "@/types/performance"
+export type { Skill } from "@/types/skill"
+export type { Language } from "@/types/language"

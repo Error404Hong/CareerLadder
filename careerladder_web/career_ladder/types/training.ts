@@ -17,4 +17,6 @@ export type Training = {
     created_at: string;
     updated_at: string | null;
     registration_count: string;
+    company_name?: string;
+    company_logo_url?: string;
 };

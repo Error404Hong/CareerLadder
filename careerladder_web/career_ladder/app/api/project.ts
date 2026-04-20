@@ -328,6 +328,26 @@ export const rateStudentPerformance = async (
     }
 };
 
+export const getAllProjectReviews = async () => {
+    try {
+        const response = await axiosInstance.get("/projects/getAllProjectReviews");
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get all project reviews: ", error);
+        throw error;
+    }
+};
+
+export const deleteProjectReview = async (reviewid: string) => {
+    try {
+        const response = await axiosInstance.delete(`/projects/deleteProjectReview/${reviewid}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to delete project review: ", error);
+        throw error;
+    }
+};
+
 export const getCompanyReviews = async (companyid: string) => {
     try {
         const response = await axiosInstance.get(

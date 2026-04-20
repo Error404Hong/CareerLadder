@@ -8,4 +8,5 @@ export type CompanyReview = {
     first_name: string;
     last_name: string;
     profile_image: string;
+    company_name?: string;
 };

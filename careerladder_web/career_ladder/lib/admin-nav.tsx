@@ -1,4 +1,4 @@
-import { LayoutDashboard, Briefcase, Users, Star, CreditCard, Bot, FolderOpen } from "lucide-react"
+import { LayoutDashboard, Briefcase, Users, Star, CreditCard, Bot, CodeXml, FolderOpen } from "lucide-react"
 
 export const adminNavItems = [
     {
@@ -17,28 +17,33 @@ export const adminNavItems = [
     },
     {
         label: "Job Listings",
-        href: "/admin-dashboard/jobs",
+        href: "/job-management",
         icon: <Briefcase size={16} />,
         children: [
-            { label: "All Job Listings", href: "/admin-dashboard/jobs" },
+            { label: "All Job Listings", href: "/job-management" },
         ],
     },
     {
         label: "Project Listings",
-        href: "/admin-dashboard/projects",
+        href: "/project-management",
         icon: <FolderOpen size={16} />,
         children: [
-            { label: "All Project Listings", href: "/admin-dashboard/projects" },
+            { label: "All Project Listings", href: "/project-management" },
         ],
     },
     {
-        label: "Company Profiles",
-        href: "/admin-dashboard/companies",
-        icon: <Star size={16} />,
+        label: "Training Programs",
+        href: "/program-management",
+        icon: <CodeXml size={16} />,
         children: [
-            { label: "All Companies", href: "/admin-dashboard/companies" },
-            { label: "Ratings & Reviews", href: "/admin-dashboard/companies/ratings" },
+            { label: "All Training Programs", href: "/program-management" },
         ],
+    },
+    {
+        label: "Ratings & Reviews",
+        href: "/ratings-reviews",
+        icon: <Star size={16} />,
+        children: [],
     },
     {
         label: "Credit Transactions",

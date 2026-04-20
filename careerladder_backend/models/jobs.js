@@ -12,7 +12,6 @@ class Jobs {
             FROM jobs 
             LEFT JOIN users ON users.clerk_id = jobs.company_id
             LEFT JOIN company_profiles ON company_profiles.company_id = users.clerk_id
-            WHERE jobs.status = 'open' 
             ORDER BY jobs.created_at DESC
             `;
             const result = await pool.query(query);

@@ -663,6 +663,48 @@ const getCompanyReviews = async (req, res) => {
     }
 };
 
+const getAllProjectReviews = async (req, res) => {
+    try {
+        const reviews = await Projects.getAllProjectReviews();
+
+        const enrichedResults = await Promise.all(
+            reviews.map(async (review) => {
+                try {
+                    const user = await clerkClient.users.getUser(review.student_id);
+                    return {
+                        ...review,
+                        first_name: user.firstName,
+                        last_name: user.lastName,
+                        profile_image: user.imageUrl,
+                        email: user.emailAddresses[0]?.emailAddress ?? "",
+                    };
+                } catch {
+                    return { ...review, first_name: "Unknown", last_name: "", profile_image: null, email: "" };
+                }
+            }),
+        );
+
+        return sendResponse(res, 200, "Fetched all project reviews", enrichedResults);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get all project reviews: ", error);
+        return sendResponse(res, 500, "Failed to get all project reviews", { error: error.message });
+    }
+};
+
+const deleteProjectReview = async (req, res) => {
+    const { reviewid } = req.params;
+    if (!reviewid) return sendResponse(res, 400, "Review ID is required");
+
+    try {
+        const result = await Projects.deleteProjectReview(reviewid);
+        if (!result) return sendResponse(res, 404, "Review not found");
+        return sendResponse(res, 200, "Review deleted successfully", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to delete project review: ", error);
+        return sendResponse(res, 500, "Failed to delete review", { error: error.message });
+    }
+};
+
 module.exports = {
     getAllProjects,
     applyProjects,
@@ -685,4 +727,6 @@ module.exports = {
     getStudentsReviewByProject,
     rateStudentPerformance,
     getCompanyReviews,
+    getAllProjectReviews,
+    deleteProjectReview,
 };

@@ -92,15 +92,22 @@ const getStudentProfile = async (req, res) => {
     }
 
     try {
+        const basicInfo = await Users.getStudentInfo(clerkid);
         const result = await Users.getStudentProfile(clerkid);
 
-        if (!result) {
-            return sendResponse(res, 400, "Student Profile Not Found");
-        } else {
-            return sendResponse(res, 200, "Student Profile Found", result);
-        }
+        const user = await clerkClient.users.getUser(clerkid);
+        const enriched = {
+            ...basicInfo,
+            ...result,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profileImage: user.imageUrl,
+            email: user.emailAddresses[0]?.emailAddress ?? "",
+        };
+
+        return sendResponse(res, 200, "Student Profile Found", enriched);
     } catch (error) {
-        logger.error("[CONTROLLER] Error Getting Students Profile: ", error);
+        console.log("[CONTROLLER] Error Getting Students Profile: ", error);
         return sendResponse(res, 500, "Failed to Get Student Profile", {
             error: error.message,
         });
@@ -633,10 +640,12 @@ const getCompanyProfile = async (req, res) => {
     if (!companyid) return sendResponse(res, 400, "Company Id is required");
 
     try {
+        const basicInfo = await Users.getCompanyBasicInfo(companyid);
         const result = await Users.getCompanyProfile(companyid);
         const user = await clerkClient.users.getUser(companyid);
 
         const enriched = {
+            ...basicInfo,
             ...result,
             email: user.emailAddresses[0]?.emailAddress ?? "",
             image_url: user.imageUrl,
@@ -809,6 +818,75 @@ const getReviewsByCompany = async (req, res) => {
     }
 };
 
+const getAllCompanyReviews = async (req, res) => {
+    try {
+        const reviews = await Users.getAllCompanyReviews();
+
+        const enrichedResults = await Promise.all(
+            reviews.map(async (review) => {
+                try {
+                    const user = await clerkClient.users.getUser(review.student_id);
+                    return {
+                        ...review,
+                        first_name: user.firstName,
+                        last_name: user.lastName,
+                        profile_image: user.imageUrl,
+                    };
+                } catch {
+                    return { ...review, first_name: "Unknown", last_name: "", profile_image: null };
+                }
+            }),
+        );
+
+        return sendResponse(res, 200, "Fetched all company reviews", enrichedResults);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get all company reviews: ", error);
+        return sendResponse(res, 500, "Failed to get all company reviews", { error: error.message });
+    }
+};
+
+const deleteCompanyReview = async (req, res) => {
+    const { reviewid } = req.params;
+    if (!reviewid) return sendResponse(res, 400, "Review ID is required");
+
+    try {
+        const result = await Users.deleteCompanyReview(reviewid);
+        if (!result) return sendResponse(res, 404, "Review not found");
+        return sendResponse(res, 200, "Review deleted successfully", result);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to delete company review: ", error);
+        return sendResponse(res, 500, "Failed to delete review", { error: error.message });
+    }
+};
+
+const getStudentPerformance = async (req, res) => {
+    const { clerkid } = req.params;
+    if (!clerkid) return sendResponse(res, 400, "Clerk ID is required");
+
+    try {
+        const result = await Users.getStudentPerformance(clerkid);
+
+        const enriched = await Promise.all(
+            result.map(async (res) => {
+                const user = await clerkClient.users.getUser(res.employer_id);
+
+                return {
+                    ...res,
+                    companyLogo: user.imageUrl,
+                    email: user.emailAddresses[0]?.emailAddress ?? "",
+                };
+            }),
+        );
+
+        return sendResponse(res, 200, "Student performance fetched", enriched);
+    } catch (error) {
+        console.log("[CONTROLLER] Failed to get student performance: ", error);
+        return sendResponse(res, 500, "Failed to get student performance", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -838,4 +916,7 @@ module.exports = {
     getAllCompany,
     writeReview,
     getReviewsByCompany,
+    getAllCompanyReviews,
+    deleteCompanyReview,
+    getStudentPerformance,
 };

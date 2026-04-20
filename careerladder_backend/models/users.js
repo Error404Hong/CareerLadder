@@ -43,6 +43,18 @@ class Users {
         }
     }
 
+    static async getStudentInfo(clerkid) {
+        try {
+            const query =
+                "SELECT * FROM users WHERE clerk_id = $1 AND role = 1";
+            const result = await pool.query(query, [clerkid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Error getting student info: ", error);
+            throw error;
+        }
+    }
+
     static async getStudentProfile(clerk_id) {
         try {
             const query = "SELECT * FROM student_profiles WHERE clerk_id = $1";
@@ -455,6 +467,18 @@ class Users {
         }
     }
 
+    static async getCompanyBasicInfo(companyid) {
+        try {
+            const query =
+                "SELECT * FROM users WHERE clerk_id = $1 and role = 2";
+            const result = await pool.query(query, [companyid]);
+            return result.rows[0] ?? null;
+        } catch {
+            logger.error("[MODEL] Failed to fetch company basic info");
+            throw error;
+        }
+    }
+
     static async getCompanyProfile(companyid) {
         try {
             const query =
@@ -594,6 +618,49 @@ class Users {
             return results.rows ?? [];
         } catch (error) {
             console.log("[MODEL] Failed to get company reviews: ", error);
+            throw error;
+        }
+    }
+
+    static async getAllCompanyReviews() {
+        try {
+            const query = `
+            SELECT cr.*, cp.company_name
+            FROM company_reviews cr
+            LEFT JOIN company_profiles cp ON cp.company_id = cr.company_id
+            ORDER BY cr.created_at DESC
+            `;
+            const results = await pool.query(query);
+            return results.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get all company reviews: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteCompanyReview(reviewid) {
+        try {
+            const query = `DELETE FROM company_reviews WHERE id = $1 RETURNING *`;
+            const result = await pool.query(query, [reviewid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to delete company review: ", error);
+            throw error;
+        }
+    }
+
+    static async getStudentPerformance(clerkid) {
+        try {
+            const query = `
+            SELECT sp.*, cp.company_name FROM student_performance sp
+            LEFT JOIN company_profiles cp ON cp.company_id = sp.employer_id
+            WHERE sp.student_id = $1
+            `;
+
+            const result = await pool.query(query, [clerkid]);
+            return result.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get student performance: ", error);
             throw error;
         }
     }

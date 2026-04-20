@@ -15,3 +15,8 @@ export * from "./task";
 export * from "./projectReview";
 export * from "./companyProfile";
 export * from "./companyReview";
+export * from "./education";
+export * from "./experience";
+export * from "./performance";
+export * from "./skill";
+export * from "./language";

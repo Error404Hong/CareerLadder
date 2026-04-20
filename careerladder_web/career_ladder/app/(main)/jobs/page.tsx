@@ -25,7 +25,8 @@ export default function Jobs() {
             try {
                 const jobs = await getAllJobs()
                 if (jobs.success) {
-                    setJobList(jobs.data)
+                    const filtered = jobs.data.filter((e: Jobs) => e.status === "open")
+                    setJobList(filtered)
                 } else {
                     toast.error("Failed to fetch jobs. Please reload page.")
                 }

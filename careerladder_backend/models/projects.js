@@ -11,7 +11,6 @@ class Projects {
             FROM projects 
             LEFT JOIN users ON users.clerk_id = projects.company_id
             LEFT JOIN company_profiles ON company_profiles.company_id = users.clerk_id
-            WHERE projects.status = 'open' 
             ORDER BY projects.created_at DESC`;
             const result = await pool.query(query);
             return result.rows ?? [];
@@ -447,6 +446,34 @@ class Projects {
             return results.rows[0] ?? null;
         } catch (error) {
             console.log("[MODEL] Failed to rate student performance: ", error);
+            throw error;
+        }
+    }
+
+    static async getAllProjectReviews() {
+        try {
+            const query = `
+                SELECT pr.*, p.title AS project_title, cp.company_name, cp.company_id
+                FROM project_reviews pr
+                LEFT JOIN projects p ON p.id = pr.project_id
+                LEFT JOIN company_profiles cp ON cp.company_id = p.company_id
+                ORDER BY pr.created_at DESC
+            `;
+            const results = await pool.query(query);
+            return results.rows ?? [];
+        } catch (error) {
+            console.log("[MODEL] Failed to get all project reviews: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteProjectReview(reviewid) {
+        try {
+            const query = `DELETE FROM project_reviews WHERE id = $1 RETURNING *`;
+            const result = await pool.query(query, [reviewid]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            console.log("[MODEL] Failed to delete project review: ", error);
             throw error;
         }
     }

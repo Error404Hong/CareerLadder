@@ -23,7 +23,8 @@ export default function Projects() {
             try {
                 const projects = await getAllProjects()
                 if (projects.success) {
-                    setProjectList(projects.data)
+                    const filtered = projects.data.filter((e: Project) => e.status === "open")
+                    setProjectList(filtered)
                 } else {
                     toast.error("Failed to fetch projects. Please reload page.")
                 }

@@ -24,8 +24,8 @@ export default function TrainingPage() {
             try {
                 const result = await getAllTraining()
                 if (result.success) {
-                    console.log("Training Data: ", result.data);
-                    setTrainingList(result.data)
+                    const filtered = result.data.filter((e: Training) => e.status === "open")
+                    setTrainingList(filtered)
                 } else {
                     toast.error("Failed to fetch training programs. Please try again")
                 }

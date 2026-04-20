@@ -11,7 +11,6 @@ class Training {
             FROM training_programs 
             LEFT JOIN users ON users.clerk_id = training_programs.company_id
             LEFT JOIN company_profiles ON company_profiles.company_id = users.clerk_id
-            WHERE training_programs.status = 'open' 
             ORDER BY training_programs.created_at DESC
             `;
             const result = await pool.query(query);

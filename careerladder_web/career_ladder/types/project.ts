@@ -13,4 +13,8 @@ export type Project = {
     application_count: string | number;
     created_at: string;
     updated_at: string;
+    company_name?: string;
+    company_email?: string;
+    company_logo_url?: string;
+    website?: string;
 };
