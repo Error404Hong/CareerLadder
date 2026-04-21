@@ -242,6 +242,29 @@ class Training {
             throw error;
         }
     }
+
+    static async getTrainingByRoomName(roomName) {
+        try {
+            const query =
+                "SELECT * FROM training_programs WHERE meeting_url LIKE '%' || $1";
+            const result = await pool.query(query, [roomName]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to get training by room name");
+            throw error;
+        }
+    }
+
+    static async updateTrainingStatus(id, status) {
+        try {
+            const query = "UPDATE training_programs SET status = $1 WHERE id = $2 RETURNING *";
+            const result = await pool.query(query, [status, id]);
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Failed to update training status");
+            throw error;
+        }
+    }
 }
 
 module.exports = Training;

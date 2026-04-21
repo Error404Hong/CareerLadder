@@ -2,16 +2,14 @@
 
 import { useUser } from "@clerk/nextjs"
 import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogHeader } from "@/components/ui/dialog"
-import { Calendar, Clock, Users, Wallet, Upload, FileText, Check } from "lucide-react"
+import { Upload, FileText, Check } from "lucide-react"
 import type { Project } from "./ProjectCard"
 import { Progress } from "@/components/ui/progress"
 import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field"
 import { toast } from "sonner"
-import { Separator } from "@/components/ui/separator"
 
 import { getStudentProfile } from "@/app/api/user"
 import { useState } from "react"
@@ -173,87 +171,94 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
     return (
         <>
             <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-                <DrawerContent className="h-full min-w-[40%] ml-auto rounded-none flex flex-col">
+                <DrawerContent className="h-full min-w-110 ml-auto rounded-none flex flex-col border-0 border-l border-slate-200 bg-white">
 
-                    {/* Header */}
-                    <DrawerHeader className="border-b border-slate-300 px-6 py-5 space-y-0">
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-4 flex-col justify-center">
-                                <div>
-                                    <Image
-                                        src={project!.company_logo_url}
-                                        width={150}
-                                        height={100}
-                                        alt="Company Logo"
-                                    />
+                    {/* ── Header ── */}
+                    <DrawerHeader className="p-0 border-0 shrink-0">
+                        <div className="px-7 pt-7 pb-6 border-b border-slate-100">
+                            {/* Logo + status */}
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="h-10 flex items-center">
+                                    {project?.company_logo_url
+                                        ? <Image src={project.company_logo_url} width={100} height={32} alt="Company Logo" className="object-contain object-left" />
+                                        : <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-300 uppercase">No Logo</span>
+                                    }
                                 </div>
-                                <div>
-                                    <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
-                                        {project?.title.toUpperCase()}
-                                    </DrawerTitle>
-                                    <Link href={`/companies/${project?.company_id}`}><p className="text-sm text-[#2563eb]">{project?.company_name}</p></Link>
-                                </div>
+                                <span className="text-[10px] font-semibold tracking-[0.14em] uppercase px-2.5 py-1 rounded-sm border border-slate-200 text-slate-500 bg-white">
+                                    {project?.status}
+                                </span>
                             </div>
-                            <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1 shrink-0 mt-1">
-                                {project?.status.toUpperCase()}
-                            </Badge>
+                            {/* Title + company */}
+                            <DrawerTitle className="text-[22px] font-bold text-slate-900 leading-tight tracking-tight mb-1">
+                                {project?.title}
+                            </DrawerTitle>
+                            <Link href={`/companies/${project?.company_id}`}>
+                                <p className="text-[13px] text-slate-400 hover:text-slate-600 transition-colors">
+                                    {project?.company_name}
+                                </p>
+                            </Link>
                         </div>
-                    </DrawerHeader>
 
-                    <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6">
-
-                        {/* Details */}
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-5">
-                                <Clock size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm  text-[#0f172a]">{project?.duration}</p>
+                        {/* ── Stats bar ── */}
+                        <div className="grid grid-cols-2 border-b border-slate-100">
+                            <div className="px-7 py-4 border-r border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Start Date</p>
+                                <p className="text-[13px] font-medium text-slate-800">
+                                    {project?.start_date ? new Date(project.start_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                                </p>
                             </div>
-                            <div className="flex items-center gap-5">
-                                <Users size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm  text-[#0f172a]">{project?.vacancies} spots available</p>
+                            <div className="px-7 py-4">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">End Date</p>
+                                <p className="text-[13px] font-medium text-slate-800">
+                                    {project?.end_date ? new Date(project.end_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                                </p>
                             </div>
-                            <div className="flex items-center gap-5">
-                                <Wallet size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm  text-[#0f172a]">RM {project?.allowance} / month</p>
+                            <div className="px-7 py-4 border-t border-r border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Commitment</p>
+                                <p className="text-[13px] font-medium text-slate-800">{project?.duration ?? "—"}</p>
                             </div>
-                            <div className="flex items-center gap-5">
-                                <Calendar size={15} className="text-slate-400 shrink-0" />
-                                <p className="text-sm  text-[#0f172a]">
-                                    {project?.start_date && new Date(project.start_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} to{" "}
-                                    {project?.end_date && new Date(project.end_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
+                            <div className="px-7 py-4 border-t border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Allowance</p>
+                                <p className="text-[13px] font-medium text-slate-800">
+                                    RM {project?.allowance}<span className="text-slate-400 font-normal"> /mo</span>
                                 </p>
                             </div>
                         </div>
+                    </DrawerHeader>
 
-                        <Separator />
+                    {/* ── Body ── */}
+                    <div className="flex-1 overflow-y-auto">
 
-                        {/* Skills */}
-                        <div>
-                            <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">Skills Required</p>
-                            <div className="flex flex-wrap gap-2">
-                                {project?.skills_required?.map((skill) => (
-                                    <Badge key={skill} className="px-4 py-2 text-sm">{skill}</Badge>
-                                ))}
+                        {project!.skills_required.length > 0 && (
+                            <div className="px-7 py-5 border-b border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mb-3">Skills Required</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {project!.skills_required.map(skill => (
+                                        <span key={skill} className="text-[12px] font-medium text-slate-600 px-3 py-1 rounded-sm border border-slate-200 bg-slate-50">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <Separator />
-
-                        {/* Description */}
-                        <div>
-                            <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">About This Project</p>
-                            <p className="text-sm text-slate-500 leading-relaxed">{project?.description}</p>
-                        </div>
+                        {project?.description && (
+                            <div className="px-7 py-5">
+                                <p className="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mb-3">About This Project</p>
+                                <p className="text-[13px] text-slate-500 leading-[1.75]">{project.description}</p>
+                            </div>
+                        )}
 
                     </div>
 
-                    <DrawerFooter className="flex flex-row gap-3 border-t border-slate-300 px-6 py-4">
+                    {/* ── Footer ── */}
+                    <DrawerFooter className="bg-white border-t border-slate-100 px-7 py-4 flex flex-row gap-2">
                         <DrawerClose asChild>
-                            <Button size="sm" variant="outline" className="flex-1 cursor-pointer px-4 py-5">
+                            <Button size="sm" variant="outline" className="flex-1 h-10 rounded-sm text-[13px] font-medium text-slate-500 border-slate-200 hover:bg-slate-50 cursor-pointer">
                                 Close
                             </Button>
                         </DrawerClose>
-                        <Button size="sm" className="flex-1 cursor-pointer px-4 py-5" onClick={() => handleApply()}>
+                        <Button size="sm" className="flex-1 h-10 rounded-sm text-[13px] font-semibold cursor-pointer bg-slate-900 hover:bg-slate-800 text-white" onClick={() => handleApply()}>
                             Apply Now
                         </Button>
                     </DrawerFooter>

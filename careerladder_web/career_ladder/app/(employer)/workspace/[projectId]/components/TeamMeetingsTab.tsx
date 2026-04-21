@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
@@ -277,18 +278,43 @@ export function TeamMeetingsTab({ projectId, companyId, meetings, onMeetingSched
                                 </div>
 
                                 {/* Join button */}
-                                {meeting.status !== "cancelled" && (
-                                    <a
-                                        href={meeting.meeting_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="shrink-0"
-                                    >
-                                        <Button size="sm" variant="outline" className="cursor-pointer gap-1.5 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white">
-                                            <Video size={13} /> Join Meeting
-                                        </Button>
-                                    </a>
-                                )}
+                                {meeting.status !== "cancelled" && meeting.status !== "completed" && (() => {
+                                    const today = new Date()
+                                    const meetingDate = new Date(meeting.scheduled_at)
+                                    const isMeetingDay =
+                                        today.getFullYear() === meetingDate.getFullYear() &&
+                                        today.getMonth() === meetingDate.getMonth() &&
+                                        today.getDate() === meetingDate.getDate()
+
+                                    if (isMeetingDay) {
+                                        return (
+                                            <a href={meeting.meeting_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                                                <Button size="sm" variant="outline" className="cursor-pointer gap-1.5 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white">
+                                                    <Video size={13} /> Join Meeting
+                                                </Button>
+                                            </a>
+                                        )
+                                    }
+
+                                    const tooltipMsg = today > meetingDate
+                                        ? "This meeting date has passed."
+                                        : `Available on ${format(meetingDate, "d MMM yyyy")}.`
+
+                                    return (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span className="shrink-0">
+                                                        <Button size="sm" variant="outline" className="gap-1.5 bg-white/10 border-white/20 text-white/40" disabled>
+                                                            <Video size={13} /> Join Meeting
+                                                        </Button>
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>{tooltipMsg}</TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )
+                                })()}
                             </div>
                         )
                     })

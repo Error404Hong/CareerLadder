@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { MapPin, Briefcase, Link, ExternalLink, DollarSign, Clock, User, Video, Copy, Calendar, CalendarClock, MoreHorizontal, Plus, CalendarSync, MessageSquare, ListCollapse } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 
 const notificationConfig: Record<string, { title: string; message: (title: string) => string }> = {
@@ -538,17 +539,46 @@ export default function ApplicationDetails() {
                                                         >
                                                             <Copy size={12} /> Copy Link
                                                         </Button>
-                                                        {m.status === "scheduled" ? (
-                                                            <a href={m.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
-                                                                <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
-                                                                    <Video size={12} /> Join
-                                                                </Button>
-                                                            </a>
-                                                        ) : (
-                                                            <Button size="sm" className="flex-1 gap-1.5 text-xs" disabled>
-                                                                <Video size={12} /> Join
-                                                            </Button>
-                                                        )}
+                                                        {(() => {
+                                                            const today = new Date()
+                                                            const meetingDate = new Date(m.scheduled_at)
+                                                            const isMeetingDay =
+                                                                today.getFullYear() === meetingDate.getFullYear() &&
+                                                                today.getMonth() === meetingDate.getMonth() &&
+                                                                today.getDate() === meetingDate.getDate()
+                                                            const canJoin = m.status === "scheduled" && isMeetingDay
+
+                                                            if (canJoin) {
+                                                                return (
+                                                                    <a href={m.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
+                                                                        <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
+                                                                            <Video size={12} /> Join
+                                                                        </Button>
+                                                                    </a>
+                                                                )
+                                                            }
+
+                                                            const tooltipMsg = m.status !== "scheduled"
+                                                                ? "Meeting is not active."
+                                                                : today > meetingDate
+                                                                    ? "This meeting date has passed."
+                                                                    : `Available on ${format(meetingDate, "d MMM yyyy")}.`
+
+                                                            return (
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <span className="flex-1">
+                                                                                <Button size="sm" className="w-full gap-1.5 text-xs" disabled>
+                                                                                    <Video size={12} /> Join
+                                                                                </Button>
+                                                                            </span>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>{tooltipMsg}</TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            )
+                                                        })()}
                                                     </div>
                                                 </CardContent>
                                             </Card>

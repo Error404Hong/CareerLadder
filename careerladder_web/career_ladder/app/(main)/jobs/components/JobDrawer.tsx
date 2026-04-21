@@ -2,15 +2,13 @@
 
 import { useUser } from "@clerk/nextjs"
 import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogHeader } from "@/components/ui/dialog"
-import { Briefcase, MapPin, Users, Wallet, Upload, FileText, Check } from "lucide-react"
+import { Upload, FileText, Check } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Field, FieldGroup, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
 import { toast } from "sonner"
-import { Separator } from "@/components/ui/separator"
 
 import { Jobs } from "./JobCard"
 import { useState } from "react"
@@ -183,107 +181,107 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
     return (
         <>
             <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-                <DrawerContent className="h-full min-w-[40%] ml-auto rounded-none flex flex-col">
+                <DrawerContent className="h-full min-w-[440px] ml-auto rounded-none flex flex-col border-0 border-l border-slate-200 bg-white">
 
-                    {/* Header */}
-                    <DrawerHeader className="border-b border-slate-100 px-6 py-5 space-y-0">
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex flex-col gap-4">
-                                <Image
-                                    src={job!.company_logo_url}
-                                    width={150}
-                                    height={60}
-                                    alt="Company Logo"
-                                />
-                                <div className="flex flex-col gap-2">
-                                    <DrawerTitle className="text-xl font-bold text-[#0f172a] leading-snug">
-                                        {job?.title}
-                                    </DrawerTitle>
-                                    <Link href={`/companies/${job?.company_id}`}><p className="text-sm text-[#2563eb]">{job?.company_name}</p></Link>
+                    {/* ── Header ── */}
+                    <DrawerHeader className="p-0 border-0 shrink-0">
+                        <div className="px-7 pt-7 pb-6 border-b border-slate-100">
+
+                            {/* Logo row */}
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="h-10 flex items-center">
+                                    {job?.company_logo_url
+                                        ? <Image src={job.company_logo_url} width={100} height={32} alt="Company Logo" className="object-contain object-left" />
+                                        : <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-300 uppercase">No Logo</span>
+                                    }
+                                </div>
+                                <div className="flex items-center gap-2 pt-0.5">
+                                    <span className="text-[10px] font-semibold tracking-[0.14em] uppercase px-2.5 py-1 rounded-sm border border-slate-200 text-slate-500 bg-white">
+                                        {job?.status}
+                                    </span>
+                                    {job?.is_remote && (
+                                        <span className="text-[10px] font-semibold tracking-[0.14em] uppercase px-2.5 py-1 rounded-sm border border-slate-200 text-slate-500 bg-white">
+                                            Remote
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                            <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                <Badge className="text-[11px]  bg-green-100 text-green-700 border border-green-100 rounded-full px-3 py-1.5">
-                                    {job?.status.toUpperCase()}
-                                </Badge>
-                                {job?.is_remote && (
-                                    <Badge className="text-[11px]  bg-blue-50 text-blue-500 border border-blue-100 rounded-full px-3 py-1.5">
-                                        Remote
-                                    </Badge>
-                                )}
+
+                            {/* Title + company */}
+                            <DrawerTitle className="text-[22px] font-bold text-slate-900 leading-tight tracking-tight mb-1">
+                                {job?.title}
+                            </DrawerTitle>
+                            <Link href={`/companies/${job?.company_id}`}>
+                                <p className="text-[13px] text-slate-400 hover:text-slate-600 transition-colors">
+                                    {job?.company_name}
+                                </p>
+                            </Link>
+                        </div>
+
+                        {/* ── Stats bar ── */}
+                        <div className="grid grid-cols-2 border-b border-slate-100">
+                            <div className="px-7 py-4 border-r border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Employment</p>
+                                <p className="text-[13px] font-medium text-slate-800 capitalize">{job?.employment_type ?? "—"}</p>
+                            </div>
+                            <div className="px-7 py-4">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Location</p>
+                                <p className="text-[13px] font-medium text-slate-800 truncate">{job?.location ?? "—"}</p>
+                            </div>
+                            <div className="px-7 py-4 border-t border-r border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Salary</p>
+                                <p className="text-[13px] font-medium text-slate-800">
+                                    RM {job?.salary_min.toLocaleString()} – {job?.salary_max.toLocaleString()}
+                                    <span className="text-slate-400 font-normal"> /mo</span>
+                                </p>
+                            </div>
+                            <div className="px-7 py-4 border-t border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-slate-400 mb-1">Openings</p>
+                                <p className="text-[13px] font-medium text-slate-800">{job?.vacancies} {job?.vacancies === 1 ? "position" : "positions"}</p>
                             </div>
                         </div>
                     </DrawerHeader>
 
-                    <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6">
+                    {/* ── Body ── */}
+                    <div className="flex-1 overflow-y-auto">
 
-                        {/* Details */}
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-4">
-                                <Briefcase size={13} className="text-slate-400" />
-                                <p className="text-sm  text-[#0f172a] capitalize">{job?.employment_type}</p>
-
-                            </div>
-                            <div className="flex items-center gap-4">
-
-                                <MapPin size={15} className="text-slate-400" />
-
-                                <p className="text-sm  text-[#0f172a]">{job?.location}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Wallet size={13} className="text-slate-400" />
-                                <p className="text-sm  text-[#0f172a]">
-                                    RM {job?.salary_min.toLocaleString()} — RM {job?.salary_max.toLocaleString()} / month
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Users size={13} className="text-slate-400" />
-                                <p className="text-sm  text-[#0f172a]">
-                                    {job?.vacancies} {job?.vacancies === 1 ? "spot" : "spots"} available
-                                </p>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Skills */}
-                        <div>
-                            <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">Skills Required</p>
-                            <div className="flex flex-wrap gap-2">
-                                {job?.skills_required?.map((skill) => (
-                                    <Badge key={skill} className="px-4 py-2 text-sm">{skill}</Badge>
-                                ))}
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Requirements */}
-                        {job?.requirements && (
-                            <>
-                                <div>
-                                    <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">Requirements</p>
-                                    <p className="text-sm text-slate-500 leading-relaxed">{job.requirements}</p>
+                        {job?.skills_required && job.skills_required.length > 0 && (
+                            <div className="px-7 py-5 border-b border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mb-3">Skills Required</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {job.skills_required.map(skill => (
+                                        <span key={skill} className="text-[12px] font-medium text-slate-600 px-3 py-1 rounded-sm border border-slate-200 bg-slate-50">
+                                            {skill}
+                                        </span>
+                                    ))}
                                 </div>
-                                <Separator />
-                            </>
+                            </div>
                         )}
 
-                        {/* Description */}
-                        <div>
-                            <p className="text-sm font-semibold text-[#0f172a] uppercase tracking-widest mb-3">About This Role</p>
-                            <p className="text-sm text-slate-500 leading-relaxed">{job?.description}</p>
-                        </div>
+                        {job?.requirements && (
+                            <div className="px-7 py-5 border-b border-slate-100">
+                                <p className="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mb-3">Requirements</p>
+                                <p className="text-[13px] text-slate-500 leading-[1.75]">{job.requirements}</p>
+                            </div>
+                        )}
+
+                        {job?.description && (
+                            <div className="px-7 py-5">
+                                <p className="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mb-3">About This Role</p>
+                                <p className="text-[13px] text-slate-500 leading-[1.75]">{job.description}</p>
+                            </div>
+                        )}
 
                     </div>
 
-                    <DrawerFooter className="flex flex-row gap-3 border-t border-slate-300 px-6 py-4">
+                    {/* ── Footer ── */}
+                    <DrawerFooter className="bg-white border-t border-slate-100 px-7 py-4 flex flex-row gap-2">
                         <DrawerClose asChild>
-                            <Button size="sm" variant="outline" className="flex-1 cursor-pointer px-4 py-5">
+                            <Button size="sm" variant="outline" className="flex-1 h-10 rounded-sm text-[13px] font-medium text-slate-500 border-slate-200 hover:bg-slate-50 cursor-pointer">
                                 Close
                             </Button>
                         </DrawerClose>
-                        <Button size="sm" className="flex-1 cursor-pointer px-4 py-5" onClick={() => handleApply()}>
+                        <Button size="sm" className="flex-1 h-10 rounded-sm text-[13px] font-semibold cursor-pointer bg-slate-900 hover:bg-slate-800 text-white" onClick={() => handleApply()}>
                             Apply Now
                         </Button>
                     </DrawerFooter>

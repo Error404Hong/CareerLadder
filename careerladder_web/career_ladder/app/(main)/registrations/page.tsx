@@ -38,10 +38,8 @@ export type TrainingRegistration = {
 }
 
 export const registrationStatusConfig: Record<string, { label: string; className: string }> = {
-    registered: { label: "Registered", className: "bg-blue-50 text-blue-600 border border-blue-100" },
-    attended: { label: "Attended", className: "bg-green-50 text-green-600 border border-green-100" },
-    completed: { label: "Completed", className: "bg-purple-50 text-purple-600 border border-purple-100" },
-    cancelled: { label: "Cancelled", className: "bg-red-50 text-red-500 border border-red-100" },
+    registered: { label: "Registered", className: "bg-blue-100 text-blue-600 border border-blue-100" },
+    completed: { label: "Completed", className: "bg-green-100 text-green-600 border border-green-100" },
 }
 
 export default function Registrations() {
@@ -63,7 +61,7 @@ export default function Registrations() {
                 } else {
                     toast.error("Failed to fetch registered training programs. Please try again")
                 }
-            } catch (error) {
+            } catch {
                 toast.error("Something went wrong. Please try again")
             } finally {
                 setIsLoading(false)
@@ -73,10 +71,8 @@ export default function Registrations() {
         getRegisteredTraining()
     }, [user])
 
-    const registered = registeredTraining.filter(t => t.registration_status === "registered")
-    const attended = registeredTraining.filter(t => t.registration_status === "attended")
-    const completed = registeredTraining.filter(t => t.registration_status === "completed")
-    const cancelled = registeredTraining.filter(t => t.registration_status === "cancelled")
+    const registered = registeredTraining.filter(t => t.registration_status === "registered" && t.program_status !== "completed")
+    const completed = registeredTraining.filter(t => t.registration_status === "registered" && t.program_status === "completed")
 
     const renderGrid = (list: TrainingRegistration[]) => (
         list.length === 0 ? (
@@ -139,28 +135,18 @@ export default function Registrations() {
                     </div>
                 ) : (
                     <Tabs defaultValue="registered">
-                        <TabsList className="mb-6">
-                            <TabsTrigger value="registered" className="gap-2 p-4 bg-gray-100">
+                        <TabsList className="mb-6" variant="line">
+                            <TabsTrigger value="registered" className="gap-2 p-4 cursor-pointer">
                                 Registered
                                 <Badge className="ml-2 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{registered.length}</Badge>
                             </TabsTrigger>
-                            <TabsTrigger value="attended" className="gap-2 p-4 bg-gray-100">
-                                Attended
-                                <Badge className="ml-2 text-[11px] bg-green-50 text-green-600 border border-green-100 rounded-full px-2 py-0">{attended.length}</Badge>
-                            </TabsTrigger>
-                            <TabsTrigger value="completed" className="gap-2 p-4 bg-gray-100">
+                            <TabsTrigger value="completed" className="gap-2 p-4 cursor-pointer">
                                 Completed
-                                <Badge className="ml-2 text-[11px] bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-2 py-0">{completed.length}</Badge>
-                            </TabsTrigger>
-                            <TabsTrigger value="cancelled" className="gap-2 p-4 bg-gray-100">
-                                Cancelled
-                                <Badge className="ml-2 text-[11px] bg-red-50 text-red-500 border border-red-100 rounded-full px-2 py-0">{cancelled.length}</Badge>
+                                <Badge className="ml-2 text-[11px] bg-green-50 text-green-600 border border-green-100 rounded-full px-2 py-0">{completed.length}</Badge>
                             </TabsTrigger>
                         </TabsList>
                         <TabsContent value="registered">{renderGrid(registered)}</TabsContent>
-                        <TabsContent value="attended">{renderGrid(attended)}</TabsContent>
                         <TabsContent value="completed">{renderGrid(completed)}</TabsContent>
-                        <TabsContent value="cancelled">{renderGrid(cancelled)}</TabsContent>
                     </Tabs>
                 )}
             </div>

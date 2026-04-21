@@ -10,6 +10,8 @@ const {
     updateProgramById,
     deleteProgramById,
     getProgramRegistration,
+    getTrainingByRoomName,
+    updateTrainingStatus,
 } = require("../controllers/trainingController");
 
 router.get("/getAllTraining", getAllTrainingPrograms);
@@ -21,5 +23,7 @@ router.get("/getProgramById/:programid", getProgramById);
 router.put("/updateProgramById/:programid", updateProgramById);
 router.delete("/deleteProgram/:programid", deleteProgramById);
 router.get("/getProgramRegistration/:programid", getProgramRegistration);
+router.get("/getTrainingMeeting/:roomname", getTrainingByRoomName);
+router.put("/updateStatus/:id", updateTrainingStatus);
 
 module.exports = router;

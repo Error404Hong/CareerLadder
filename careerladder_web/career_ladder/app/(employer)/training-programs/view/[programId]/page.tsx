@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { format } from "date-fns"
 
 import { DataTable } from "./data-table"
 import { getColumns } from "./columns"
@@ -137,13 +139,43 @@ export default function ViewProgramDetails() {
                                 Created on {new Date(programData?.created_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}
                             </p>
                         </div>
-                        {programData?.meeting_url && programData?.status === "open" && (
-                            <a href={programData.meeting_url} target="_blank" rel="noreferrer">
-                                <Button className="cursor-pointer gap-1.5">
-                                    <Video size={14} /> Join Session
-                                </Button>
-                            </a>
-                        )}
+                        {programData?.meeting_url && programData?.status === "open" && (() => {
+                            const today = new Date()
+                            const sessionDate = new Date(programData.date)
+                            const isMeetingDay =
+                                today.getFullYear() === sessionDate.getFullYear() &&
+                                today.getMonth() === sessionDate.getMonth() &&
+                                today.getDate() === sessionDate.getDate()
+
+                            if (isMeetingDay) {
+                                return (
+                                    <a href={programData.meeting_url} target="_blank" rel="noreferrer">
+                                        <Button className="cursor-pointer gap-1.5">
+                                            <Video size={14} /> Join Session
+                                        </Button>
+                                    </a>
+                                )
+                            }
+
+                            const tooltipMsg = today > sessionDate
+                                ? "This session date has passed."
+                                : `Available on ${format(sessionDate, "d MMM yyyy")}.`
+
+                            return (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span>
+                                                <Button className="gap-1.5" disabled>
+                                                    <Video size={14} /> Join Session
+                                                </Button>
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>{tooltipMsg}</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )
+                        })()}
                     </div>
 
                     {/* Stats Card */}

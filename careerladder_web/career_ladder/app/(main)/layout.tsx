@@ -16,6 +16,7 @@ import {
 
 import { getNotifications, markAllAsRead, markAsRead } from "@/app/api/notifications"
 import { Notification } from "@/types"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 
 const timeAgo = (dateStr: string) => {
@@ -231,7 +232,7 @@ export default function MainLayout({
         </div>
       </header>
 
-      {children}
+      <TooltipProvider>{children}</TooltipProvider>
 
       <Toaster position="top-left" richColors />
     </>

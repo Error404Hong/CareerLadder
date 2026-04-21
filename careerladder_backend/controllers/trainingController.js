@@ -322,6 +322,39 @@ const getProgramRegistration = async (req, res) => {
     }
 };
 
+const getTrainingByRoomName = async (req, res) => {
+    const { roomname } = req.params;
+
+    if (!roomname) return sendResponse(res, 400, "Room name is required");
+
+    try {
+        const result = await Training.getTrainingByRoomName(roomname);
+        return sendResponse(res, 200, "Training meeting fetched", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to get training meeting");
+        return sendResponse(res, 500, "Failed to get training meeting", {
+            error: error.message,
+        });
+    }
+};
+
+const updateTrainingStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) return sendResponse(res, 400, "Status is required");
+
+    try {
+        const result = await Training.updateTrainingStatus(id, status);
+        return sendResponse(res, 200, "Training status updated", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to update training status");
+        return sendResponse(res, 500, "Failed to update training status", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllTrainingPrograms,
     registerTraining,
@@ -332,4 +365,6 @@ module.exports = {
     updateProgramById,
     deleteProgramById,
     getProgramRegistration,
+    getTrainingByRoomName,
+    updateTrainingStatus,
 };

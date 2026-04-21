@@ -48,8 +48,12 @@ export function TrainingRegistrationCard({ training, onView }: Props) {
                         </div>
                     </div>
                     <div className="mt-auto">
-                        <Button className="w-full text-sm cursor-pointer rounded-xl" onClick={() => onView(training)}>
-                            View Details
+                        <Button
+                            className="w-full text-sm rounded-xl"
+                            disabled={training.program_status === "completed"}
+                            onClick={() => onView(training)}
+                        >
+                            {training.program_status === "completed" ? "Program Ended" : "View Details"}
                         </Button>
                     </div>
                 </div>

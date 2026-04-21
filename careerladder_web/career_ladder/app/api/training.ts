@@ -162,3 +162,25 @@ export const getProgramRegistration = async (programid: string) => {
         throw error;
     }
 };
+
+export const getTrainingMeetingByRoomName = async (roomName: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/training/getTrainingMeeting/${roomName}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching training by room name");
+        throw error;
+    }
+};
+
+export const updateTrainingStatus = async (id: string, status: string) => {
+    try {
+        const response = await axiosInstance.put(`/training/updateStatus/${id}`, { status });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating training status");
+        throw error;
+    }
+};

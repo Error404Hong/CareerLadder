@@ -5,8 +5,6 @@ import { toast } from "sonner"
 import { getAllTraining } from "@/app/api/training"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { Search, BookOpen } from "lucide-react"
 
 import { TrainingCard, type Training } from "./components/TrainingCard"
@@ -44,7 +42,6 @@ export default function TrainingPage() {
         .filter(t => visibilityFilter === "all" || (visibilityFilter === "public" ? t.is_public : !t.is_public))
 
     const open = filtered.filter(t => t.status === "open")
-    const ongoing = filtered.filter(t => t.status === "ongoing")
 
     const renderGrid = (list: Training[]) => (
         list.length === 0 ? (
@@ -54,7 +51,7 @@ export default function TrainingPage() {
                 <p className="text-sm text-slate-300">Try adjusting your search or filters</p>
             </div>
         ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3  gap-5">
                 {list.map(t => <TrainingCard key={t.id} training={t} />)}
             </div>
         )
@@ -121,24 +118,10 @@ export default function TrainingPage() {
                         {Array.from({ length: 8 }).map((_, i) => <TrainingCardSkeleton key={i} />)}
                     </div>
                 ) : (
-                    <Tabs defaultValue="open">
-                        <TabsList className="mb-6">
-                            <TabsTrigger value="open">
-                                Open
-                                <Badge className="ml-2 text-[11px] bg-green-50 text-green-600 border border-green-100 rounded-full px-2 py-0">
-                                    {open.length}
-                                </Badge>
-                            </TabsTrigger>
-                            <TabsTrigger value="ongoing">
-                                Ongoing
-                                <Badge className="ml-2 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">
-                                    {ongoing.length}
-                                </Badge>
-                            </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="open">{renderGrid(open)}</TabsContent>
-                        <TabsContent value="ongoing">{renderGrid(ongoing)}</TabsContent>
-                    </Tabs>
+                    <>
+                        {renderGrid(open)}
+                    </>
+
                 )}
             </div>
         </div >

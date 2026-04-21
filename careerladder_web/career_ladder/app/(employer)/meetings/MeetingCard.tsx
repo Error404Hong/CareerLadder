@@ -12,6 +12,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     scheduled: { label: "Scheduled", className: "bg-blue-100 text-blue-700 border border-blue-200" },
@@ -129,17 +130,46 @@ export function MeetingCard({ meeting, onCancel }: Props) {
                     >
                         <Copy size={12} /> Copy Link
                     </Button>
-                    {meeting.status === "scheduled" ? (
-                        <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
-                            <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
-                                <Video size={12} /> Join
-                            </Button>
-                        </a>
-                    ) : (
-                        <Button size="sm" className="flex-1 gap-1.5 p-4.5 cursor-pointer  text-xs" disabled>
-                            <Video size={13} /> Join Meeting
-                        </Button>
-                    )}
+                    {(() => {
+                        const today = new Date()
+                        const meetingDate = new Date(meeting.scheduled_at)
+                        const isMeetingDay =
+                            today.getFullYear() === meetingDate.getFullYear() &&
+                            today.getMonth() === meetingDate.getMonth() &&
+                            today.getDate() === meetingDate.getDate()
+                        const canJoin = meeting.status === "scheduled" && isMeetingDay
+
+                        if (canJoin) {
+                            return (
+                                <a href={meeting.meeting_url} target="_blank" rel="noreferrer" className="flex-1">
+                                    <Button size="sm" className="cursor-pointer w-full gap-1.5 text-xs">
+                                        <Video size={12} /> Join
+                                    </Button>
+                                </a>
+                            )
+                        }
+
+                        const tooltipMsg = meeting.status !== "scheduled"
+                            ? "Meeting is not active."
+                            : today > meetingDate
+                                ? "This meeting date has passed."
+                                : `Available on ${format(meetingDate, "d MMM yyyy")}.`
+
+                        return (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="flex-1">
+                                            <Button size="sm" className="w-full gap-1.5 text-xs" disabled>
+                                                <Video size={12} /> Join
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>{tooltipMsg}</TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )
+                    })()}
                 </div>
             </CardContent>
         </Card>
