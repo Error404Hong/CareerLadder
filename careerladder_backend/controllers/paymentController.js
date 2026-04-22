@@ -289,6 +289,37 @@ const updatePaymentStatus = async (req, res) => {
     }
 };
 
+const releaseMonthlyPayment = async (req, res) => {
+    const { id } = req.params;
+    if (!id) return sendResponse(res, 400, "Payment id is required");
+
+    try {
+        const result = await Payment.releaseMonthlyPayment(id);
+        return sendResponse(res, 200, "Monthly payment released", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to release payment");
+        return sendResponse(res, 500, "Failed to release payment", {
+            error: error.message,
+        });
+    }
+};
+
+const getPaymentReleases = async (req, res) => {
+    const { paymentId } = req.params;
+    const id = paymentId;
+    if (!id) return sendResponse(res, 400, "Payment id is required");
+
+    try {
+        const result = await Payment.getPaymentReleases(id);
+        return sendResponse(res, 200, "Payment releases fetched", result);
+    } catch (error) {
+        logger.error("[CONTROLLER] Failed to fetch payment releases");
+        return sendResponse(res, 500, "Failed to fetch payment releases", {
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createCheckoutSession,
     handleWebhook,
@@ -298,4 +329,6 @@ module.exports = {
     getPaymentStats,
     getPaymentsByStudent,
     updatePaymentStatus,
+    releaseMonthlyPayment,
+    getPaymentReleases,
 };

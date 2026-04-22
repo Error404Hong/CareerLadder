@@ -19,6 +19,8 @@ const meetingRoutes = require("./routes/meetingsRoute");
 const notificationRoutes = require("./routes/notificationsRoute");
 const chatRoutes = require("./routes/chatRoute");
 const taskRoutes = require("./routes/tasksRoute");
+const bankRoutes = require("./routes/bankRoute");
+const withdrawalRoutes = require("./routes/withdrawalRoute");
 
 app.use(
     cors({
@@ -47,6 +49,8 @@ app.use("/meetings", meetingRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/chat", chatRoutes);
 app.use("/tasks", taskRoutes);
+app.use("/bank", bankRoutes);
+app.use("/withdrawal", withdrawalRoutes);
 
 app.get("/", async (req, res) => {
     try {

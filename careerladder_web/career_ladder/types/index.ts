@@ -20,3 +20,6 @@ export * from "./experience";
 export * from "./performance";
 export * from "./skill";
 export * from "./language";
+export * from "./paymentRelease";
+export * from "./bank";
+export * from "./withdrawal";

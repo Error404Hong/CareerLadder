@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
-import { createCheckoutSession, getPaymentsByCompany, getPaymentStats } from "@/app/api/payment"
+import { createCheckoutSession, getPaymentsByCompany, getPaymentStats, releaseMonthlyPayment } from "@/app/api/payment"
 import { toast } from "sonner"
 
 import { Wallet, Clock, ShieldCheck, CheckCircle2, CircleDollarSign } from "lucide-react"
@@ -86,7 +86,26 @@ export default function FinancePage() {
         handlePayNow(payment);
     })
 
-    const activeEscrowColumns = getEscrowColumns();
+    const handleRelease = async (payment: ProjectPayment) => {
+        try {
+            const res = await releaseMonthlyPayment(payment.id)
+            if (res.success) {
+                toast.success(`Released RM ${Number(payment.monthly_allowance).toLocaleString()} to ${payment.student_name ?? "student"}`)
+                const [statsRes, paymentsRes] = await Promise.all([
+                    getPaymentStats(user!.id),
+                    getPaymentsByCompany(user!.id),
+                ])
+                if (statsRes.success) setStats(statsRes.data)
+                if (paymentsRes.success) setPayments(paymentsRes.data)
+            } else {
+                toast.error("Failed to release payment")
+            }
+        } catch {
+            toast.error("Failed to release payment. Please try again.")
+        }
+    }
+
+    const activeEscrowColumns = getEscrowColumns(handleRelease);
     const paymentHistoryColumns = getHistoryColumns();
 
     const handlePayNow = async (payment: ProjectPayment) => {

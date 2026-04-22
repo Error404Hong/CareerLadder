@@ -222,6 +222,71 @@ class Payment {
             throw error;
         }
     }
+
+    static async releaseMonthlyPayment(id) {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            // Calculate next month number
+            const countRes = await client.query(
+                "SELECT COUNT(*) AS cnt FROM payment_releases WHERE payment_id = $1",
+                [id],
+            );
+            const monthNumber = parseInt(countRes.rows[0].cnt) + 1;
+
+            // Update project_payments
+            const updateRes = await client.query(
+                `
+                UPDATE project_payments
+                SET
+                    paid_amount       = paid_amount + monthly_allowance,
+                    remaining_amount  = remaining_amount - monthly_allowance,
+                    status = CASE
+                        WHEN (remaining_amount - monthly_allowance) <= 0 THEN 'completed'
+                        ELSE 'releasing'
+                    END,
+                    updated_at = NOW()
+                WHERE id = $1
+                AND status IN ('paid', 'releasing')
+                AND remaining_amount > 0
+                RETURNING *
+            `,
+                [id],
+            );
+
+            if (!updateRes.rows[0]) {
+                await client.query("ROLLBACK");
+                return null;
+            }
+
+            const payment = updateRes.rows[0];
+
+            // Insert into payment_releases
+            await client.query(
+                `
+            INSERT INTO payment_releases (payment_id, month_number, amount_released)
+            VALUES ($1, $2, $3)
+        `,
+                [id, monthNumber, payment.monthly_allowance],
+            );
+
+            await client.query("COMMIT");
+            return payment;
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async getPaymentReleases(payment_id) {
+        const result = await pool.query(
+            "SELECT * FROM payment_releases WHERE payment_id = $1 ORDER BY month_number ASC",
+            [payment_id],
+        );
+        return result.rows;
+    }
 }
 
 module.exports = Payment;

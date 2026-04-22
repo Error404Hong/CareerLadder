@@ -117,3 +117,13 @@ export const updatePaymentStatus = async (id: string, status: string) => {
         throw error;
     }
 };
+
+export const releaseMonthlyPayment = async (id: string) => {
+    const response = await axiosInstance.put(`/payment/releaseMonthly/${id}`);
+    return response.data;
+};
+
+export const getPaymentReleases = async (id: string) => {
+    const response = await axiosInstance.get(`/payment/releases/${id}`);
+    return response.data;
+};

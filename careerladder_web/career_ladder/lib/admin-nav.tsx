@@ -50,8 +50,8 @@ export const adminNavItems = [
         href: "/admin-dashboard/credits",
         icon: <CreditCard size={16} />,
         children: [
-            { label: "All Transactions", href: "/admin-dashboard/credits" },
-            { label: "Withdrawal Requests", href: "/admin-dashboard/credits/withdrawals" },
+            // { label: "All Transactions", href: "/admin-dashboard/credits" },
+            { label: "Withdrawal Requests", href: "/withdrawals" },
         ],
     },
     {
