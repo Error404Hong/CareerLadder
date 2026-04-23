@@ -6,10 +6,12 @@ import { useUser } from "@clerk/nextjs"
 import { format } from "date-fns"
 import { Playfair_Display, DM_Mono } from "next/font/google"
 
-import { Job, Project, JobApplication, ProjectApplication } from "@/types"
+import { Job, Project, Training, JobApplication, ProjectApplication } from "@/types"
 import { getAllJobs, getJobApplications } from "@/app/api/job"
 import { getAllProjects, getProjectApplications } from "@/app/api/project"
+import { getAllTraining } from "@/app/api/training"
 import { getUserById } from "@/app/api/user"
+import { AIRecommendationPanel } from "./components/AIRecommendationPanel"
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { MapPin, DollarSign, Users, Clock, Briefcase, FolderKanban, ArrowUpRight, Building2, ChevronRight, Sparkles } from "lucide-react"
@@ -47,6 +49,7 @@ export default function HomePage() {
 
     const [jobs, setJobs] = useState<(Job & { company_name?: string })[]>([])
     const [projects, setProjects] = useState<(Project & { company_name?: string })[]>([])
+    const [trainings, setTrainings] = useState<Training[]>([])
     const [jobApps, setJobApps] = useState<JobApplication[]>([])
     const [projectApps, setProjectApps] = useState<ProjectApplication[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -73,9 +76,10 @@ export default function HomePage() {
     useEffect(() => {
         const fetchListings = async () => {
             try {
-                const [jobsRes, projectsRes] = await Promise.all([getAllJobs(), getAllProjects()])
+                const [jobsRes, projectsRes, trainingsRes] = await Promise.all([getAllJobs(), getAllProjects(), getAllTraining()])
                 if (jobsRes.success) setJobs((jobsRes.data as (Job & { company_name?: string })[]).filter(j => j.status?.toLowerCase() === "open"))
                 if (projectsRes.success) setProjects((projectsRes.data as (Project & { company_name?: string })[]).filter(p => p.status?.toLowerCase() === "open"))
+                if (trainingsRes.success) setTrainings(trainingsRes.data as Training[])
             } catch { /* silent */ }
             finally { setIsLoading(false) }
         }
@@ -545,6 +549,13 @@ export default function HomePage() {
                                 <p className="text-xs text-slate-400 mt-1">available right now</p>
                             </div>
                         )}
+
+                        {/* AI Recommendations */}
+                        <AIRecommendationPanel
+                            jobs={jobs}
+                            projects={projects}
+                            trainings={trainings}
+                        />
                     </div>
                 </div>
             </div>
