@@ -11,7 +11,7 @@ import { getPaymentsByStudent } from "@/app/api/payment"
 import { getAvailableBalance, requestWithdrawal, getWithdrawalRequestByStudent } from "@/app/api/withdrawal"
 
 import { toast } from "sonner"
-import { Wallet, ShieldCheck, Clock, TrendingUp, Building2, CalendarDays, CheckCircle2, AlertCircle, BanknoteArrowDown, DollarSign, Plus, CreditCard, Info } from "lucide-react"
+import { Wallet, ShieldCheck, Clock, TrendingUp, Building2, CalendarDays, CheckCircle2, AlertCircle, BanknoteArrowDown, DollarSign, Plus, CreditCard, Info, ChevronLeft, ChevronRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,6 +65,9 @@ export default function MyFinance() {
     const [withdrawalLoading, setWithdrawalLoading] = useState(true)
     const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false)
     const [withdrawSubmitting, setWithdrawSubmitting] = useState(false)
+    const [paymentPage, setPaymentPage] = useState(1)
+    const [withdrawalPage, setWithdrawalPage] = useState(1)
+    const PAGE_SIZE = 5
 
     const withdrawForm = useForm<WithdrawFormValues>({
         resolver: zodResolver(withdrawSchema),
@@ -175,6 +178,12 @@ export default function MyFinance() {
     ]
 
     const sortedBankAcc = [...bankAcc].sort((a, b) => Number(b.is_default) - Number(a.is_default))
+
+    const totalPaymentPages = Math.max(1, Math.ceil(history.length / PAGE_SIZE))
+    const pagedHistory = history.slice((paymentPage - 1) * PAGE_SIZE, paymentPage * PAGE_SIZE)
+
+    const totalWithdrawalPages = Math.max(1, Math.ceil(withdrawals.length / PAGE_SIZE))
+    const pagedWithdrawals = withdrawals.slice((withdrawalPage - 1) * PAGE_SIZE, withdrawalPage * PAGE_SIZE)
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -361,43 +370,59 @@ export default function MyFinance() {
                                         <p className="text-xs text-slate-300">Completed payments will appear here</p>
                                     </div>
                                 ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-(--color-navy-mid) hover:bg-(--color-navy-light)">
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Project</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Duration</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Total Received</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Completed On</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Status</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {history.map((p) => (
-                                                <TableRow key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                                    <TableCell className="px-5 py-3">
-                                                        <p className="text-sm font-medium text-[#0f172a]">{p.project_title}</p>
-                                                        <p className="text-xs text-slate-400">{(p as ProjectPayment & { company_name?: string }).company_name ?? "—"}</p>
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3 text-sm text-slate-500">
-                                                        {p.duration_months} month{p.duration_months !== 1 ? "s" : ""}
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3 text-sm font-semibold text-[#0f172a]">
-                                                        RM {Number(p.total_amount).toLocaleString()}
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3 text-sm text-slate-500">
-                                                        {p.paid_at
-                                                            ? new Date(p.paid_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })
-                                                            : "—"}
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3">
-                                                        <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${statusConfig[p.status]?.className}`}>
-                                                            {statusConfig[p.status]?.label}
-                                                        </span>
-                                                    </TableCell>
+                                    <>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow className="bg-(--color-navy-mid) hover:bg-(--color-navy-light)">
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Project</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Duration</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Total Received</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Completed On</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Status</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {pagedHistory.map((p) => (
+                                                    <TableRow key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                                        <TableCell className="px-5 py-3">
+                                                            <p className="text-sm font-medium text-[#0f172a]">{p.project_title}</p>
+                                                            <p className="text-xs text-slate-400">{(p as ProjectPayment & { company_name?: string }).company_name ?? "—"}</p>
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3 text-sm text-slate-500">
+                                                            {p.duration_months} month{p.duration_months !== 1 ? "s" : ""}
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3 text-sm font-semibold text-[#0f172a]">
+                                                            RM {Number(p.total_amount).toLocaleString()}
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3 text-sm text-slate-500">
+                                                            {p.paid_at
+                                                                ? new Date(p.paid_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })
+                                                                : "—"}
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3">
+                                                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${statusConfig[p.status]?.className}`}>
+                                                                {statusConfig[p.status]?.label}
+                                                            </span>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+                                            <p className="text-xs text-slate-400">
+                                                Showing {Math.min((paymentPage - 1) * PAGE_SIZE + 1, history.length)}–{Math.min(paymentPage * PAGE_SIZE, history.length)} of {history.length} row{history.length !== 1 ? "s" : ""}
+                                            </p>
+                                            <div className="flex items-center gap-1.5">
+                                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2.5" disabled={paymentPage === 1} onClick={() => setPaymentPage(p => p - 1)}>
+                                                    <ChevronLeft size={12} /> Previous
+                                                </Button>
+                                                <span className="font-mono text-xs text-slate-500 px-1">{paymentPage} / {totalPaymentPages}</span>
+                                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2.5" disabled={paymentPage === totalPaymentPages} onClick={() => setPaymentPage(p => p + 1)}>
+                                                    Next <ChevronRight size={12} />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </CardContent>
                         </Card>
@@ -484,44 +509,60 @@ export default function MyFinance() {
                                         <p className="text-xs text-slate-300">Your requests will appear here once submitted</p>
                                     </div>
                                 ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-(--color-navy-mid) hover:bg-(--color-navy-light)">
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Date</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Amount</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Bank Account</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Status</TableHead>
-                                                <TableHead className="px-5 py-3 text-white text-sm font-medium">Note</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {withdrawals.map((w) => (
-                                                <TableRow key={w.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                                    <TableCell className="px-5 py-3 text-sm text-slate-500">
-                                                        {new Date(w.requested_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3 text-sm font-semibold text-[#0f172a]">
-                                                        RM {Number(w.amount).toLocaleString()}
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3">
-                                                        <p className="text-sm text-[#0f172a]">{w.bank_name}</p>
-                                                        <div className="flex items-center gap-1 mt-0.5">
-                                                            <CreditCard size={10} className="text-slate-400" />
-                                                            <p className="text-xs text-slate-400 font-mono">{maskAccount(w.account_number)}</p>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3">
-                                                        <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${withdrawalStatusConfig[w.status]?.className}`}>
-                                                            {withdrawalStatusConfig[w.status]?.label}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-3 text-xs text-slate-400 max-w-40">
-                                                        {w.admin_note ?? "—"}
-                                                    </TableCell>
+                                    <>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow className="bg-(--color-navy-mid) hover:bg-(--color-navy-light)">
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Date</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Amount</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Bank Account</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Status</TableHead>
+                                                    <TableHead className="px-5 py-3 text-white text-sm font-medium">Note</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {pagedWithdrawals.map((w) => (
+                                                    <TableRow key={w.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                                        <TableCell className="px-5 py-3 text-sm text-slate-500">
+                                                            {new Date(w.requested_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3 text-sm font-semibold text-[#0f172a]">
+                                                            RM {Number(w.amount).toLocaleString()}
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3">
+                                                            <p className="text-sm text-[#0f172a]">{w.bank_name}</p>
+                                                            <div className="flex items-center gap-1 mt-0.5">
+                                                                <CreditCard size={10} className="text-slate-400" />
+                                                                <p className="text-xs text-slate-400 font-mono">{maskAccount(w.account_number)}</p>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3">
+                                                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${withdrawalStatusConfig[w.status]?.className}`}>
+                                                                {withdrawalStatusConfig[w.status]?.label}
+                                                            </span>
+                                                        </TableCell>
+                                                        <TableCell className="px-5 py-3 text-xs text-slate-400 max-w-40">
+                                                            {w.admin_note ?? "—"}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+                                            <p className="text-xs text-slate-400">
+                                                Showing {Math.min((withdrawalPage - 1) * PAGE_SIZE + 1, withdrawals.length)}–{Math.min(withdrawalPage * PAGE_SIZE, withdrawals.length)} of {withdrawals.length} row{withdrawals.length !== 1 ? "s" : ""}
+                                            </p>
+                                            <div className="flex items-center gap-1.5">
+                                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2.5" disabled={withdrawalPage === 1} onClick={() => setWithdrawalPage(p => p - 1)}>
+                                                    <ChevronLeft size={12} /> Previous
+                                                </Button>
+                                                <span className="font-mono text-xs text-slate-500 px-1">{withdrawalPage} / {totalWithdrawalPages}</span>
+                                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2.5" disabled={withdrawalPage === totalWithdrawalPages} onClick={() => setWithdrawalPage(p => p + 1)}>
+                                                    Next <ChevronRight size={12} />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </CardContent>
                         </Card>

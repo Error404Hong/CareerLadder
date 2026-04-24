@@ -6,10 +6,11 @@ import { toast } from "sonner"
 import { getAllProjects } from "@/app/api/project"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { Briefcase, Search } from "lucide-react"
+import { Briefcase, Search, Sparkles, Loader2 } from "lucide-react"
 
 import { ProjectCard, type Project } from "./components/ProjectCard"
 import { ProjectCardSkeleton } from "./components/ProjectCardSkeleton"
+import { useRecommendations } from "@/hooks/useRecommendations"
 
 export default function Projects() {
     const searchParams = useSearchParams()
@@ -17,6 +18,13 @@ export default function Projects() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState(searchParams.get("search") ?? "")
     const [durationFilter, setDurationFilter] = useState("all")
+
+    const { recommendations, isLoading: aiLoading, refresh: refreshAI } = useRecommendations(
+        [], projectList, [], { autoFetch: false }
+    )
+    const aiProjects = recommendations
+        ? projectList.filter(p => recommendations.recommendedProjectIds.includes(p.id)).slice(0, 3)
+        : []
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -68,7 +76,7 @@ export default function Projects() {
                         <div>
                             <h1 className="text-xl font-bold">Project Listings</h1>
                             <p className="text-sm text-slate-400 mt-1">
-                                {loading ? "Loading..." : `${filtered.length} open project${filtered.length !== 1 ? "s" : ""} available`}
+                                Explore projects available for collaboration and contribution
                             </p>
                         </div>
 
@@ -97,6 +105,14 @@ export default function Projects() {
                                     <SelectItem value="6 months">6 Months</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <button
+                                onClick={refreshAI}
+                                disabled={aiLoading || loading}
+                                className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition-colors disabled:opacity-60"
+                            >
+                                {aiLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                {aiLoading ? "Thinking..." : "AI Picks"}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -108,14 +124,24 @@ export default function Projects() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {Array.from({ length: 8 }).map((_, i) => <ProjectCardSkeleton key={i} />)}
                     </div>
+                ) : aiProjects.length > 0 ? (
+                    <>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Sparkles size={13} className="text-indigo-500" />
+                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">AI Picks for You</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                            {aiProjects.map(project => <ProjectCard key={project.id} project={project} aiPick />)}
+                        </div>
+                    </>
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
                         <Briefcase size={36} className="text-slate-200" />
-                        <p className="text-sm  text-slate-400">No projects found</p>
+                        <p className="text-sm text-slate-400">No projects found</p>
                         <p className="text-sm text-slate-400">Try adjusting your search or filters</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                         {filtered.map((project) => (
                             <ProjectCard key={project.id} project={project} />
                         ))}

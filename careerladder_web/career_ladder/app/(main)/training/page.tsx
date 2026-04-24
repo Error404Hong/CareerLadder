@@ -5,10 +5,11 @@ import { toast } from "sonner"
 import { getAllTraining } from "@/app/api/training"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, BookOpen } from "lucide-react"
+import { Search, BookOpen, Sparkles, Loader2 } from "lucide-react"
 
 import { TrainingCard, type Training } from "./components/TrainingCard"
 import { TrainingCardSkeleton } from "./components/TrainingCardSkeleton"
+import { useRecommendations } from "@/hooks/useRecommendations"
 
 
 export default function TrainingPage() {
@@ -16,6 +17,13 @@ export default function TrainingPage() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
     const [visibilityFilter, setVisibilityFilter] = useState("all")
+
+    const { recommendations, isLoading: aiLoading, refresh: refreshAI } = useRecommendations(
+        [], [], trainingList, { autoFetch: false }
+    )
+    const aiTrainings = recommendations
+        ? trainingList.filter(t => recommendations.recommendedTrainingIds.includes(t.id)).slice(0, 3)
+        : []
 
     useEffect(() => {
         const fetchTrainingPrograms = async () => {
@@ -82,7 +90,7 @@ export default function TrainingPage() {
                         <div>
                             <h1 className="text-xl font-bold">Industrial Training Programs</h1>
                             <p className="text-sm text-slate-400 mt-1">
-                                {loading ? "Loading..." : `${filtered.length} program${filtered.length !== 1 ? "s" : ""} available`}
+                                Discover programs designed to build your skills and knowledge
                             </p>
                         </div>
 
@@ -107,6 +115,14 @@ export default function TrainingPage() {
                                     <SelectItem value="private">Private</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <button
+                                onClick={refreshAI}
+                                disabled={aiLoading || loading}
+                                className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition-colors disabled:opacity-60"
+                            >
+                                {aiLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                {aiLoading ? "Thinking..." : "AI Picks"}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -117,11 +133,18 @@ export default function TrainingPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {Array.from({ length: 8 }).map((_, i) => <TrainingCardSkeleton key={i} />)}
                     </div>
-                ) : (
+                ) : aiTrainings.length > 0 ? (
                     <>
-                        {renderGrid(open)}
+                        <div className="flex items-center gap-2 mb-4">
+                            <Sparkles size={13} className="text-indigo-500" />
+                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">AI Picks for You</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                            {aiTrainings.map(t => <TrainingCard key={t.id} training={t} aiPick />)}
+                        </div>
                     </>
-
+                ) : (
+                    renderGrid(open)
                 )}
             </div>
         </div >

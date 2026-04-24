@@ -5,9 +5,10 @@ import { useEffect, useState } from "react"
 
 import { getJobApplicationsById } from "@/app/api/job"
 import { Application } from "@/types"
+import { JobApplication } from "@/types/jobApplication"
 
 import { toast } from "sonner"
-import { Users } from "lucide-react"
+import { Users, Sparkles, Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
@@ -22,6 +23,8 @@ export default function ViewApplications() {
 
     const [isLoading, setIsLoading] = useState(true)
     const [applicationData, setApplicationData] = useState<Application[]>([])
+    const [rankingMap, setRankingMap] = useState<Map<string, { score: number; reasoning: string }> | null>(null)
+    const [rankLoading, setRankLoading] = useState(false)
 
     useEffect(() => {
         const getApplications = async () => {
@@ -40,10 +43,61 @@ export default function ViewApplications() {
         getApplications()
     }, [id])
 
-    const columns = getColumns((application) => {
-        console.log("View application: ", application)
-        router.push(`/job-listings/view/${id}/applications/${application.id}`)
-    })
+    const handleRankCandidates = async () => {
+        if (applicationData.length === 0) return
+        setRankLoading(true)
+        try {
+            const jobApps = applicationData as unknown as JobApplication[]
+            const listing = {
+                title: jobApps[0]?.title ?? "",
+                description: jobApps[0]?.description ?? "",
+                skills_required: jobApps[0]?.skills_required ?? [],
+            }
+            const candidates = applicationData.map((app, i) => ({
+                applicationId: app.id,
+                name: `${app.first_name ?? ""} ${app.last_name ?? ""}`,
+                major: app.major,
+                skills_fulfilled: app.skills_fulfilled ?? [],
+                profile_summary: app.profile_summary ?? "",
+                cover_letter: app.cover_letter ?? "",
+                expected_salary: app.expected_salary,
+                availability: app.availability,
+                job_preference: jobApps[i]?.job_preference,
+            }))
+            const res = await fetch("/api/ai/rank-candidates", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ listing, candidates }),
+            })
+            const data = await res.json()
+            if (data.success) {
+                const map = new Map<string, { score: number; reasoning: string }>()
+                data.data.rankings.forEach((r: { applicationId: string; suitabilityScore: number; reasoning: string }) => {
+                    map.set(r.applicationId, { score: r.suitabilityScore, reasoning: r.reasoning })
+                })
+                setRankingMap(map)
+            } else {
+                toast.error("Failed to rank candidates. Please try again.")
+            }
+        } catch {
+            toast.error("Failed to rank candidates. Please try again.")
+        } finally {
+            setRankLoading(false)
+        }
+    }
+
+    const sortedData = rankingMap
+        ? [...applicationData].sort((a, b) => {
+            const scoreA = rankingMap.get(a.id)?.score ?? 0
+            const scoreB = rankingMap.get(b.id)?.score ?? 0
+            return scoreB - scoreA
+        })
+        : applicationData
+
+    const columns = getColumns(
+        (application) => router.push(`/job-listings/view/${id}/applications/${application.id}`),
+        rankingMap ?? undefined
+    )
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -87,16 +141,28 @@ export default function ViewApplications() {
                     </Card>
                 ) : (
                     <Card className="rounded-lg border border-slate-200 shadow-sm">
-                        <CardHeader className="px-5 border-b border-grey-300">
-                            <CardTitle className="text-base font-semibold text-[#0f172a]">Job Applications</CardTitle>
-                            <CardDescription>
-                                {applicationData.length} application{applicationData.length !== 1 ? "s" : ""} received for this position
-                            </CardDescription>
+                        <CardHeader className="px-5 border-b border-grey-300 flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-base font-semibold text-[#0f172a]">Job Applications</CardTitle>
+                                <CardDescription>
+                                    {applicationData.length} application{applicationData.length !== 1 ? "s" : ""} received for this position
+                                </CardDescription>
+                            </div>
+                            {applicationData.length > 0 && (
+                                <button
+                                    onClick={handleRankCandidates}
+                                    disabled={rankLoading || isLoading}
+                                    className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition-colors disabled:opacity-60 shrink-0"
+                                >
+                                    {rankLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                    {rankLoading ? "Ranking..." : rankingMap ? "Re-rank" : "Rank Candidates"}
+                                </button>
+                            )}
                         </CardHeader>
                         <CardContent className="px-6 py-3">
                             <DataTable
                                 columns={columns}
-                                data={applicationData}
+                                data={sortedData}
                                 searchPlaceholder="Search applicants..."
                                 emptyIcon={<Users size={32} className="text-slate-200" />}
                                 emptyTitle="No applications yet"

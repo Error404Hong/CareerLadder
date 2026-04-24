@@ -34,6 +34,7 @@ export type Training = {
 
 type Props = {
     training: Training
+    aiPick?: boolean
 }
 
 const isDeadlineSoon = (deadline: string) => {
@@ -41,7 +42,7 @@ const isDeadlineSoon = (deadline: string) => {
     return diff <= 3 && diff >= 0
 }
 
-export function TrainingCard({ training }: Props) {
+export function TrainingCard({ training, aiPick }: Props) {
     const deadlineSoon = isDeadlineSoon(training.application_deadline)
 
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
@@ -64,14 +65,19 @@ export function TrainingCard({ training }: Props) {
                             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                                 <BookOpen size={16} className="text-slate-400" />
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <Badge className={`text-[11px]  rounded-full px-2.5 py-1 shrink-0 ${training.status === "open" ? "bg-green-100 text-green-700 border border-green-100" : "bg-blue-100 text-blue-700 border border-blue-100"}`}>
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                <Badge className={`text-[11px] rounded-full px-2.5 py-1 shrink-0 ${training.status === "open" ? "bg-green-100 text-green-700 border border-green-100" : "bg-blue-100 text-blue-700 border border-blue-100"}`}>
                                     {training.status.toUpperCase()}
                                 </Badge>
-                                <span className="flex items-center gap-1 text-[11px]  px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                <span className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                                     {training.is_public ? <Globe size={10} /> : <Lock size={10} />}
                                     {training.is_public ? "Public" : "Private"}
                                 </span>
+                                {aiPick && (
+                                    <Badge className="text-[11px] bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-full px-2.5 py-1 shrink-0">
+                                        ✨ AI Pick
+                                    </Badge>
+                                )}
                             </div>
                         </div>
 

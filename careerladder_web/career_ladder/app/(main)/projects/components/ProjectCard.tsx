@@ -27,7 +27,7 @@ export type Project = {
     company_logo_url: string
 }
 
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({ project, aiPick }: { project: Project; aiPick?: boolean }) {
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
     const viewProject = () => {
@@ -44,9 +44,16 @@ export function ProjectCard({ project }: { project: Project }) {
                             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                                 <Briefcase size={16} className="text-slate-400" />
                             </div>
-                            <Badge className="text-[11px] bg-green-100 text-green-700 border border-green-100 rounded-full px-2.5 py-1 shrink-0">
-                                {project.status.toUpperCase()}
-                            </Badge>
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                <Badge className="text-[11px] bg-green-100 text-green-700 border border-green-100 rounded-full px-2.5 py-1 shrink-0">
+                                    {project.status.toUpperCase()}
+                                </Badge>
+                                {aiPick && (
+                                    <Badge className="text-[11px] bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-full px-2.5 py-1 shrink-0">
+                                        ✨ AI Pick
+                                    </Badge>
+                                )}
+                            </div>
                         </div>
                         <h3 className="font-bold text-[#0f172a] text-sm leading-snug mb-1">{project.title}</h3>
                         <p className="text-sm text-[#2563eb]  mb-3">{project.company_name}</p>

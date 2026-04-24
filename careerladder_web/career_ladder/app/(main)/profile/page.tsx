@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info, Download } from "lucide-react"
+import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info, Download, Star } from "lucide-react"
 
 import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
@@ -13,8 +13,10 @@ import { useForm } from "react-hook-form"
 import {
     getUserById, getStudentProfile, modifyUserProfile, modifyProfileSummary, getStudentEducation,
     addNewEducation, deleteEducation, editEducation, getStudentExperience, addNewExperience, deleteExperience, editExperience,
-    saveResume, deleteResume, getStudentSkills, addNewSkill, removeSkill, getLanguages, addLanguage, deleteLanguage
+    saveResume, deleteResume, getStudentSkills, addNewSkill, removeSkill, getLanguages, addLanguage, deleteLanguage,
+    getStudentPerformance
 } from "@/app/api/user"
+import { Performance } from "@/types/performance"
 
 import { DeleteDialog } from "./delete/DeleteDialog"
 import ProfileForm, { formSchema, type ProfileFormValues, jobTypes } from "./forms/ProfileForm"
@@ -112,6 +114,7 @@ export default function Profile() {
     const [experience, setExperience] = useState<Experience[]>([]);
     const [skills, setSkills] = useState<Skills[]>([]);
     const [languages, setLanguages] = useState<Language[]>([]);
+    const [performances, setPerformances] = useState<Performance[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -197,6 +200,7 @@ export default function Profile() {
                 const userExperience = await getStudentExperience(user.id);
                 const userSkills = await getStudentSkills(user.id);
                 const userLanguages = await getLanguages(user.id);
+                const userPerformance = await getStudentPerformance(user.id);
 
                 if (userProfile) {
                     setMajor(userProfile.data.major ?? "Not Specified Yet");
@@ -237,6 +241,10 @@ export default function Profile() {
 
                 if (userLanguages) {
                     setLanguages(userLanguages.data ?? []);
+                }
+
+                if (userPerformance) {
+                    setPerformances(userPerformance.data ?? []);
                 }
             }
         }
@@ -674,6 +682,81 @@ export default function Profile() {
                                 <Upload size={11} /> {resumeURL ? "Replace Resume" : "Upload Resume"}
                                 <input type="file" className="hidden" accept=".pdf" onChange={uploadResume} />
                             </label>
+                        </CardContent>
+                    </Card>
+
+                    {/* Performance Ratings */}
+                    <Card className="rounded-2xl border border-slate-100 shadow-sm">
+                        <CardContent className="px-5">
+                            <div className="flex items-center gap-2.5 mb-4">
+                                <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white shrink-0">
+                                    <Star size={13} />
+                                </span>
+                                <span className="font-semibold text-[#0f172a] text-sm">Performance Ratings</span>
+                            </div>
+
+                            {performances.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-50 border border-slate-100 rounded-xl">
+                                    <Star size={24} className="text-slate-200" />
+                                    <p className="text-sm text-slate-400">No ratings yet</p>
+                                    <p className="text-xs text-slate-300 text-center">Ratings appear after completing a project</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Average banner */}
+                                    {(() => {
+                                        const avg = performances.reduce((sum, p) => sum + p.overall_rating, 0) / performances.length
+                                        return (
+                                            <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-3">
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-2xl font-bold text-[#0f172a]">{avg.toFixed(1)}</span>
+                                                    <span className="text-xs text-slate-400">/ 5</span>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <div className="flex gap-0.5">
+                                                        {[1, 2, 3, 4, 5].map(i => (
+                                                            <Star key={i} size={11} className={i <= Math.round(avg) ? "fill-amber-400 text-amber-400" : "text-slate-200"} />
+                                                        ))}
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400">{performances.length} review{performances.length !== 1 ? "s" : ""}</span>
+                                                </div>
+                                            </div>
+                                        )
+                                    })()}
+
+                                    {/* Per-employer entries */}
+                                    <div className="flex flex-col gap-3">
+                                        {performances.map((p, i) => (
+                                            <div key={i} className="border border-slate-100 rounded-xl p-3 flex flex-col gap-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs font-semibold text-[#0f172a] truncate">{p.company_name}</span>
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                                                        <span className="text-xs font-semibold text-[#0f172a]">{p.overall_rating}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-1">
+                                                    {[
+                                                        { label: "Communication", val: p.communication },
+                                                        { label: "Teamwork", val: p.teamwork },
+                                                        { label: "Technical", val: p.technical_skills },
+                                                        { label: "Problem Solving", val: p.problem_solving },
+                                                        { label: "Professionalism", val: p.professionalism },
+                                                    ].map(m => (
+                                                        <div key={m.label} className="flex items-center justify-between bg-slate-50 rounded-lg px-2 py-1">
+                                                            <span className="text-[10px] text-slate-400 truncate">{m.label}</span>
+                                                            <span className="text-[10px] font-semibold text-[#0f172a] ml-1 shrink-0">{m.val}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {p.comments && (
+                                                    <p className="text-[11px] text-slate-400 italic leading-relaxed">&ldquo;{p.comments}&rdquo;</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
 

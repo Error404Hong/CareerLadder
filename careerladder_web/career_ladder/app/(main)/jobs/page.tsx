@@ -5,11 +5,12 @@ import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { Briefcase, Search } from "lucide-react"
+import { Briefcase, Search, Sparkles, Loader2 } from "lucide-react"
 
 import { getAllJobs } from "@/app/api/job"
 import { JobCard, type Jobs } from "./components/JobCard"
 import { JobCardSkeleton } from "./components/JobCardSkeleton"
+import { useRecommendations } from "@/hooks/useRecommendations"
 
 
 export default function Jobs() {
@@ -19,6 +20,13 @@ export default function Jobs() {
     const [search, setSearch] = useState(searchParams.get("search") ?? "")
     const [employmentFilter, setEmploymentFilter] = useState("all")
     const [remoteFilter, setRemoteFilter] = useState("all")
+
+    const { recommendations, isLoading: aiLoading, refresh: refreshAI } = useRecommendations(
+        jobList, [], [], { autoFetch: false }
+    )
+    const aiJobs = recommendations
+        ? jobList.filter(j => recommendations.recommendedJobIds.includes(j.id)).slice(0, 3)
+        : []
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -72,7 +80,7 @@ export default function Jobs() {
                         <div>
                             <h1 className="text-xl font-bold">Opening Job Positions</h1>
                             <p className="text-sm text-slate-400 mt-1">
-                                {loading ? "Loading..." : `${filtered.length} job${filtered.length !== 1 ? "s" : ""} available`}
+                                Explore roles that are currently open for applications
                             </p>
                         </div>
 
@@ -109,6 +117,14 @@ export default function Jobs() {
                                     <SelectItem value="onsite">On-site</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <button
+                                onClick={refreshAI}
+                                disabled={aiLoading || loading}
+                                className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition-colors disabled:opacity-60"
+                            >
+                                {aiLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                {aiLoading ? "Thinking..." : "AI Picks"}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -120,14 +136,24 @@ export default function Jobs() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => <JobCardSkeleton key={i} />)}
                     </div>
+                ) : aiJobs.length > 0 ? (
+                    <>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Sparkles size={13} className="text-indigo-500" />
+                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">AI Picks for You</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {aiJobs.map(job => <JobCard key={job.id} job={job} aiPick />)}
+                        </div>
+                    </>
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
                         <Briefcase size={36} className="text-slate-200" />
-                        <p className="text-sm  text-slate-400">No jobs found</p>
+                        <p className="text-sm text-slate-400">No jobs found</p>
                         <p className="text-sm text-slate-300">Try adjusting your search or filters</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {filtered.map((job) => <JobCard key={job.id} job={job} />)}
                     </div>
                 )}
