@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogHeader } from "@/components/ui/dialog"
-import { Upload, FileText, Check } from "lucide-react"
+import { Upload, FileText, Check, Zap, Award, ScrollText } from "lucide-react"
 import type { Project } from "./ProjectCard"
 import { Progress } from "@/components/ui/progress"
 import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field"
@@ -241,6 +241,40 @@ export function ProjectDrawer({ open, onOpenChange, project }: Props) {
                                 </div>
                             </div>
                         )}
+
+                        {/* Rewards section */}
+                        <div className="px-7 py-5 border-b border-slate-100">
+                            <p className="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mb-3">What You&apos;ll Earn</p>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                                        <Zap size={13} className="text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[13px] font-medium text-slate-700">Experience Points (XP)</p>
+                                        <p className="text-[12px] text-slate-400 leading-relaxed">Awarded based on your performance and contribution upon completion.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                                        <Award size={13} className="text-[#2563eb]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[13px] font-medium text-slate-700">Badges</p>
+                                        <p className="text-[12px] text-slate-400 leading-relaxed">Employer-selected badges recognising your specific strengths on the project.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                                        <ScrollText size={13} className="text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[13px] font-medium text-slate-700">Certificate of Completion</p>
+                                        <p className="text-[12px] text-slate-400 leading-relaxed">A verifiable certificate auto-issued once the project is marked complete.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         {project?.description && (
                             <div className="px-7 py-5">

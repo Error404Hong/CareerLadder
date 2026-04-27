@@ -19,6 +19,17 @@ const resumeStorage = new CloudinaryStorage({
     },
 });
 
+const certificationStorage = new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => {
+        return {
+            folder: "certifications",
+            allowed_formats: ["pdf", "png", "jpeg", "webp"],
+            resource_type: "auto",
+        };
+    },
+});
+
 const removeResume = async (publicId) => {
     return await cloudinary.uploader.destroy(publicId, {
         resource_type: "raw",
@@ -26,5 +37,11 @@ const removeResume = async (publicId) => {
 };
 
 const uploadResume = multer({ storage: resumeStorage });
+const uploadCertification = multer({ storage: certificationStorage });
 
-module.exports = { uploadResume, cloudinary, removeResume };
+module.exports = {
+    uploadResume,
+    cloudinary,
+    removeResume,
+    uploadCertification,
+};

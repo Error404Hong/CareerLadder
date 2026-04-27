@@ -4,7 +4,8 @@ import { useUser } from "@clerk/nextjs"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 
-import { ProjectApplicant, Project, Task, Meeting, ProjectReview } from "@/types"
+import { ProjectApplicant, Project, Task, Meeting, ProjectReview, Badge as AwardBadge } from "@/types"
+import { getBadges } from "@/app/api/rewards"
 import { getTasksByProject } from "@/app/api/task"
 import { getProjectApplicantsById, getProjectById, completeProject, getStudentsReviews } from "@/app/api/project"
 import { getProjectInternalMeeting } from "@/app/api/meetings"
@@ -46,6 +47,7 @@ export default function ProjectCollabPage() {
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [completing, setCompleting] = useState(false)
     const [reviews, setReviews] = useState<ProjectReview[]>([]);
+    const [badges, setBadges] = useState<AwardBadge[]>([]);
 
     useEffect(() => {
         if (!user) return
@@ -57,13 +59,15 @@ export default function ProjectCollabPage() {
                 const tasksRes = await getTasksByProject(projectId)
                 const meetingRes = await getProjectInternalMeeting(projectId)
                 const reviewsRes = await getStudentsReviews(projectId)
+                const badgesRes = await getBadges();
 
-                if (pApplicants.success && projectRes.success && tasksRes.success && meetingRes.success && reviewsRes.success) {
+                if (pApplicants.success && projectRes.success && tasksRes.success && meetingRes.success && reviewsRes.success && badgesRes.success) {
                     setProjectApplicants(pApplicants.data)
                     setProject(projectRes.data)
                     setTasks(tasksRes.data)
                     setMeetings(meetingRes.data)
                     setReviews(reviewsRes.data);
+                    setBadges(badgesRes.data);
                     console.log("reviews: ", reviewsRes.data)
                 } else {
                     toast.error("Failed to fetch project details")
@@ -209,13 +213,14 @@ export default function ProjectCollabPage() {
                                     <CardHeader className="p-0">
                                         <CardTitle className="font-semibold text-lg">Project Reviews and Student Evaluation</CardTitle>
                                         <CardDescription>
-                                            View project feedback and assess students based on their involvement and performance.                                        </CardDescription>
+                                            View project feedback and assess students based on their involvement and performance.
+                                        </CardDescription>
                                     </CardHeader>
 
                                     <Separator />
 
                                     <CardContent className="p-0 flex flex-col gap-3">
-                                        <ReviewsAndEvaluationTab reviews={reviews} projectApplicants={projectApplicants} employer={user?.id ?? ""} />
+                                        <ReviewsAndEvaluationTab reviews={reviews} projectApplicants={projectApplicants} employer={user?.id ?? ""} badges={badges} projectId={projectId} />
                                     </CardContent>
                                 </Card>
                             </TabsContent>

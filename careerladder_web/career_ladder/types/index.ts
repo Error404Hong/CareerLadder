@@ -23,3 +23,4 @@ export * from "./language";
 export * from "./paymentRelease";
 export * from "./bank";
 export * from "./withdrawal";
+export * from "./badge";

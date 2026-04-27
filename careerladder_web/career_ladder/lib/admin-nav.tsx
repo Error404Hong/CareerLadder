@@ -1,4 +1,4 @@
-import { LayoutDashboard, Briefcase, Users, Star, CreditCard, Bot, CodeXml, FolderOpen } from "lucide-react"
+import { LayoutDashboard, Briefcase, Users, Star, CreditCard, Bot, CodeXml, FolderOpen, Trophy } from "lucide-react"
 
 export const adminNavItems = [
     {
@@ -53,6 +53,14 @@ export const adminNavItems = [
             // { label: "All Transactions", href: "/admin-dashboard/credits" },
             { label: "Withdrawal Requests", href: "/withdrawals" },
         ],
+    },
+    {
+        label: "Achievements",
+        href: "",
+        icon: <Trophy size={16} />,
+        children: [
+            { label: "Manage Badges", href: "/badges" }
+        ]
     },
     {
         label: "AI Model",

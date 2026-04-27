@@ -21,6 +21,7 @@ const chatRoutes = require("./routes/chatRoute");
 const taskRoutes = require("./routes/tasksRoute");
 const bankRoutes = require("./routes/bankRoute");
 const withdrawalRoutes = require("./routes/withdrawalRoute");
+const rewardsRoutes = require("./routes/rewardsRoute");
 
 app.use(
     cors({
@@ -51,6 +52,7 @@ app.use("/chat", chatRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/bank", bankRoutes);
 app.use("/withdrawal", withdrawalRoutes);
+app.use("/rewards", rewardsRoutes);
 
 app.get("/", async (req, res) => {
     try {

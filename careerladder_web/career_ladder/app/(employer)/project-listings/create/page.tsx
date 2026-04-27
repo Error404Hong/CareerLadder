@@ -6,14 +6,14 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { format, addMonths } from "date-fns"
 
-import { Plus, X, CalendarIcon } from "lucide-react"
+import { Plus, X, CalendarIcon, CircleHelp } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Field, FieldGroup, FieldError } from "@/components/ui/field"
+import { Field, FieldGroup, FieldError, FieldContent, FieldTitle } from "@/components/ui/field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +23,8 @@ import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createProject } from "@/app/api/project"
+import { Checkbox } from "@/components/ui/checkbox"
+import { TermsDialog } from "./termsDialog"
 
 const formSchema = z.object({
     title: z.string().min(1, "Project title cannot be empty"),
@@ -33,6 +35,7 @@ const formSchema = z.object({
     vacancies: z.number().min(1, "At least 1 vacancy is required"),
     start_date: z.date({ message: "Start date is required" }),
     end_date: z.date({ message: "End date is required" }),
+    rewards_acknowledged: z.boolean().refine(val => val === true, { message: "You must agree before publishing." }),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -42,6 +45,7 @@ export default function CreateProject() {
     const router = useRouter()
     const [skillInput, setSkillInput] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [termsOpen, setTermsOpen] = useState(false)
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -52,6 +56,7 @@ export default function CreateProject() {
             duration_months: 1,
             allowance: 0,
             vacancies: 1,
+            rewards_acknowledged: false,
         }
     })
 
@@ -368,28 +373,60 @@ export default function CreateProject() {
                         </Card>
 
                         {/* Footer Actions */}
-                        <div className="flex items-center justify-end gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="cursor-pointer p-5"
-                                onClick={() => router.push("/project-listings")}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                form="project-form"
-                                disabled={isSubmitting}
-                                className="cursor-pointer p-5"
-                            >
-                                {isSubmitting ? "Publishing..." : "Publish Project"}
-                            </Button>
-                        </div>
+                        <Controller name="rewards_acknowledged" control={form.control}
+                            render={({ field, fieldState }) => (
+                                <div className="flex items-start justify-between gap-6">
+                                    <Field orientation="horizontal" data-invalid={fieldState.invalid} className="flex-1">
+                                        <Checkbox
+                                            id="terms-checkbox"
+                                            checked={field.value}
+                                            onCheckedChange={(val) => field.onChange(val === true)}
+                                        />
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Label htmlFor="terms-checkbox" className="text-sm font-normal leading-snug">
+                                                        By creating this project, I agree to award badges, XP, and a certificate to accepted students upon completion.
+                                                    </Label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setTermsOpen(true)}
+                                                        className="text-slate-400 hover:text-[#2563eb] transition-colors shrink-0 cursor-pointer"
+                                                    >
+                                                        <CircleHelp size={14} />
+                                                    </button>
+                                                </div>
+                                            </FieldTitle>
+                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                        </FieldContent>
+                                    </Field>
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="cursor-pointer p-5"
+                                            onClick={() => router.push("/project-listings")}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            form="project-form"
+                                            disabled={isSubmitting}
+                                            className="cursor-pointer p-5"
+                                        >
+                                            {isSubmitting ? "Publishing..." : "Publish Project"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        />
 
                     </div>
                 </form>
             </div>
+
+            <TermsDialog open={termsOpen} onOpenChange={setTermsOpen} />
         </div>
     )
 }
