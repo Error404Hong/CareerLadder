@@ -5,13 +5,15 @@ import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
-import { Application, Project, Meeting } from "@/types"
-import { getApplicantsProfile, updateApplicationStatus } from "@/app/api/job"
-import { getProjectById, updateProjectVacancies, updateProjectStatus } from "@/app/api/project"
-import { calculatePayable, createProjectPayment } from "@/app/api/payment"
-import { createNotification } from "@/app/api/notifications"
-import { getApplicantMeetingById, updateMeetingStatus } from "@/app/api/meetings"
+import { Application, Project, Meeting, StudentBadge, Certification, Performance } from "@/types"
 import { createChannel } from "@/app/api/chat"
+import { getStudentPerformance } from "@/app/api/user"
+import { createNotification } from "@/app/api/notifications"
+import { calculatePayable, createProjectPayment } from "@/app/api/payment"
+import { getApplicantsProfile, updateApplicationStatus } from "@/app/api/job"
+import { getApplicantMeetingById, updateMeetingStatus } from "@/app/api/meetings"
+import { getProjectById, updateProjectVacancies, updateProjectStatus } from "@/app/api/project"
+import { getBadgesByStudent, getStudentCertifications, getStudentExpPoints } from "@/app/api/rewards"
 
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -22,13 +24,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { MapPin, Briefcase, Link, ExternalLink, User, Video, Copy, Calendar, Clock, CalendarClock, MoreHorizontal, Plus, CalendarSync, MessageSquare, ListCollapse } from "lucide-react"
+import { MapPin, Briefcase, Link, ExternalLink, Video, Copy, Calendar, Clock, CalendarClock, MoreHorizontal, Plus, CalendarSync, MessageSquare, ListCollapse, Award, File, Star } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 
 import { MeetingDialog } from "./meeting-dialog"
 import { PaymentDialog } from "./payment-dialog"
+import { XP_TIERS } from "@/app/(main)/achivements/components/ExpBanner"
+import { BadgeCard } from "@/app/(main)/achivements/components/BadgeCard"
+import { CertificationCard } from "@/app/(main)/achivements/components/CertificationCard"
+import { EmptyState } from "@/app/(main)/achivements/components/EmptyState"
+
 
 const allowedTransitions: Record<string, string[]> = {
     pending: ["pending", "reviewed", "shortlisted", "accepted", "rejected"],
@@ -69,7 +76,11 @@ export default function ApplicantsProfile() {
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [totalVacancies, setTotalVacancies] = useState(0);
-    const [meetings, setMeetings] = useState<Meeting[]>([])
+    const [meetings, setMeetings] = useState<Meeting[]>([]);
+    const [studentExp, setStudentExp] = useState(0);
+    const [studentBadges, setStudentBadges] = useState<StudentBadge[]>([]);
+    const [studentCerts, setStudentCerts] = useState<Certification[]>([]);
+    const [studentPerformances, setStudentPerformances] = useState<Performance[]>([]);
 
     const fetchMeetings = async (clerkId?: string) => {
         const cid = clerkId ?? application?.clerk_id
@@ -94,9 +105,23 @@ export default function ApplicantsProfile() {
                     setApplication(fetchRes.data)
                     setSelectedStatus(fetchRes.data.status)
                     fetchMeetings(fetchRes.data.clerk_id)
+
+                    const [studentExpRes, studentBadgeRes, studentCertRes, studentPerformanceRes] = await Promise.all([
+                        getStudentExpPoints(fetchRes.data.clerk_id),
+                        getBadgesByStudent(fetchRes.data.clerk_id),
+                        getStudentCertifications(fetchRes.data.clerk_id),
+                        getStudentPerformance(fetchRes.data.clerk_id)
+                    ])
+
+                    if (studentExpRes.success) setStudentExp(studentExpRes.data.experience_points);
+                    if (studentBadgeRes.success) setStudentBadges(studentBadgeRes.data);
+                    if (studentCertRes.success) setStudentCerts(studentCertRes.data);
+                    if (studentPerformanceRes.success) setStudentPerformances(studentPerformanceRes.data);
                 } else {
                     toast.error("Failed to fetch application")
                 }
+            } catch {
+                toast.error("Something went wrong. Please try again.")
             } finally {
                 setIsLoading(false)
             }
@@ -286,15 +311,14 @@ export default function ApplicantsProfile() {
                                 <p className="text-xs text-slate-400 uppercase tracking-widest">Project</p>
                                 <p className="text-lg font-bold text-[#0f172a]">{projectData?.title}</p>
                                 <div className="flex items-center gap-2 flex-wrap mt-1">
-                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${
-                                        projectData?.status === "open"        ? "bg-green-100 text-green-700 border-green-200" :
+                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${projectData?.status === "open" ? "bg-green-100 text-green-700 border-green-200" :
                                         projectData?.status === "in_progress" ? "bg-blue-100 text-blue-700 border-blue-200" :
-                                        projectData?.status === "completed"   ? "bg-purple-100 text-purple-700 border-purple-200" :
-                                                                                "bg-red-100 text-red-600 border-red-200"
-                                    }`}>
-                                        {projectData?.status === "open"        ? "Open" :
-                                         projectData?.status === "in_progress" ? "In Progress" :
-                                         projectData?.status === "completed"   ? "Completed" : "Closed"}
+                                            projectData?.status === "completed" ? "bg-purple-100 text-purple-700 border-purple-200" :
+                                                "bg-red-100 text-red-600 border-red-200"
+                                        }`}>
+                                        {projectData?.status === "open" ? "Open" :
+                                            projectData?.status === "in_progress" ? "In Progress" :
+                                                projectData?.status === "completed" ? "Completed" : "Closed"}
                                     </span>
                                 </div>
                             </div>
@@ -320,45 +344,110 @@ export default function ApplicantsProfile() {
                     </div>
 
                     {/* Applicant Hero Card */}
-                    <Card className="rounded-lg border border-slate-200 shadow-sm overflow-hidden p-0">
-                        <div className="h-16 bg-[#0f172a] relative">
-                            <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-[#2563eb]/10" />
-                        </div>
-                        <CardContent className="px-6 pb-5">
-                            <div className="flex items-end justify-between -mt-8 mb-4 flex-wrap gap-4">
-                                <div className="flex items-end gap-4">
-                                    <div className="w-16 h-16 rounded-full border-4 border-white bg-slate-100 shadow-md flex items-center justify-center shrink-0 relative z-10 overflow-hidden">
-                                        {application?.image_url ? (
-                                            <Image src={application.image_url} alt="profile" height={100} width={100} className="rounded-full" />
-                                        ) : (
-                                            <User size={24} className="text-slate-300" />
-                                        )}
-                                    </div>
-                                    <div className="pb-1">
-                                        <h1 className="text-xl font-bold text-[#0f172a]">{application?.first_name} {application?.last_name}</h1>
-                                        <p className="text-sm text-slate-400">{application?.email}</p>
+                    {(() => {
+                        const tier = XP_TIERS.find(t => studentExp >= t.min && studentExp <= t.max) ?? XP_TIERS[0]
+                        const TierIcon = tier.icon
+                        return (
+                            <Card className="rounded-xl border border-slate-200 shadow-sm overflow-hidden p-0">
+                                {/* Banner */}
+                                <div className="h-18 bg-[#0f172a] relative overflow-hidden">
+                                    {/* Subtle dot-grid texture */}
+                                    <div className="absolute inset-0 opacity-[0.06]" style={{
+                                        backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
+                                        backgroundSize: "20px 20px"
+                                    }} />
+                                    {/* Glow orbs */}
+                                    <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: tier.color + "20" }} />
+                                    <div className="absolute top-4 right-32 w-20 h-20 rounded-full blur-2xl" style={{ background: tier.color + "15" }} />
+                                    {/* Tier label watermark */}
+                                    <div className="absolute top-4 right-5 flex items-center gap-1.5 opacity-30">
+                                        <TierIcon size={11} className="text-white" />
+                                        <span className="text-[11px] font-semibold text-white tracking-widest uppercase">{tier.label}</span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 pb-1">
-                                    <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusConfig[application?.status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
-                                        {statusConfig[application?.status ?? ""]?.label ?? application?.status}
-                                    </span>
-                                    <p className="text-xs text-slate-400">
-                                        Applied {new Date(application?.applied_at ?? "").toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
-                                    </p>
-                                    <Button size="sm" className="cursor-pointer gap-1.5 text-xs" onClick={handleMessage}>
-                                        <MessageSquare size={13} /> Message
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+
+                                <CardContent className="px-6 pb-5">
+                                    <div className="flex items-end justify-between flex-wrap gap-4" style={{ marginTop: "-10px" }}>
+                                        {/* Left: avatar + info */}
+                                        <div className="flex items-end gap-4">
+                                            {/* Tier-ringed avatar */}
+                                            <div className="w-20 h-20 rounded-full border-4 border-white shadow-md bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                                {application?.image_url ? (
+                                                    <Image src={application.image_url} alt="profile" height={100} width={100} className="w-full h-full object-cover rounded-full" />
+                                                ) : (
+                                                    <span className="text-xl font-bold text-[#0f172a]">
+                                                        {application?.first_name?.[0]}{application?.last_name?.[0]}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Name + email + stats */}
+                                            <div className="pb-0.5">
+                                                <h1 className="text-xl font-bold text-[#0f172a] leading-tight">
+                                                    {application?.first_name} {application?.last_name}
+                                                </h1>
+                                                <p className="text-sm text-slate-400 mt-0.5">{application?.email}</p>
+                                                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                    {/* Tier + XP pill */}
+                                                    <span
+                                                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border"
+                                                        style={{ color: tier.color, borderColor: tier.color + "35", background: tier.color + "12" }}
+                                                    >
+                                                        <TierIcon size={10} />
+                                                        {tier.label} · {studentExp.toLocaleString()} XP
+                                                    </span>
+                                                    {/* Badges count */}
+                                                    {studentBadges.length > 0 && (
+                                                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                                                            <Award size={10} className="text-slate-400" />
+                                                            {studentBadges.length} badge{studentBadges.length !== 1 ? "s" : ""}
+                                                        </span>
+                                                    )}
+                                                    {/* Certs count */}
+                                                    {studentCerts.length > 0 && (
+                                                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                                                            <File size={10} className="text-slate-400" />
+                                                            {studentCerts.length} cert{studentCerts.length !== 1 ? "s" : ""}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right: status + action */}
+                                        <div className="flex items-center gap-3 pb-0.5">
+                                            <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusConfig[application?.status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
+                                                {statusConfig[application?.status ?? ""]?.label ?? application?.status}
+                                            </span>
+                                            <Button size="sm" className="cursor-pointer gap-1.5 text-xs" onClick={handleMessage}>
+                                                <MessageSquare size={13} /> Message
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )
+                    })()}
 
                     {/* Tabs */}
                     <Tabs defaultValue="details">
                         <TabsList className="mb-4" variant="line">
                             <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
                                 <ListCollapse /> Application Details
+                            </TabsTrigger>
+                            <TabsTrigger value="performance" className="gap-2 rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
+                                <Star size={14} /> Performance
+                                {studentPerformances.length > 0 && (
+                                    <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{studentPerformances.length}</Badge>
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger value="achievements" className="gap-2 rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
+                                <Award /> Achievements
+                                {(studentBadges.length + studentCerts.length) > 0 && (
+                                    <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">
+                                        {studentBadges.length + studentCerts.length}
+                                    </Badge>
+                                )}
                             </TabsTrigger>
                             <TabsTrigger value="meetings" className="gap-2 rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
                                 <Video /> Meetings
@@ -493,7 +582,159 @@ export default function ApplicantsProfile() {
                             </div>
                         </TabsContent>
 
-                        {/* Tab 2: Meetings */}
+                        {/* Tab 2: Performance */}
+                        <TabsContent value="performance">
+                            {studentPerformances.length === 0 ? (
+                                <div className="bg-white border border-slate-200 rounded-lg">
+                                    <EmptyState
+                                        icon={<Star size={24} />}
+                                        title="No performance reviews yet"
+                                        subtitle="Ratings appear after the student completes a project"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-5">
+                                    {/* Average banner */}
+                                    {(() => {
+                                        const avg = studentPerformances.reduce((s, p) => s + p.overall_rating, 0) / studentPerformances.length
+                                        return (
+                                            <Card className="rounded-lg border border-slate-200 shadow-sm">
+                                                <CardContent className="px-6 py-5">
+                                                    <div className="flex items-center justify-between flex-wrap gap-4">
+                                                        <div>
+                                                            <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Overall Average</p>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <span className="text-4xl font-bold text-[#0f172a]">{avg.toFixed(1)}</span>
+                                                                <span className="text-sm text-slate-400">/ 5</span>
+                                                            </div>
+                                                            <div className="flex gap-0.5 mt-1.5">
+                                                                {[1, 2, 3, 4, 5].map(i => (
+                                                                    <Star key={i} size={14} className={i <= Math.round(avg) ? "fill-amber-400 text-amber-400" : "text-slate-200 fill-slate-200"} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-3xl font-bold text-[#0f172a]">{studentPerformances.length}</p>
+                                                            <p className="text-xs text-slate-400 mt-0.5">Review{studentPerformances.length !== 1 ? "s" : ""}</p>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })()}
+
+                                    {/* Per-employer cards */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                        {studentPerformances.map((p, i) => (
+                                            <Card key={i} className="rounded-lg border border-slate-200 shadow-sm">
+                                                <CardContent className="px-5 py-4 flex flex-col gap-4">
+                                                    {/* Header */}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                                                                {p.companyLogo
+                                                                    ? <Image src={p.companyLogo} alt={p.company_name} width={32} height={32} className="w-full h-full object-cover" />
+                                                                    : <span className="text-xs font-bold text-slate-400">{p.company_name?.[0]}</span>
+                                                                }
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-[#0f172a] leading-tight">{p.company_name}</p>
+                                                                <p className="text-[11px] text-slate-400">{p.email}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <Star size={13} className="fill-amber-400 text-amber-400" />
+                                                            <span className="text-sm font-bold text-[#0f172a]">{p.overall_rating}</span>
+                                                            <span className="text-xs text-slate-400">/ 5</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Metric bars */}
+                                                    <div className="flex flex-col gap-2">
+                                                        {[
+                                                            { label: "Communication",   val: p.communication },
+                                                            { label: "Teamwork",        val: p.teamwork },
+                                                            { label: "Technical Skills",val: p.technical_skills },
+                                                            { label: "Problem Solving", val: p.problem_solving },
+                                                            { label: "Professionalism", val: p.professionalism },
+                                                        ].map(m => (
+                                                            <div key={m.label} className="flex items-center gap-3">
+                                                                <span className="text-[11px] text-slate-400 w-32 shrink-0">{m.label}</span>
+                                                                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className="h-full bg-linear-to-r from-[#0f172a] to-[#2563eb] rounded-full"
+                                                                        style={{ width: `${(m.val / 5) * 100}%` }}
+                                                                    />
+                                                                </div>
+                                                                <span className="text-[11px] font-semibold text-[#0f172a] w-5 text-right shrink-0">{m.val}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Comment */}
+                                                    {p.comments && (
+                                                        <p className="text-xs text-slate-500 italic leading-relaxed border-t border-slate-100 pt-3">
+                                                            &ldquo;{p.comments}&rdquo;
+                                                        </p>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* Tab 3: Achievements */}
+                        <TabsContent value="achievements">
+                            <div className="flex flex-col gap-6">
+                                {/* Badges */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Award size={15} className="text-[#0f172a]" />
+                                        <p className="text-sm font-semibold text-[#0f172a]">Awarded Badges</p>
+                                        <span className="text-xs text-slate-400">({studentBadges.length})</span>
+                                    </div>
+                                    {studentBadges.length === 0 ? (
+                                        <div className="bg-white border border-slate-200 rounded-lg">
+                                            <EmptyState
+                                                icon={<Award size={24} />}
+                                                title="No badges earned yet"
+                                                subtitle="Complete projects to earn recognition badges"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {studentBadges.map(badge => <BadgeCard key={badge.id} badge={badge} />)}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Certifications */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <File size={15} className="text-[#0f172a]" />
+                                        <p className="text-sm font-semibold text-[#0f172a]">Awarded Certifications</p>
+                                        <span className="text-xs text-slate-400">({studentCerts.length})</span>
+                                    </div>
+                                    {studentCerts.length === 0 ? (
+                                        <div className="bg-white border border-slate-200 rounded-lg">
+                                            <EmptyState
+                                                icon={<File size={24} />}
+                                                title="No certifications yet"
+                                                subtitle="Certifications are issued upon successful project completion"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                            {studentCerts.map(cert => <CertificationCard key={cert.id} cert={cert} />)}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        {/* Tab 3: Meetings */}
                         <TabsContent value="meetings">
                             <div className="flex items-center justify-between mb-4">
                                 <p className="text-sm text-slate-500">{meetings.length} meeting{meetings.length !== 1 ? "s" : ""} scheduled</p>

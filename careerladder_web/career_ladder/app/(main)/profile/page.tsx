@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Globe, Pencil, Mail, MapPin, Briefcase, GraduationCap, Code2, Languages, FileText, ChevronDown, Plus, Trash2, Upload, Info, Download, Star } from "lucide-react"
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -203,6 +205,7 @@ export default function Profile() {
                 const userPerformance = await getStudentPerformance(user.id);
 
                 if (userProfile) {
+                    console.log("USER PROFILE:", userProfile.data);
                     setMajor(userProfile.data.major ?? "Not Specified Yet");
                     setLocation(userProfile.data.location ?? "Not Specified Yet");
                     setLinkedinURL(userProfile.data.linkedin_url ?? "No Link Provided Yet");
@@ -513,7 +516,7 @@ export default function Profile() {
             } else {
                 toast.error("Failed to upload resume. Please try again")
             }
-        } catch (error) {
+        } catch {
             toast.error("Something went wrong. Please try again");
         }
 
@@ -587,181 +590,212 @@ export default function Profile() {
 
     return (
         <div className="min-h-screen bg-slate-100">
-            <div className="max-w-7xl mx-auto px-6 py-8 flex gap-0">
+            <div className="bg-white border-b border-slate-100">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <Breadcrumb className="mb-4">
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/home">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>My Profile</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
 
-                {/* ── LEFT SIDE ── */}
-                <div className="w-[35%] flex flex-col px-5 py-3.5 gap-4">
-                    <Card className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
-                        <CardHeader className="p-0 space-y-0">
-                            <div className="h-24 bg-linear-to-br from-[#0f172a] to-[#2563eb] relative" />
-                            <div className="flex justify-center -mt-10 pb-1 relative z-10">
-                                <div className="w-20 h-20 rounded-2xl border-4 border-white bg-linear-to-br from-[#0f172a] to-[#2563eb] shadow-md flex items-center justify-center">
-                                    <span className="text-2xl font-bold text-white">
-                                        {fname?.charAt(0) || "?"}
+                    <div>
+                        <h1 className="text-xl font-bold text-[#0f172a]">My Profile</h1>
+                        <p className="text-sm text-slate-400 mt-1">Manage your personal information, resume, and portfolio</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 py-6">
+                <div className="flex gap-6">
+
+                    {/* ── LEFT SIDE ── */}
+                    <div className="w-[35%] flex flex-col gap-4">
+                        <Card className="overflow-hidden rounded-lg border border-slate-100 shadow-sm">
+                            <CardHeader className="p-0 space-y-0">
+                                <div className="flex justify-center mt-2 relative z-10">
+                                    {user?.imageUrl ? (
+                                        <Image
+                                            src={user.imageUrl}
+                                            alt={`${fname} ${lname}`}
+                                            width={80}
+                                            height={80}
+                                            className="w-25 h-25 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-20 h-20 rounded-full bg-linear-to-br from-[#0f172a] to-[#2563eb] flex items-center justify-center">
+                                            <span className="text-2xl font-bold text-white">
+                                                {fname?.charAt(0) || "?"}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardHeader>
+                            <CardContent className="px-6 pb-6 text-center">
+                                <h2 className="text-lg font-bold text-[#0f172a]">{fname} {lname}</h2>
+                                <p className="text-sm text-[#2563eb]  mt-0.5">{major} Student</p>
+                                <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs mt-2">
+                                    <MapPin size={11} /><span>{location}</span>
+                                </div>
+                                <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+                                    <span className="text-[11px]  px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                        {workStatus ? "Open to Work" : "Unavailable"}
+                                    </span>
+                                    <span className="text-[11px]  px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                        {jobLabel}
                                     </span>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="px-6 pb-6 pt-3 text-center">
-                            <h2 className="text-lg font-bold text-[#0f172a]">{fname} {lname}</h2>
-                            <p className="text-sm text-[#2563eb]  mt-0.5">{major} Student</p>
-                            <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs mt-2">
-                                <MapPin size={11} /><span>{location}</span>
-                            </div>
-                            <div className="flex flex-wrap justify-center gap-1.5 mt-4">
-                                <span className="text-[11px]  px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                                    {workStatus ? "Open to Work" : "Unavailable"}
-                                </span>
-                                <span className="text-[11px]  px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                                    {jobLabel}
-                                </span>
-                            </div>
-                            <div className="h-px bg-slate-100 my-4" />
-                            <div className="flex flex-col gap-2 text-left">
-                                <div className="flex items-center gap-2.5 text-xs text-slate-500">
-                                    <Mail size={12} className="text-slate-300 shrink-0" />
-                                    <span>{email || "No email"}</span>
+                                <div className="h-px bg-slate-100 my-4" />
+                                <div className="flex flex-col gap-2 text-left">
+                                    <div className="flex items-center gap-2.5 text-xs text-slate-500">
+                                        <Mail size={12} className="text-slate-300 shrink-0" />
+                                        <span>{email || "No email"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5 text-xs text-slate-500">
+                                        <Globe size={12} className="text-slate-300 shrink-0" />
+                                        <span className="text-[#2563eb]">
+                                            {linkedinURL || "No LinkedIn URL"}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2.5 text-xs text-slate-500">
-                                    <Globe size={12} className="text-slate-300 shrink-0" />
-                                    <span className="text-[#2563eb]">
-                                        {linkedinURL || "No LinkedIn URL"}
+                                <div className="h-px bg-slate-100 my-4" />
+                                <button
+                                    className="w-full flex items-center justify-center gap-1.5 text-sm  text-slate-500 border border-slate-200 rounded-lg py-2.5 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors"
+                                    onClick={() => openDialog("profile")}
+                                >
+                                    <Pencil size={11} /> Edit Profile
+                                </button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Resume card */}
+                        <Card className="rounded-lg border border-slate-100 shadow-sm">
+                            <CardContent className="px-5">
+                                <div className="flex items-center gap-2.5 mb-4">
+                                    <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white shrink-0">
+                                        <FileText size={13} />
                                     </span>
+                                    <span className="font-semibold text-[#0f172a] text-sm">Resume</span>
                                 </div>
-                            </div>
-                            <div className="h-px bg-slate-100 my-4" />
-                            <button
-                                className="w-full flex items-center justify-center gap-1.5 text-sm  text-slate-500 border border-slate-200 rounded-xl py-2.5 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors"
-                                onClick={() => openDialog("profile")}
-                            >
-                                <Pencil size={11} /> Edit Profile
-                            </button>
-                        </CardContent>
-                    </Card>
 
-                    {/* Resume card */}
-                    <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                        <CardContent className="px-5">
-                            <div className="flex items-center gap-2.5 mb-4">
-                                <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white shrink-0">
-                                    <FileText size={13} />
-                                </span>
-                                <span className="font-semibold text-[#0f172a] text-sm">Resume</span>
-                            </div>
-
-                            {resumeURL ? (
-                                <div className="flex items-center gap-3 bg-slate-100 border border-slate-200 rounded-xl p-3">
-                                    <div className="w-9 h-9 rounded-lg bg-[#0f172a] flex items-center justify-center shrink-0">
-                                        <FileText size={13} className="text-white" />
+                                {resumeURL ? (
+                                    <div className="flex items-center gap-3 bg-slate-100 border border-slate-200 rounded-lg p-3">
+                                        <div className="w-9 h-9 rounded-lg bg-[#0f172a] flex items-center justify-center shrink-0">
+                                            <FileText size={13} className="text-white" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm  text-[#0f172a] truncate">{resumeURL.split("/").pop()}</p>
+                                            <p className="text-[11px] text-slate-400 mt-0.5">Uploaded</p>
+                                        </div>
+                                        <a href={resumeURL} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#2563eb] transition-colors cursor-pointer">
+                                            <Download size={15} />
+                                        </a>
+                                        <button className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                                            onClick={() => {
+                                                openDeleteDialog()
+                                                setDeleteTarget({ label: "Resume", type: "resume" })
+                                            }}
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm  text-[#0f172a] truncate">{resumeURL.split("/").pop()}</p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">Uploaded</p>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-100 border border-slate-200 rounded-lg">
+                                        <FileText size={24} className="text-slate-400" />
+                                        <p className="text-sm text-slate-400 ">No resume uploaded yet</p>
+                                        <p className="text-sm text-slate-400">Upload a PDF to showcase your experience</p>
                                     </div>
-                                    <a href={resumeURL} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#2563eb] transition-colors cursor-pointer">
-                                        <Download size={15} />
-                                    </a>
-                                    <button className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
-                                        onClick={() => {
-                                            openDeleteDialog()
-                                            setDeleteTarget({ label: "Resume", type: "resume" })
-                                        }}
-                                    >
-                                        <Trash2 size={15} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-100 border border-slate-200 rounded-xl">
-                                    <FileText size={24} className="text-slate-400" />
-                                    <p className="text-sm text-slate-400 ">No resume uploaded yet</p>
-                                    <p className="text-sm text-slate-400">Upload a PDF to showcase your experience</p>
-                                </div>
-                            )}
+                                )}
 
-                            <label className="mt-3 w-full flex items-center justify-center gap-1.5 text-sm  text-slate-500 border border-dashed border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] rounded-xl py-2.5 cursor-pointer transition-colors">
-                                <Upload size={11} /> {resumeURL ? "Replace Resume" : "Upload Resume"}
-                                <input type="file" className="hidden" accept=".pdf" onChange={uploadResume} />
-                            </label>
-                        </CardContent>
-                    </Card>
+                                <label className="mt-3 w-full flex items-center justify-center gap-1.5 text-sm  text-slate-500 border border-dashed border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] rounded-lg py-2.5 cursor-pointer transition-colors">
+                                    <Upload size={11} /> {resumeURL ? "Replace Resume" : "Upload Resume"}
+                                    <input type="file" className="hidden" accept=".pdf" onChange={uploadResume} />
+                                </label>
+                            </CardContent>
+                        </Card>
 
-                    {/* Performance Ratings */}
-                    <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                        <CardContent className="px-5">
-                            <div className="flex items-center gap-2.5 mb-4">
-                                <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white shrink-0">
-                                    <Star size={13} />
-                                </span>
-                                <span className="font-semibold text-[#0f172a] text-sm">Performance Ratings</span>
-                            </div>
-
-                            {performances.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-50 border border-slate-100 rounded-xl">
-                                    <Star size={24} className="text-slate-200" />
-                                    <p className="text-sm text-slate-400">No ratings yet</p>
-                                    <p className="text-xs text-slate-300 text-center">Ratings appear after completing a project</p>
+                        {/* Performance Ratings */}
+                        <Card className="rounded-lg border border-slate-100 shadow-sm">
+                            <CardContent className="px-5">
+                                <div className="flex items-center gap-2.5 mb-4">
+                                    <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white shrink-0">
+                                        <Star size={13} />
+                                    </span>
+                                    <span className="font-semibold text-[#0f172a] text-sm">Performance Ratings</span>
                                 </div>
-                            ) : (
-                                <>
-                                    {/* Average banner */}
-                                    {(() => {
-                                        const avg = performances.reduce((sum, p) => sum + p.overall_rating, 0) / performances.length
-                                        return (
-                                            <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-3">
-                                                <div className="flex items-baseline gap-1">
-                                                    <span className="text-2xl font-bold text-[#0f172a]">{avg.toFixed(1)}</span>
-                                                    <span className="text-xs text-slate-400">/ 5</span>
+
+                                {performances.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-6 gap-2 bg-slate-50 border border-slate-100 rounded-lg">
+                                        <Star size={24} className="text-slate-200" />
+                                        <p className="text-sm text-slate-400">No ratings yet</p>
+                                        <p className="text-xs text-slate-300 text-center">Ratings appear after completing a project</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Average banner */}
+                                        {(() => {
+                                            const avg = performances.reduce((sum, p) => sum + p.overall_rating, 0) / performances.length
+                                            return (
+                                                <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-100 mb-3">
+                                                    <div className="flex items-baseline gap-1">
+                                                        <span className="text-2xl font-bold text-[#0f172a]">{avg.toFixed(1)}</span>
+                                                        <span className="text-xs text-slate-400">/ 5</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        <div className="flex gap-0.5">
+                                                            {[1, 2, 3, 4, 5].map(i => (
+                                                                <Star key={i} size={11} className={i <= Math.round(avg) ? "fill-amber-400 text-amber-400" : "text-slate-200"} />
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-[10px] text-slate-400">{performances.length} review{performances.length !== 1 ? "s" : ""}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <div className="flex gap-0.5">
-                                                        {[1, 2, 3, 4, 5].map(i => (
-                                                            <Star key={i} size={11} className={i <= Math.round(avg) ? "fill-amber-400 text-amber-400" : "text-slate-200"} />
+                                            )
+                                        })()}
+
+                                        {/* Per-employer entries */}
+                                        <div className="flex flex-col gap-3">
+                                            {performances.map((p, i) => (
+                                                <div key={i} className="border border-slate-100 rounded-lg p-3 flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-xs font-semibold text-[#0f172a] truncate">{p.company_name}</span>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <Star size={11} className="fill-amber-400 text-amber-400" />
+                                                            <span className="text-xs font-semibold text-[#0f172a]">{p.overall_rating}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-1">
+                                                        {[
+                                                            { label: "Communication", val: p.communication },
+                                                            { label: "Teamwork", val: p.teamwork },
+                                                            { label: "Technical", val: p.technical_skills },
+                                                            { label: "Problem Solving", val: p.problem_solving },
+                                                            { label: "Professionalism", val: p.professionalism },
+                                                        ].map(m => (
+                                                            <div key={m.label} className="flex items-center justify-between bg-slate-50 rounded-lg px-2 py-1">
+                                                                <span className="text-[10px] text-slate-400 truncate">{m.label}</span>
+                                                                <span className="text-[10px] font-semibold text-[#0f172a] ml-1 shrink-0">{m.val}</span>
+                                                            </div>
                                                         ))}
                                                     </div>
-                                                    <span className="text-[10px] text-slate-400">{performances.length} review{performances.length !== 1 ? "s" : ""}</span>
+                                                    {p.comments && (
+                                                        <p className="text-[11px] text-slate-400 italic leading-relaxed">&ldquo;{p.comments}&rdquo;</p>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        )
-                                    })()}
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                                    {/* Per-employer entries */}
-                                    <div className="flex flex-col gap-3">
-                                        {performances.map((p, i) => (
-                                            <div key={i} className="border border-slate-100 rounded-xl p-3 flex flex-col gap-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs font-semibold text-[#0f172a] truncate">{p.company_name}</span>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                                                        <span className="text-xs font-semibold text-[#0f172a]">{p.overall_rating}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-1">
-                                                    {[
-                                                        { label: "Communication", val: p.communication },
-                                                        { label: "Teamwork", val: p.teamwork },
-                                                        { label: "Technical", val: p.technical_skills },
-                                                        { label: "Problem Solving", val: p.problem_solving },
-                                                        { label: "Professionalism", val: p.professionalism },
-                                                    ].map(m => (
-                                                        <div key={m.label} className="flex items-center justify-between bg-slate-50 rounded-lg px-2 py-1">
-                                                            <span className="text-[10px] text-slate-400 truncate">{m.label}</span>
-                                                            <span className="text-[10px] font-semibold text-[#0f172a] ml-1 shrink-0">{m.val}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {p.comments && (
-                                                    <p className="text-[11px] text-slate-400 italic leading-relaxed">&ldquo;{p.comments}&rdquo;</p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Profile completion */}
-                    {/* <Card className="rounded-2xl border border-slate-100 shadow-sm">
+                        {/* Profile completion */}
+                        {/* <Card className="rounded-lg border border-slate-100 shadow-sm">
                         <CardContent className="px-5">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="font-semibold text-[#0f172a] text-sm">Profile Strength</span>
@@ -793,269 +827,270 @@ export default function Profile() {
                             </div>
                         </CardContent>
                     </Card> */}
-                </div>
+                    </div>
 
-                {/* ── RIGHT SIDE ── */}
-                <div className="w-[65%] flex flex-col px-5 py-3.5 gap-4">
+                    {/* ── RIGHT SIDE ── */}
+                    <div className="w-[65%] flex flex-col gap-4">
 
-                    {/* Summary */}
-                    <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                        <CardContent className="px-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white">
-                                        <Pencil size={13} />
-                                    </span>
-                                    <span className="font-semibold text-[#0f172a] text-sm">Profile Summary</span>
+                        {/* Summary */}
+                        <Card className="rounded-lg border border-slate-100 shadow-sm">
+                            <CardContent className="px-6">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="w-7 h-7 rounded-lg bg-[#0f172a] flex items-center justify-center text-white">
+                                            <Pencil size={13} />
+                                        </span>
+                                        <span className="font-semibold text-[#0f172a] text-sm">Profile Summary</span>
+                                    </div>
+                                    <button
+                                        className="flex items-center gap-1 text-[11px]  text-[#2563eb] bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                                        onClick={() => openDialog("summary")}
+                                    >
+                                        <Pencil size={11} /> Edit
+                                    </button>
                                 </div>
-                                <button
-                                    className="flex items-center gap-1 text-[11px]  text-[#2563eb] bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                                    onClick={() => openDialog("summary")}
-                                >
-                                    <Pencil size={11} /> Edit
-                                </button>
-                            </div>
-                            {summary ? (
-                                <p className="text-sm text-slate-500 leading-relaxed">{summary}</p>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-8 gap-2">
-                                    <Info size={28} className="text-slate-200" />
-                                    <p className="text-sm text-slate-400 ">No summary yet</p>
-                                    <p className="text-sm text-slate-300">Click Edit to add a profile summary</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                {summary ? (
+                                    <p className="text-sm text-slate-500 leading-relaxed">{summary}</p>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                        <Info size={28} className="text-slate-200" />
+                                        <p className="text-sm text-slate-400 ">No summary yet</p>
+                                        <p className="text-sm text-slate-300">Click Edit to add a profile summary</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                    {/* Experience */}
-                    <Collapsible defaultOpen className="group">
-                        <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                            <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<Briefcase size={13} />} title="Work Experience" onAdd={() => openDialog("experience")} />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <CardContent className="px-6 flex flex-col gap-5">
-                                    {experience.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
-                                            <Briefcase size={28} className="text-slate-200" />
-                                            <p className="text-sm text-slate-400 ">No experience added yet</p>
-                                            <p className="text-sm text-slate-300">Click Add to add your work experience</p>
-                                        </div>
-                                    ) : (
-                                        experience.map((exp, i, arr) => (
-                                            <div key={exp.id} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
-                                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                    <Briefcase size={14} className="text-slate-400" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <p className="font-semibold text-[#0f172a] text-sm">{exp.jobtitle}</p>
-                                                            <p className="text-sm text-[#2563eb]  mt-0.5">{exp.company}</p>
-                                                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                                                                <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
-                                                                    {workTypes.find(j => j.value === exp.employment_type)?.label ?? exp.employment_type}
-                                                                </Badge>
-                                                                {exp.location && (
+                        {/* Experience */}
+                        <Collapsible defaultOpen className="group">
+                            <Card className="rounded-lg border border-slate-100 shadow-sm">
+                                <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
+                                    <SectionHeader icon={<Briefcase size={13} />} title="Work Experience" onAdd={() => openDialog("experience")} />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="px-6 flex flex-col gap-5">
+                                        {experience.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                                <Briefcase size={28} className="text-slate-200" />
+                                                <p className="text-sm text-slate-400 ">No experience added yet</p>
+                                                <p className="text-sm text-slate-300">Click Add to add your work experience</p>
+                                            </div>
+                                        ) : (
+                                            experience.map((exp, i, arr) => (
+                                                <div key={exp.id} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
+                                                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <Briefcase size={14} className="text-slate-400" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-start justify-between">
+                                                            <div>
+                                                                <p className="font-semibold text-[#0f172a] text-sm">{exp.jobtitle}</p>
+                                                                <p className="text-sm text-[#2563eb]  mt-0.5">{exp.company}</p>
+                                                                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                                                                     <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
-                                                                        {exp.location}
+                                                                        {workTypes.find(j => j.value === exp.employment_type)?.label ?? exp.employment_type}
                                                                     </Badge>
-                                                                )}
-                                                                <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
-                                                                    {exp.start_year} — {exp.is_current ? "Present" : exp.end_year}
-                                                                </Badge>
+                                                                    {exp.location && (
+                                                                        <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
+                                                                            {exp.location}
+                                                                        </Badge>
+                                                                    )}
+                                                                    <Badge variant="outline" className="text-[11px] text-slate-500 font-normal">
+                                                                        {exp.start_year} — {exp.is_current ? "Present" : exp.end_year}
+                                                                    </Badge>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1.5">
+                                                                <button
+                                                                    className="text-slate-500 hover:text-slate-400 transition-colors"
+                                                                    onClick={() => openEditDialog(
+                                                                        "experience",
+                                                                        exp.id,
+                                                                        { type: "experience", data: exp },
+                                                                        {
+                                                                            jobtitle: exp.jobtitle,
+                                                                            company: exp.company,
+                                                                            location: exp.location,
+                                                                            employment_type: exp.employment_type,
+                                                                            jobdescription: exp.job_description,
+                                                                            start_year: exp.start_year,
+                                                                            end_year: exp.end_year ?? "",
+                                                                            is_current: exp.is_current,
+                                                                        }
+                                                                    )}
+                                                                >
+                                                                    <Pencil size={15} />
+                                                                </button>
+                                                                <button
+                                                                    className="text-slate-500 hover:text-red-400 transition-colors"
+                                                                    onClick={() => {
+                                                                        openDeleteDialog()
+                                                                        setDeleteTarget({ id: exp.id, label: `${exp.jobtitle} at ${exp.company}`, type: "experience" })
+                                                                    }}
+                                                                >
+                                                                    <Trash2 size={15} />
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex gap-1.5">
-                                                            <button
-                                                                className="text-slate-500 hover:text-slate-400 transition-colors"
-                                                                onClick={() => openEditDialog(
-                                                                    "experience",
-                                                                    exp.id,
-                                                                    { type: "experience", data: exp },
-                                                                    {
-                                                                        jobtitle: exp.jobtitle,
-                                                                        company: exp.company,
-                                                                        location: exp.location,
-                                                                        employment_type: exp.employment_type,
-                                                                        jobdescription: exp.job_description,
-                                                                        start_year: exp.start_year,
-                                                                        end_year: exp.end_year ?? "",
-                                                                        is_current: exp.is_current,
-                                                                    }
-                                                                )}
-                                                            >
-                                                                <Pencil size={15} />
-                                                            </button>
-                                                            <button
-                                                                className="text-slate-500 hover:text-red-400 transition-colors"
-                                                                onClick={() => {
-                                                                    openDeleteDialog()
-                                                                    setDeleteTarget({ id: exp.id, label: `${exp.jobtitle} at ${exp.company}`, type: "experience" })
-                                                                }}
-                                                            >
-                                                                <Trash2 size={15} />
-                                                            </button>
-                                                        </div>
+                                                        <p className="text-xs text-slate-500 leading-relaxed mt-2">{exp.job_description}</p>
                                                     </div>
-                                                    <p className="text-xs text-slate-500 leading-relaxed mt-2">{exp.job_description}</p>
                                                 </div>
+                                            ))
+                                        )}
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
+
+                        {/* Education */}
+                        <Collapsible defaultOpen className="group">
+                            <Card className="rounded-lg border border-slate-100 shadow-sm">
+                                <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
+                                    <SectionHeader icon={<GraduationCap size={13} />} title="Education" onAdd={() => openDialog("education")} />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="px-6 flex flex-col gap-5">
+                                        {education.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                                <GraduationCap size={28} className="text-slate-200" />
+                                                <p className="text-sm text-slate-400 ">No education added yet</p>
+                                                <p className="text-sm text-slate-300">Click Add to add your education history</p>
                                             </div>
-                                        ))
-                                    )}
-                                </CardContent>
-                            </CollapsibleContent>
-                        </Card>
-                    </Collapsible>
-
-                    {/* Education */}
-                    <Collapsible defaultOpen className="group">
-                        <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                            <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<GraduationCap size={13} />} title="Education" onAdd={() => openDialog("education")} />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <CardContent className="px-6 flex flex-col gap-5">
-                                    {education.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
-                                            <GraduationCap size={28} className="text-slate-200" />
-                                            <p className="text-sm text-slate-400 ">No education added yet</p>
-                                            <p className="text-sm text-slate-300">Click Add to add your education history</p>
-                                        </div>
-                                    ) : (
-                                        education.map((edu, i, arr) => (
-                                            <div key={edu.id} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
-                                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                    <GraduationCap size={14} className="text-slate-400" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <p className="text-sm text-[#2563eb]  mt-0.5">{edu.institution}</p>
-                                                            <p className="text-xs text-slate-400 mt-0.5">
-                                                                {edu.field} · {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex gap-1.5">
-                                                            <button
-                                                                className="text-slate-500 hover:text-slate-400 transition-colors"
-                                                                onClick={() => openEditDialog(
-                                                                    "education",
-                                                                    edu.id,
-                                                                    { type: "education", data: edu },
-                                                                    {
-                                                                        institution: edu.institution,
-                                                                        field: edu.field,
-                                                                        start_year: edu.start_year,
-                                                                        end_year: edu.end_year ?? "",
-                                                                        is_current: edu.is_current,
-                                                                    }
-                                                                )}
-                                                            >
-                                                                <Pencil size={15} />
-                                                            </button>
-                                                            <button
-                                                                className="text-slate-500 hover:text-red-400 transition-colors"
-                                                                onClick={() => {
-                                                                    openDeleteDialog()
-                                                                    setDeleteTarget({ id: edu.id, label: `${edu.institution} - ${edu.field}`, type: "education" })
-                                                                }}
-                                                            >
-                                                                <Trash2 size={15} />
-                                                            </button>
+                                        ) : (
+                                            education.map((edu, i, arr) => (
+                                                <div key={edu.id} className={`flex gap-4 ${i < arr.length - 1 ? "pb-5 border-b border-slate-100" : ""}`}>
+                                                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <GraduationCap size={14} className="text-slate-400" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-start justify-between">
+                                                            <div>
+                                                                <p className="text-sm text-[#2563eb]  mt-0.5">{edu.institution}</p>
+                                                                <p className="text-xs text-slate-400 mt-0.5">
+                                                                    {edu.field} · {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex gap-1.5">
+                                                                <button
+                                                                    className="text-slate-500 hover:text-slate-400 transition-colors"
+                                                                    onClick={() => openEditDialog(
+                                                                        "education",
+                                                                        edu.id,
+                                                                        { type: "education", data: edu },
+                                                                        {
+                                                                            institution: edu.institution,
+                                                                            field: edu.field,
+                                                                            start_year: edu.start_year,
+                                                                            end_year: edu.end_year ?? "",
+                                                                            is_current: edu.is_current,
+                                                                        }
+                                                                    )}
+                                                                >
+                                                                    <Pencil size={15} />
+                                                                </button>
+                                                                <button
+                                                                    className="text-slate-500 hover:text-red-400 transition-colors"
+                                                                    onClick={() => {
+                                                                        openDeleteDialog()
+                                                                        setDeleteTarget({ id: edu.id, label: `${edu.institution} - ${edu.field}`, type: "education" })
+                                                                    }}
+                                                                >
+                                                                    <Trash2 size={15} />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                            ))
+                                        )}
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
+
+                        {/* Skills */}
+                        <Collapsible defaultOpen className="group">
+                            <Card className="rounded-lg border border-slate-100 shadow-sm">
+                                <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
+                                    <SectionHeader icon={<Code2 size={13} />} title="Skills" onAdd={() => openDialog("skill")} />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="px-6">
+                                        {skills.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                                <Code2 size={28} className="text-slate-200" />
+                                                <p className="text-sm text-slate-400 ">No skills added yet</p>
+                                                <p className="text-sm text-slate-300">Click Add to add your skills</p>
                                             </div>
-                                        ))
-                                    )}
-                                </CardContent>
-                            </CollapsibleContent>
-                        </Card>
-                    </Collapsible>
+                                        ) : (
+                                            <div className="flex flex-wrap gap-2">
+                                                {skills.map((skill) => (
+                                                    <span key={skill.id} className="inline-flex items-center gap-1.5 text-xs  px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
+                                                        {skill.name}
+                                                        <button
+                                                            className="text-slate-300 hover:text-red-400 transition-colors"
+                                                            onClick={() => {
+                                                                setDeleteTarget({ id: skill.id, label: skill.name, type: "skill" })
+                                                                setDeleteDialogOpen(true)
+                                                            }}
+                                                        >
+                                                            <span className="text-[10px]">✕</span>
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
 
-                    {/* Skills */}
-                    <Collapsible defaultOpen className="group">
-                        <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                            <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<Code2 size={13} />} title="Skills" onAdd={() => openDialog("skill")} />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <CardContent className="px-6">
-                                    {skills.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
-                                            <Code2 size={28} className="text-slate-200" />
-                                            <p className="text-sm text-slate-400 ">No skills added yet</p>
-                                            <p className="text-sm text-slate-300">Click Add to add your skills</p>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-wrap gap-2">
-                                            {skills.map((skill) => (
-                                                <span key={skill.id} className="inline-flex items-center gap-1.5 text-xs  px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:border-[#0f172a] hover:text-[#0f172a] transition-colors">
-                                                    {skill.name}
-                                                    <button
-                                                        className="text-slate-300 hover:text-red-400 transition-colors"
-                                                        onClick={() => {
-                                                            setDeleteTarget({ id: skill.id, label: skill.name, type: "skill" })
-                                                            setDeleteDialogOpen(true)
-                                                        }}
-                                                    >
-                                                        <span className="text-[10px]">✕</span>
-                                                    </button>
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </CollapsibleContent>
-                        </Card>
-                    </Collapsible>
-
-                    {/* Languages */}
-                    <Collapsible defaultOpen className="group">
-                        <Card className="rounded-2xl border border-slate-100 shadow-sm">
-                            <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
-                                <SectionHeader icon={<Languages size={13} />} title="Languages" onAdd={() => openDialog("language")} />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <CardContent className="px-6 flex flex-col gap-3">
-                                    {languages.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center py-8 gap-2">
-                                            <Languages size={28} className="text-slate-200" />
-                                            <p className="text-sm text-slate-400 ">No languages added yet</p>
-                                            <p className="text-sm text-slate-300">Click Add to add your languages</p>
-                                        </div>
-                                    ) : (
-                                        languages.map((l) => {
-                                            const pct = proficiencyLevels.find(p => p.value === l.proficiency)?.pct ?? 0
-                                            return (
-                                                <div key={l.id} className="flex items-center gap-4">
-                                                    <div className="w-28 shrink-0">
-                                                        <p className="text-sm  text-[#0f172a]">{l.language}</p>
-                                                        <p className="text-[11px] text-slate-400 capitalize">{l.proficiency}</p>
+                        {/* Languages */}
+                        <Collapsible defaultOpen className="group">
+                            <Card className="rounded-lg border border-slate-100 shadow-sm">
+                                <CollapsibleTrigger className="w-full px-6 pb-4 border-b border-slate-100">
+                                    <SectionHeader icon={<Languages size={13} />} title="Languages" onAdd={() => openDialog("language")} />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="px-6 flex flex-col gap-3">
+                                        {languages.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                                <Languages size={28} className="text-slate-200" />
+                                                <p className="text-sm text-slate-400 ">No languages added yet</p>
+                                                <p className="text-sm text-slate-300">Click Add to add your languages</p>
+                                            </div>
+                                        ) : (
+                                            languages.map((l) => {
+                                                const pct = proficiencyLevels.find(p => p.value === l.proficiency)?.pct ?? 0
+                                                return (
+                                                    <div key={l.id} className="flex items-center gap-4">
+                                                        <div className="w-28 shrink-0">
+                                                            <p className="text-sm  text-[#0f172a]">{l.language}</p>
+                                                            <p className="text-[11px] text-slate-400 capitalize">{l.proficiency}</p>
+                                                        </div>
+                                                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-linear-to-r from-[#0f172a] to-[#2563eb] rounded-full" style={{ width: `${pct}%` }} />
+                                                        </div>
+                                                        <button
+                                                            className="text-slate-500 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
+                                                            onClick={() => {
+                                                                setDeleteTarget({ id: l.id, label: l.language, type: "language" })
+                                                                setDeleteDialogOpen(true)
+                                                            }}
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
                                                     </div>
-                                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-linear-to-r from-[#0f172a] to-[#2563eb] rounded-full" style={{ width: `${pct}%` }} />
-                                                    </div>
-                                                    <button
-                                                        className="text-slate-500 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
-                                                        onClick={() => {
-                                                            setDeleteTarget({ id: l.id, label: l.language, type: "language" })
-                                                            setDeleteDialogOpen(true)
-                                                        }}
-                                                    >
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                </div>
-                                            )
-                                        })
-                                    )}
-                                </CardContent>
-                            </CollapsibleContent>
-                        </Card>
-                    </Collapsible>
+                                                )
+                                            })
+                                        )}
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
 
-                </div>
+                    </div>
+                </div>{/* closes flex gap-0 */}
             </div>
 
             {/* ── Profile Form Dialog ── */}

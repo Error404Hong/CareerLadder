@@ -24,3 +24,5 @@ export * from "./paymentRelease";
 export * from "./bank";
 export * from "./withdrawal";
 export * from "./badge";
+export * from "./studentBadge";
+export * from "./certification";

@@ -1,21 +1,25 @@
 import { Student } from "@/types/student"
 import { Mail, MapPin, CalendarDays } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { XP_TIERS } from "@/app/(main)/achivements/components/ExpBanner"
 import Image from "next/image"
 
 const accountStatusConfig: Record<number, { label: string; className: string }> = {
-    1: { label: "Active",    className: "bg-green-100 text-green-700 border border-green-200" },
-    2: { label: "Disabled",  className: "bg-red-100 text-red-600 border border-red-200" },
-    3: { label: "Frozen",    className: "bg-blue-100 text-blue-600 border border-blue-200" },
+    1: { label: "Active",   className: "bg-green-100 text-green-700 border border-green-200" },
+    2: { label: "Disabled", className: "bg-red-100 text-red-600 border border-red-200" },
+    3: { label: "Frozen",   className: "bg-blue-100 text-blue-600 border border-blue-200" },
 }
 
-export function ProfileHeader({ profile }: { profile: Student }) {
+export function ProfileHeader({ profile, studentExp }: { profile: Student; studentExp: number }) {
     const statusConfig = accountStatusConfig[Number(profile.status)]
         ?? { label: "Unknown", className: "bg-slate-100 text-slate-500 border border-slate-200" }
 
+    const tier = XP_TIERS.find(t => studentExp >= t.min && studentExp <= t.max) ?? XP_TIERS[0]
+    const TierIcon = tier.icon
+
     return (
         <Card className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="h-1.5 bg-linear-to-r from-[#2563eb] via-violet-500 to-[#2563eb]" />
+            <div className="h-1.5 bg-linear-to-r from-[#2563eb] to-violet-500" />
             <CardContent className="px-6 py-6">
                 <div className="flex items-start gap-6 flex-wrap">
                     {/* Avatar */}
@@ -55,6 +59,14 @@ export function ProfileHeader({ profile }: { profile: Student }) {
                             )}
                             <span className="flex items-center gap-1.5 text-xs text-slate-400">
                                 <CalendarDays size={12} /> Joined {new Date(profile.created_at).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" })}
+                            </span>
+                            {/* XP + Tier pill */}
+                            <span
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border"
+                                style={{ color: tier.color, borderColor: tier.color + "35", background: tier.color + "12" }}
+                            >
+                                <TierIcon size={11} />
+                                {tier.label} · {studentExp.toLocaleString()} XP
                             </span>
                         </div>
                     </div>

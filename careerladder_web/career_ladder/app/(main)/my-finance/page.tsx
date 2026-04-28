@@ -186,26 +186,29 @@ export default function MyFinance() {
     const pagedWithdrawals = withdrawals.slice((withdrawalPage - 1) * PAGE_SIZE, withdrawalPage * PAGE_SIZE)
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
+        <div className="min-h-screen bg-slate-100">
+            <div className="bg-white border-b border-slate-100">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <Breadcrumb className="mb-4">
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/home">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>My Finance</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
 
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>My Finance</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-
-                <div>
-                    <h1 className="text-xl font-bold">My Finance</h1>
-                    <p className="text-sm text-slate-400 mt-1">Track your allowances, escrow status, and earnings</p>
+                    <div>
+                        <h1 className="text-xl font-bold">My Finance</h1>
+                        <p className="text-sm text-slate-400 mt-1">Track your allowances, escrow status, and earnings</p>
+                    </div>
                 </div>
+            </div>
 
+            <div className="max-w-7xl mx-auto px-6 py-6">
                 <Tabs defaultValue="overview">
                     <TabsList variant="line" className="mb-3 gap-3">
                         <TabsTrigger value="overview" className="cursor-pointer"><DollarSign />Finance Overview</TabsTrigger>

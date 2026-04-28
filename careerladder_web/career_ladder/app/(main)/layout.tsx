@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Toaster } from "sonner"
 import { navItems } from "@/lib/nav"
-import { Bell, User, DollarSign, MessageCircle, Landmark } from "lucide-react"
+import { Bell, User, DollarSign, MessageCircle, Landmark, Trophy } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useUser } from "@clerk/nextjs"
@@ -224,9 +224,14 @@ export default function MainLayout({
                     href="/my-finance"
                   />
                   <UserButton.Link
-                    label="Saved Bank Account(s)"
+                    label="Saved Bank Accounts"
                     labelIcon={<Landmark size={14} />}
                     href="/banks"
+                  />
+                  <UserButton.Link
+                    label="My Achivements"
+                    labelIcon={<Trophy size={14} />}
+                    href="/achivements"
                   />
                   <UserButton.Action label="manageAccount" />
                   <UserButton.Action label="signOut" />

@@ -128,92 +128,96 @@ export default function BankPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
+        <div className="min-h-screen bg-slate-100">
+            <div className="bg-white border-b border-slate-100">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <Breadcrumb className="mb-4">
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/home">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Bank Accounts</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
 
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Bank Accounts</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div>
-                        <h1 className="text-xl font-bold text-[#0f172a]">Bank Accounts</h1>
-                        <p className="text-sm text-slate-400 mt-1">Manage your saved bank accounts for withdrawals</p>
-                    </div>
-                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button className=" text-white gap-1.5 cursor-pointer">
-                                <Plus size={15} /> Add Bank Account
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                                <DialogTitle>Add Bank Account</DialogTitle>
-                            </DialogHeader>
-                            <form id="bank-form" onSubmit={form.handleSubmit(handleAdd)}>
-                                <FieldGroup className="py-2">
-                                    <Controller name="bank_name" control={form.control}
-                                        render={({ field, fieldState }) => (
-                                            <Field data-invalid={fieldState.invalid}>
-                                                <Label htmlFor="bank_name">Bank Name</Label>
-                                                <Select value={field.value} onValueChange={field.onChange}>
-                                                    <SelectTrigger id="bank_name" aria-invalid={fieldState.invalid}>
-                                                        <SelectValue placeholder="Select your bank" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {MALAYSIAN_BANKS.map(b => (
-                                                            <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                            </Field>
-                                        )}
-                                    />
-                                    <Controller name="account_number" control={form.control}
-                                        render={({ field, fieldState }) => (
-                                            <Field data-invalid={fieldState.invalid}>
-                                                <Label htmlFor="account_number">Account Number</Label>
-                                                <Input {...field} id="account_number" placeholder="e.g. 1234567890" aria-invalid={fieldState.invalid} />
-                                                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                            </Field>
-                                        )}
-                                    />
-                                    <Controller name="account_holder_name" control={form.control}
-                                        render={({ field, fieldState }) => (
-                                            <Field data-invalid={fieldState.invalid}>
-                                                <Label htmlFor="account_holder_name">Account Holder Name</Label>
-                                                <Input {...field} id="account_holder_name" placeholder="Full name as on bank account" aria-invalid={fieldState.invalid} />
-                                                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                            </Field>
-                                        )}
-                                    />
-                                </FieldGroup>
-                            </form>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                                <Button
-                                    type="submit"
-                                    form="bank-form"
-                                    disabled={submitting}
-                                    className="cursor-pointer text-white"
-                                >
-                                    {submitting ? "Adding..." : "Add Account"}
+                    <div className="flex items-end justify-between gap-6 flex-wrap">
+                        <div>
+                            <h1 className="text-xl font-bold text-[#0f172a]">Bank Accounts</h1>
+                            <p className="text-sm text-slate-400 mt-1">Manage your saved bank accounts for withdrawals</p>
+                        </div>
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button className=" text-white gap-1.5 cursor-pointer">
+                                    <Plus size={15} /> Add Bank Account
                                 </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </div>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Add Bank Account</DialogTitle>
+                                </DialogHeader>
+                                <form id="bank-form" onSubmit={form.handleSubmit(handleAdd)}>
+                                    <FieldGroup className="py-2">
+                                        <Controller name="bank_name" control={form.control}
+                                            render={({ field, fieldState }) => (
+                                                <Field data-invalid={fieldState.invalid}>
+                                                    <Label htmlFor="bank_name">Bank Name</Label>
+                                                    <Select value={field.value} onValueChange={field.onChange}>
+                                                        <SelectTrigger id="bank_name" aria-invalid={fieldState.invalid}>
+                                                            <SelectValue placeholder="Select your bank" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {MALAYSIAN_BANKS.map(b => (
+                                                                <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                </Field>
+                                            )}
+                                        />
+                                        <Controller name="account_number" control={form.control}
+                                            render={({ field, fieldState }) => (
+                                                <Field data-invalid={fieldState.invalid}>
+                                                    <Label htmlFor="account_number">Account Number</Label>
+                                                    <Input {...field} id="account_number" placeholder="e.g. 1234567890" aria-invalid={fieldState.invalid} />
+                                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                </Field>
+                                            )}
+                                        />
+                                        <Controller name="account_holder_name" control={form.control}
+                                            render={({ field, fieldState }) => (
+                                                <Field data-invalid={fieldState.invalid}>
+                                                    <Label htmlFor="account_holder_name">Account Holder Name</Label>
+                                                    <Input {...field} id="account_holder_name" placeholder="Full name as on bank account" aria-invalid={fieldState.invalid} />
+                                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                </Field>
+                                            )}
+                                        />
+                                    </FieldGroup>
+                                </form>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                                    <Button
+                                        type="submit"
+                                        form="bank-form"
+                                        disabled={submitting}
+                                        className="cursor-pointer text-white"
+                                    >
+                                        {submitting ? "Adding..." : "Add Account"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
 
+
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 py-6">
                 {/* Warning banner — no accounts */}
                 {!isLoading && bankAccounts.length === 0 && (
                     <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
