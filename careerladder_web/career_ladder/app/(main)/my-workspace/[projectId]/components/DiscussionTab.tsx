@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { StreamChat, Channel as StreamChannel } from "stream-chat"
 import { Chat, Channel, ChannelHeader, MessageInput, MessageList, Thread, Window } from "stream-chat-react"
-// @ts-expect-error no type declarations for css
+// @ts-ignore
 import "stream-chat-react/dist/css/v2/index.css"
 
 import { getChatToken } from "@/app/api/chat"
