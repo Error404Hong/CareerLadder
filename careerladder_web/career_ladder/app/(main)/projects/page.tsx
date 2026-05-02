@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { getAllProjects } from "@/app/api/project"
@@ -12,7 +12,7 @@ import { ProjectCard, type Project } from "./components/ProjectCard"
 import { ProjectCardSkeleton } from "./components/ProjectCardSkeleton"
 import { useRecommendations } from "@/hooks/useRecommendations"
 
-export default function Projects() {
+function ProjectsContent() {
     const searchParams = useSearchParams()
     const [projectList, setProjectList] = useState<Project[]>([])
     const [loading, setLoading] = useState(true)
@@ -149,5 +149,13 @@ export default function Projects() {
                 )}
             </div>
         </div>
+    )
+}
+
+export default function Projects() {
+    return (
+        <Suspense>
+            <ProjectsContent />
+        </Suspense>
     )
 }

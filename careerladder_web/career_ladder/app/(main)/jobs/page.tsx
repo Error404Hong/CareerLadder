@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,7 +13,7 @@ import { JobCardSkeleton } from "./components/JobCardSkeleton"
 import { useRecommendations } from "@/hooks/useRecommendations"
 
 
-export default function Jobs() {
+function JobsContent() {
     const searchParams = useSearchParams()
     const [jobList, setJobList] = useState<Jobs[]>([]);
     const [loading, setLoading] = useState(true)
@@ -159,5 +159,13 @@ export default function Jobs() {
                 )}
             </div>
         </div >
+    )
+}
+
+export default function Jobs() {
+    return (
+        <Suspense>
+            <JobsContent />
+        </Suspense>
     )
 }
