@@ -84,7 +84,7 @@ function ProjectReviewCard({ review }: { review: ProjectReview }) {
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Avatar className="w-9 h-9">
-                            <AvatarImage src={review.profile_image} alt={review.first_name} />
+                            <AvatarImage className="object-cover" src={review.profile_image} alt={review.first_name} />
                             <AvatarFallback className="text-xs font-semibold bg-white/10 text-white">{initials}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
@@ -117,7 +117,7 @@ function CompanyReviewCard({ review }: { review: CompanyReview }) {
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Avatar className="w-9 h-9">
-                            <AvatarImage src={review.profile_image} alt={review.first_name} />
+                            <AvatarImage className="object-cover" src={review.profile_image} alt={review.first_name} />
                             <AvatarFallback className="text-xs font-semibold bg-white/10 text-white">{initials}</AvatarFallback>
                         </Avatar>
                         <span className="text-sm font-semibold text-white">{review.first_name} {review.last_name}</span>

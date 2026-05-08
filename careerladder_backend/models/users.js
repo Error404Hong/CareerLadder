@@ -664,6 +664,32 @@ class Users {
             throw error;
         }
     }
+
+    static async updateStatus(clerkid, status) {
+        try {
+            const result = await pool.query(
+                "UPDATE users SET status = $1 WHERE clerk_id = $2 RETURNING *",
+                [status, clerkid]
+            );
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Error updating user status: ", error);
+            throw error;
+        }
+    }
+
+    static async deleteUser(clerkid) {
+        try {
+            const result = await pool.query(
+                "DELETE FROM users WHERE clerk_id = $1 RETURNING *",
+                [clerkid]
+            );
+            return result.rows[0] ?? null;
+        } catch (error) {
+            logger.error("[MODEL] Error deleting user: ", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Users;

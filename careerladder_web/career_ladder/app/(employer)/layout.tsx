@@ -3,12 +3,14 @@
 import { Toaster } from "sonner"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/ui/app-sidebar"
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs"
+import { SignedIn, SignedOut, UserButton, useUser, useClerk } from "@clerk/nextjs"
 import Link from "next/link"
 import { Building2, Bell } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { getNotifications, markAllAsRead, markAsRead } from "@/app/api/notifications"
+import { getUserById } from "@/app/api/user"
 
 type Notification = {
     id: number
@@ -40,10 +42,28 @@ export default function DashboardLayout({
     children: React.ReactNode
 }) {
     const { user } = useUser()
+    const { signOut } = useClerk()
+    const router = useRouter()
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [unreadCount, setUnreadCount] = useState(0)
 
     const userId = user?.id
+
+    useEffect(() => {
+        if (!userId) return
+        const checkFrozen = async () => {
+            try {
+                const res = await getUserById(userId)
+                if (res.data?.status && res.data.status !== 1) {
+                    await signOut()
+                    router.replace("/account-frozen")
+                }
+            } catch {
+                // silently fail — don't block if API is temporarily unavailable
+            }
+        }
+        checkFrozen()
+    }, [userId])
 
     useEffect(() => {
         if (!userId) return

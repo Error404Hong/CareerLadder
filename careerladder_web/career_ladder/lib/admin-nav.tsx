@@ -61,15 +61,7 @@ export const adminNavItems = [
         children: [
             { label: "Manage Badges", href: "/badges" }
         ]
-    },
-    {
-        label: "AI Model",
-        href: "/admin-dashboard/ai",
-        icon: <Bot size={16} />,
-        children: [
-            { label: "Model Settings", href: "/admin-dashboard/ai" },
-        ],
-    },
+    }
 ]
 
 export type AdminNavItem = (typeof adminNavItems)[0];

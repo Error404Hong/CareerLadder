@@ -7,9 +7,11 @@ import { useRouter } from "next/navigation"
 
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { Briefcase, CheckCircle2, XCircle } from "lucide-react"
+import { Briefcase, CheckCircle2, XCircle, FileDown } from "lucide-react"
+import { generatePDFReport } from "@/lib/generate-report"
 import { DataTable } from "./data-table"
 import { getJobColumns } from "./job-columns"
 import { DeleteJobDialog } from "./components/DeleteJobDialog"
@@ -73,6 +75,30 @@ export default function JobManagementPage() {
     const openJobs = jobs.filter((j) => j.status === "open").length
     const closedJobs = jobs.filter((j) => j.status === "closed").length
 
+    const handleGenerateReport = () => {
+        generatePDFReport({
+            title: "Job Listings Report",
+            subtitle: "All job listings across companies",
+            stats: [
+                { label: "Total Jobs", value: jobs.length },
+                { label: "Open", value: openJobs },
+                { label: "Closed", value: closedJobs },
+            ],
+            tables: [{
+                head: ["Title", "Type", "Location", "Salary (RM)", "Status", "Posted", "Applications"],
+                body: jobs.map(j => [
+                    j.title,
+                    j.employment_type,
+                    j.is_remote ? "Remote" : j.location,
+                    `${Number(j.salary_min).toLocaleString()} – ${Number(j.salary_max).toLocaleString()}`,
+                    j.status.charAt(0).toUpperCase() + j.status.slice(1),
+                    new Date(j.created_at).toLocaleDateString("en-MY"),
+                    j.application_count ?? 0,
+                ]),
+            }],
+        })
+    }
+
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
@@ -128,8 +154,22 @@ export default function JobManagementPage() {
 
                         <Card className="rounded-lg border border-slate-200 shadow-sm">
                             <CardHeader className="px-5 border-b border-slate-100">
-                                <CardTitle className="text-xl font-bold">Job Listings</CardTitle>
-                                <CardDescription>View and monitor all job listings across companies</CardDescription>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <CardTitle className="text-xl font-bold">Job Listings</CardTitle>
+                                        <CardDescription>View and monitor all job listings across companies</CardDescription>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5 shrink-0 cursor-pointer"
+                                        onClick={handleGenerateReport}
+                                        disabled={jobs.length === 0}
+                                    >
+                                        <FileDown size={14} />
+                                        Export PDF
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="px-5 py-4">
                                 <DataTable

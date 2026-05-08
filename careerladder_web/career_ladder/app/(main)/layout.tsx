@@ -15,8 +15,10 @@ import {
 } from "@/components/ui/navigation-menu"
 
 import { getNotifications, markAllAsRead, markAsRead } from "@/app/api/notifications"
+import { getUserById } from "@/app/api/user"
 import { Notification } from "@/types"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { useClerk } from "@clerk/nextjs"
 
 
 const timeAgo = (dateStr: string) => {
@@ -37,11 +39,28 @@ export default function MainLayout({
   children: React.ReactNode
 }>) {
   const { user } = useUser()
+  const { signOut } = useClerk()
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
 
   const userId = user?.id
+
+  useEffect(() => {
+    if (!userId) return
+    const checkFrozen = async () => {
+      try {
+        const res = await getUserById(userId)
+        if (res.data?.status && res.data.status !== 1) {
+          await signOut()
+          router.replace("/account-frozen")
+        }
+      } catch {
+        // silently fail — don't block if API is temporarily unavailable
+      }
+    }
+    checkFrozen()
+  }, [userId])
 
   useEffect(() => {
     if (!userId) return

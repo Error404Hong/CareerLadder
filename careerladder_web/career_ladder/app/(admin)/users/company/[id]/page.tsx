@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 import { CompanyHeader } from "./components/CompanyHeader"
+import { FreezeAccountDialog } from "../../components/FreezeAccountDialog"
 import { OverviewTab } from "./components/OverviewTab"
 import { ReviewsTab } from "./components/ReviewsTab"
 import { ProjectReviewsTab } from "./components/ProjectReviewsTab"
@@ -24,6 +25,7 @@ export default function CompanyDetailsPage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+    const [freezeDialogOpen, setFreezeDialogOpen] = useState(false);
     const [companyReviews, setCompanyReviews] = useState<CompanyReview[]>([]);
     const [projectReviews, setProjectReviews] = useState<ProjectReview[]>([]);
 
@@ -87,7 +89,11 @@ export default function CompanyDetailsPage() {
                     </div>
                 ) : companyProfile ? (
                     <>
-                        <CompanyHeader profile={companyProfile} />
+                        <CompanyHeader
+                            profile={companyProfile}
+                            onFreeze={() => setFreezeDialogOpen(true)}
+                            onUnfreeze={() => setFreezeDialogOpen(true)}
+                        />
 
                         <Card className="rounded-xl border border-slate-200 shadow-sm">
                             <CardContent className="px-6 pt-2 pb-6">
@@ -131,6 +137,17 @@ export default function CompanyDetailsPage() {
                     </Card>
                 )}
             </div>
+
+            {companyProfile && (
+                <FreezeAccountDialog
+                    open={freezeDialogOpen}
+                    name={companyProfile.company_name}
+                    clerkId={companyProfile.clerk_id}
+                    isFreezing={Number(companyProfile.status) === 1}
+                    onClose={() => setFreezeDialogOpen(false)}
+                    onSuccess={(newStatus) => setCompanyProfile((prev) => prev ? { ...prev, status: newStatus } : prev)}
+                />
+            )}
         </div>
     )
 }

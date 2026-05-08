@@ -887,6 +887,33 @@ const getStudentPerformance = async (req, res) => {
     }
 };
 
+const deleteUser = async (req, res) => {
+    const { clerkid } = req.params;
+    try {
+        const deleted = await Users.deleteUser(clerkid);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.json({ success: true, data: deleted });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const updateUserStatus = async (req, res) => {
+    const { clerkid } = req.params;
+    const { status } = req.body;
+    try {
+        const updated = await Users.updateStatus(clerkid, status);
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.json({ success: true, data: updated });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     addNewUser,
     getUser,
@@ -919,4 +946,6 @@ module.exports = {
     getAllCompanyReviews,
     deleteCompanyReview,
     getStudentPerformance,
+    updateUserStatus,
+    deleteUser,
 };

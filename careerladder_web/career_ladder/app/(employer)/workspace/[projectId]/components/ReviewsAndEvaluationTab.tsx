@@ -111,7 +111,7 @@ function ReviewCard({ review }: { review: ProjectReview }) {
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Avatar className="w-9 h-9">
-                            <AvatarImage src={review.profile_image} alt={review.first_name} />
+                            <AvatarImage src={review.profile_image} alt={review.first_name} className="object-cover" />
                             <AvatarFallback className="text-xs font-semibold bg-white/10 text-white">{initials}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
@@ -209,7 +209,7 @@ function EvaluateStudentsForm({ projectApplicants, employer, projectId, badges }
                                 {selectedStudent ? (
                                     <div className="flex items-center gap-2">
                                         <Avatar className="w-5 h-5">
-                                            <AvatarImage src={selectedStudent.profile_image} />
+                                            <AvatarImage src={selectedStudent.profile_image} className="object-cover" />
                                             <AvatarFallback className="text-[10px]">
                                                 {selectedStudent.first_name[0]}{selectedStudent.last_name[0]}
                                             </AvatarFallback>
@@ -225,7 +225,7 @@ function EvaluateStudentsForm({ projectApplicants, employer, projectId, badges }
                                     <SelectItem key={applicant.clerk_id} value={applicant.clerk_id}>
                                         <div className="flex items-center gap-2 py-0.5">
                                             <Avatar className="w-6 h-6">
-                                                <AvatarImage src={applicant.profile_image} />
+                                                <AvatarImage src={applicant.profile_image} className="object-cover" />
                                                 <AvatarFallback className="text-[10px] bg-slate-100">
                                                     {applicant.first_name[0]}{applicant.last_name[0]}
                                                 </AvatarFallback>

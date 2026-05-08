@@ -7,9 +7,11 @@ import { useRouter } from "next/navigation"
 
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { FolderKanban, CheckCircle2, XCircle } from "lucide-react"
+import { FolderKanban, CheckCircle2, XCircle, FileDown } from "lucide-react"
+import { generatePDFReport } from "@/lib/generate-report"
 import { DataTable } from "./data-table"
 import { getProjectColumns } from "./project-columns"
 import { DeleteProjectDialog } from "./components/DeleteProjectDialog"
@@ -61,6 +63,31 @@ export default function ProjectManagementPage() {
     const openProjects = projects.filter((p) => p.status === "open").length
     const closedProjects = projects.filter((p) => p.status === "closed").length
     const inProgressProjects = projects.filter((p) => p.status === "in_progress").length
+
+    const handleGenerateReport = () => {
+        generatePDFReport({
+            title: "Project Listings Report",
+            subtitle: "All project listings across companies",
+            stats: [
+                { label: "Total Projects", value: projects.length },
+                { label: "Open", value: openProjects },
+                { label: "In Progress", value: inProgressProjects },
+                { label: "Closed", value: closedProjects },
+            ],
+            tables: [{
+                head: ["Title", "Company", "Duration", "Allowance (RM)", "Status", "Start Date", "Applications"],
+                body: projects.map(p => [
+                    p.title,
+                    p.company_name ?? "—",
+                    p.duration,
+                    Number(p.allowance).toLocaleString(),
+                    p.status === "in_progress" ? "In Progress" : p.status.charAt(0).toUpperCase() + p.status.slice(1),
+                    p.start_date ? new Date(p.start_date).toLocaleDateString("en-MY") : "—",
+                    p.application_count ?? 0,
+                ]),
+            }],
+        })
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -118,8 +145,22 @@ export default function ProjectManagementPage() {
 
                         <Card className="rounded-lg border border-slate-200 shadow-sm">
                             <CardHeader className="px-5 border-b border-slate-100">
-                                <CardTitle className="text-xl font-bold">Project Listings</CardTitle>
-                                <CardDescription>View and monitor all project listings across companies</CardDescription>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <CardTitle className="text-xl font-bold">Project Listings</CardTitle>
+                                        <CardDescription>View and monitor all project listings across companies</CardDescription>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5 shrink-0 cursor-pointer"
+                                        onClick={handleGenerateReport}
+                                        disabled={projects.length === 0}
+                                    >
+                                        <FileDown size={14} />
+                                        Export PDF
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="px-5 py-4">
                                 <DataTable

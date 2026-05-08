@@ -7,9 +7,11 @@ import { useRouter } from "next/navigation"
 
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { BookOpen, CheckCircle2, XCircle, Users } from "lucide-react"
+import { BookOpen, CheckCircle2, XCircle, Users, FileDown } from "lucide-react"
+import { generatePDFReport } from "@/lib/generate-report"
 import { DataTable } from "./data-table"
 import { getTrainingColumns } from "./training-columns"
 import { DeleteProgramDialog } from "./components/DeleteProgramDialog"
@@ -63,6 +65,30 @@ export default function ProgramManagementPage() {
 
     const openPrograms = trainings.filter((t) => t.status === "open").length
     const completedPrograms = trainings.filter((t) => t.status === "completed").length
+
+    const handleGenerateReport = () => {
+        generatePDFReport({
+            title: "Training Programs Report",
+            subtitle: "All training programs across companies",
+            stats: [
+                { label: "Total Programs", value: trainings.length },
+                { label: "Open", value: openPrograms },
+                { label: "Completed", value: completedPrograms },
+            ],
+            tables: [{
+                head: ["Title", "Company", "Mode / Location", "Date", "Duration", "Status", "Registrations"],
+                body: trainings.map(t => [
+                    t.title,
+                    t.company_name ?? "—",
+                    t.meeting_url ? "Online" : (t.location || "—"),
+                    t.date ? new Date(t.date).toLocaleDateString("en-MY") : "—",
+                    t.duration,
+                    t.status.charAt(0).toUpperCase() + t.status.slice(1),
+                    t.registration_count ?? 0,
+                ]),
+            }],
+        })
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -119,8 +145,22 @@ export default function ProgramManagementPage() {
 
                         <Card className="rounded-lg border border-slate-200 shadow-sm">
                             <CardHeader className="px-5 border-b border-slate-100">
-                                <CardTitle className="text-xl font-bold">Training Programs</CardTitle>
-                                <CardDescription>View and monitor all training programs across companies</CardDescription>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <CardTitle className="text-xl font-bold">Training Programs</CardTitle>
+                                        <CardDescription>View and monitor all training programs across companies</CardDescription>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5 shrink-0 cursor-pointer"
+                                        onClick={handleGenerateReport}
+                                        disabled={trainings.length === 0}
+                                    >
+                                        <FileDown size={14} />
+                                        Export PDF
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="px-5 py-4">
                                 <DataTable

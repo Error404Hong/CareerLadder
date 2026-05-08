@@ -1,15 +1,17 @@
+"use client"
+
 import Image from "next/image"
-import { Building2, MapPin, Globe } from "lucide-react"
+import { Building2, MapPin, Globe, Snowflake, ShieldCheck } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { CompanyProfile } from "@/types/companyProfile"
 
 const accountStatusConfig: Record<number, { label: string; className: string }> = {
     1: { label: "Active", className: "bg-emerald-50 text-emerald-700 border border-emerald-200" },
-    2: { label: "Disabled", className: "bg-red-50 text-red-600 border border-red-200" },
     3: { label: "Frozen", className: "bg-blue-50 text-blue-600 border border-blue-200" },
 }
 
-export function CompanyHeader({ profile }: { profile: CompanyProfile }) {
+export function CompanyHeader({ profile, onFreeze, onUnfreeze }: { profile: CompanyProfile; onFreeze: () => void; onUnfreeze: () => void }) {
     const status = accountStatusConfig[Number(profile.status)] ?? { label: "Unknown", className: "bg-slate-100 text-slate-500" }
 
     return (
@@ -41,6 +43,18 @@ export function CompanyHeader({ profile }: { profile: CompanyProfile }) {
                                 <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${status.className}`}>
                                     {status.label}
                                 </span>
+                                {Number(profile.status) === 1 && (
+                                    <Button size="sm" variant="outline" onClick={onFreeze} className="h-7 px-2.5 gap-1 text-xs text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer">
+                                        <Snowflake size={11} />
+                                        Freeze
+                                    </Button>
+                                )}
+                                {Number(profile.status) === 3 && (
+                                    <Button size="sm" variant="outline" onClick={onUnfreeze} className="h-7 px-2.5 gap-1 text-xs text-green-600 border-green-200 hover:bg-green-50 cursor-pointer">
+                                        <ShieldCheck size={11} />
+                                        Unfreeze
+                                    </Button>
+                                )}
                             </div>
                         </div>
 

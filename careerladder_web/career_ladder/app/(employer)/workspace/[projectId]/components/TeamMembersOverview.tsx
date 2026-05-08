@@ -28,13 +28,15 @@ export function TeamMembersOverview({ ownerImageUrl, ownerName, ownerEmail, proj
             <CardContent className="p-0 flex flex-col gap-3">
                 {/* Company (Owner) */}
                 <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 bg-slate-100">
-                    <Image
-                        src={ownerImageUrl}
-                        alt="Owner"
-                        height={40}
-                        width={40}
-                        className="rounded-full object-cover"
-                    />
+                    <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
+                        <Image
+                            src={ownerImageUrl}
+                            alt="Owner"
+                            height={40}
+                            width={40}
+                            className="object-cover w-full h-full"
+                        />
+                    </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-slate-800">{ownerName} (You)</p>
                         <p className="text-xs text-slate-400 truncate">{ownerEmail}</p>
@@ -45,13 +47,15 @@ export function TeamMembersOverview({ ownerImageUrl, ownerName, ownerEmail, proj
                 {/* Applicants */}
                 {projectApplicants.map(member => (
                     <div key={member.clerk_id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 bg-slate-100">
-                        <Image
-                            src={member.profile_image}
-                            alt={member.first_name}
-                            height={40}
-                            width={40}
-                            className="rounded-full object-cover"
-                        />
+                        <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
+                            <Image
+                                src={member.profile_image}
+                                alt={member.first_name}
+                                height={40}
+                                width={40}
+                                className="object-cover w-full h-full"
+                            />
+                        </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-slate-800">
                                 {member.first_name} {member.last_name}

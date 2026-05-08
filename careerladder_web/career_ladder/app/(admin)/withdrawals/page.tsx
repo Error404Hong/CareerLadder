@@ -8,7 +8,8 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { toast } from "sonner"
-import { BanknoteArrowDown, Clock, CheckCircle2, XCircle, BadgeCheck } from "lucide-react"
+import { BanknoteArrowDown, Clock, CheckCircle2, XCircle, BadgeCheck, FileDown } from "lucide-react"
+import { generatePDFReport } from "@/lib/generate-report"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -117,6 +118,32 @@ export default function WithdrawalRequestPage() {
 
     const columns = getWithdrawalColumns(handleApprove, handleRejectOpen, handleComplete, actionLoadingId)
 
+    const handleGenerateReport = () => {
+        generatePDFReport({
+            title: "Withdrawal Requests Report",
+            subtitle: "All student withdrawal requests",
+            stats: [
+                { label: "Pending Review", value: totalPending },
+                { label: "Approved", value: totalApproved },
+                { label: "Completed", value: totalCompleted },
+                { label: "Rejected", value: totalRejected },
+                { label: "Total Disbursed", value: `RM ${totalCompletedAmount.toLocaleString()}` },
+            ],
+            tables: [{
+                head: ["Student", "Amount (RM)", "Bank", "Account No.", "Status", "Requested", "Note"],
+                body: withdrawals.map(w => [
+                    w.account_holder_name,
+                    `RM ${Number(w.amount).toLocaleString()}`,
+                    w.bank_name,
+                    w.account_number,
+                    w.status.charAt(0).toUpperCase() + w.status.slice(1),
+                    new Date(w.requested_at).toLocaleDateString("en-MY"),
+                    w.admin_note ?? "—",
+                ]),
+            }],
+        })
+    }
+
     const totalPending = withdrawals.filter(w => w.status === "pending").length
     const totalApproved = withdrawals.filter(w => w.status === "approved").length
     const totalCompleted = withdrawals.filter(w => w.status === "completed").length
@@ -154,9 +181,21 @@ export default function WithdrawalRequestPage() {
                     </BreadcrumbList>
                 </Breadcrumb>
 
-                <div>
-                    <h1 className="text-xl font-bold text-[#0f172a]">Withdrawal Requests</h1>
-                    <p className="text-sm text-slate-400 mt-1">Review and manage student withdrawal requests</p>
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl font-bold text-[#0f172a]">Withdrawal Requests</h1>
+                        <p className="text-sm text-slate-400 mt-1">Review and manage student withdrawal requests</p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 shrink-0 cursor-pointer"
+                        onClick={handleGenerateReport}
+                        disabled={isLoading || withdrawals.length === 0}
+                    >
+                        <FileDown size={14} />
+                        Export PDF
+                    </Button>
                 </div>
 
                 {/* Stat Cards */}

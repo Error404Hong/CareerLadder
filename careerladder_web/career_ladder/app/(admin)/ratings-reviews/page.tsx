@@ -12,7 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Star, MessageSquare, Trash2, Building2, FolderKanban } from "lucide-react"
+import { Star, MessageSquare, Trash2, Building2, FolderKanban, FileDown } from "lucide-react"
+import { generatePDFReport } from "@/lib/generate-report"
 
 import { DeleteReviewDialog } from "./components/DeleteReviewDialog"
 
@@ -162,6 +163,44 @@ export default function RatingsReviewsPage() {
         ? (projectReviews.reduce((sum, r) => sum + r.rating, 0) / projectReviews.length).toFixed(1)
         : "—"
 
+    const handleGenerateReport = () => {
+        generatePDFReport({
+            title: "Ratings & Reviews Report",
+            subtitle: "All company and project reviews",
+            stats: [
+                { label: "Company Reviews", value: companyReviews.length },
+                { label: "Avg Company Rating", value: avgCompanyRating },
+                { label: "Project Reviews", value: projectReviews.length },
+                { label: "Avg Project Rating", value: avgProjectRating },
+            ],
+            tables: [
+                {
+                    title: "Company Reviews",
+                    head: ["Reviewer", "Company", "Rating", "Date", "Review"],
+                    body: companyReviews.map(r => [
+                        `${r.first_name} ${r.last_name}`,
+                        r.company_name ?? "—",
+                        `${r.rating} / 5`,
+                        new Date(r.created_at).toLocaleDateString("en-MY"),
+                        r.review_text.length > 80 ? r.review_text.slice(0, 77) + "..." : r.review_text,
+                    ]),
+                },
+                {
+                    title: "Project Reviews",
+                    head: ["Reviewer", "Project", "Company", "Rating", "Date", "Review"],
+                    body: projectReviews.map(r => [
+                        `${r.first_name} ${r.last_name}`,
+                        r.project_title ?? "—",
+                        r.company_name ?? "—",
+                        `${r.rating} / 5`,
+                        new Date(r.created_at).toLocaleDateString("en-MY"),
+                        r.review_text.length > 60 ? r.review_text.slice(0, 57) + "..." : r.review_text,
+                    ]),
+                },
+            ],
+        })
+    }
+
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col gap-6">
@@ -200,8 +239,22 @@ export default function RatingsReviewsPage() {
 
                 <Card className="rounded-lg border border-slate-200 shadow-sm">
                     <CardHeader className="px-5 border-b border-slate-100">
-                        <CardTitle className="text-xl font-bold">Review Moderation</CardTitle>
-                        <CardDescription>Monitor and remove reviews that violate platform policies</CardDescription>
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-xl font-bold">Review Moderation</CardTitle>
+                                <CardDescription>Monitor and remove reviews that violate platform policies</CardDescription>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1.5 shrink-0 cursor-pointer"
+                                onClick={handleGenerateReport}
+                                disabled={isLoading || (companyReviews.length === 0 && projectReviews.length === 0)}
+                            >
+                                <FileDown size={14} />
+                                Export PDF
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="px-5 py-4">
                         <Tabs defaultValue="company">

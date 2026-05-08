@@ -514,3 +514,23 @@ export const getStudentPerformance = async (clerkid: string) => {
         throw error;
     }
 };
+
+export const updateUserStatus = async (clerkId: string, status: number) => {
+    try {
+        const response = await axiosInstance.patch(`/users/updateStatus/${clerkId}`, { status });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating user status: ", error);
+        throw error;
+    }
+};
+
+export const deleteUserFromDB = async (clerkId: string) => {
+    try {
+        const response = await axiosInstance.delete(`/users/deleteUser/${clerkId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting user from DB: ", error);
+        throw error;
+    }
+};

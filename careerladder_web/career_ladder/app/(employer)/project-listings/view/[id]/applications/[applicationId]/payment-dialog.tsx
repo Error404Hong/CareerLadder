@@ -18,15 +18,12 @@ type Props = {
     total_vacancies: number,
 }
 
-const PLATFORM_FEE_PERCENT = 5
-
 const calculateTotal = (allowance: string, duration: string, vacancies: number) => {
     const monthMatch = duration.toLowerCase().match(/(\d+)\s*month/)
     const weekMatch = duration.toLowerCase().match(/(\d+)\s*week/)
     const months = monthMatch ? parseInt(monthMatch[1]) : weekMatch ? parseInt(weekMatch[1]) / 4 : 1
-    const subtotal = Number(allowance) * months * vacancies
-    const platformFee = subtotal * (PLATFORM_FEE_PERCENT / 100)
-    return { subtotal, platformFee, total: subtotal + platformFee, months }
+    const total = Number(allowance) * months * vacancies
+    return { total, months }
 }
 
 export function PaymentDialog({ open, onOpenChange, project, total_vacancies }: Props) {
@@ -36,9 +33,9 @@ export function PaymentDialog({ open, onOpenChange, project, total_vacancies }: 
     const applicationId = params.applicationId as string
     const [isPaying, setIsPaying] = useState(false)
 
-    const { subtotal, platformFee, total, months } = project
+    const { total, months } = project
         ? calculateTotal(project.allowance, project.duration, total_vacancies)
-        : { subtotal: 0, platformFee: 0, total: 0, months: 1 }
+        : { total: 0, months: 1 }
 
     const handleProceedToPayment = async () => {
         if (!user || !project) return
@@ -98,20 +95,6 @@ export function PaymentDialog({ open, onOpenChange, project, total_vacancies }: 
                         <span className="text-xs text-slate-400">Vacancies</span>
                         <span className="text-sm font-medium text-[#0f172a]">
                             {total_vacancies} student{total_vacancies !== 1 ? "s" : ""}
-                        </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400">Subtotal</span>
-                        <span className="text-sm font-medium text-[#0f172a]">
-                            RM {subtotal.toLocaleString()}
-                        </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400">Platform Fee ({PLATFORM_FEE_PERCENT}%)</span>
-                        <span className="text-sm font-medium text-[#0f172a]">
-                            RM {platformFee.toLocaleString()}
                         </span>
                     </div>
 

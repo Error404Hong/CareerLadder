@@ -79,7 +79,6 @@ export function DataTable<TData, TValue>({
                         <SelectContent>
                             <SelectItem value="all">All Status</SelectItem>
                             <SelectItem value="1">Active</SelectItem>
-                            <SelectItem value="2">Disabled</SelectItem>
                             <SelectItem value="3">Frozen</SelectItem>
                         </SelectContent>
                     </Select>

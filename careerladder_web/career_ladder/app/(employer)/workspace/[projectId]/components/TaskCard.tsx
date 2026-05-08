@@ -93,13 +93,15 @@ export function TaskCard({ task, assignee, index, projectApplicants, onTaskDelet
                 <div className="flex items-center justify-between">
                     {assignee ? (
                         <div className="flex items-center gap-1.5">
-                            <Image
-                                src={assignee.profile_image}
-                                height={30}
-                                width={30}
-                                alt="Member Profile"
-                                className="rounded-full"
-                            />
+                            <div className="w-7.5 h-7.5 rounded-full overflow-hidden shrink-0">
+                                <Image
+                                    src={assignee.profile_image}
+                                    height={30}
+                                    width={30}
+                                    alt="Member Profile"
+                                    className="object-cover w-full h-full"
+                                />
+                            </div>
                             <span className="text-xs text-slate-400">{assignee.first_name}</span>
                         </div>
                     ) : (

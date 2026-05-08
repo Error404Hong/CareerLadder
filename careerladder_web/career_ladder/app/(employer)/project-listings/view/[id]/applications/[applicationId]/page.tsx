@@ -255,7 +255,7 @@ export default function ApplicantsProfile() {
 
     if (isLoading) return (
         <div className="min-h-screen bg-slate-50">
-            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
                 <Skeleton className="h-4 w-64 rounded" />
                 <Skeleton className="h-32 w-full rounded-lg" />
                 <Skeleton className="h-10 w-72 rounded" />
@@ -277,7 +277,7 @@ export default function ApplicantsProfile() {
     return (
         <>
             <div className="min-h-screen bg-slate-50">
-                <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-6">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
 
                     {/* Breadcrumb */}
                     <Breadcrumb>
@@ -305,8 +305,8 @@ export default function ApplicantsProfile() {
                     </Breadcrumb>
 
                     {/* Project Info Banner */}
-                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm px-6 py-5">
-                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm px-4 sm:px-6 py-5">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div className="flex flex-col gap-1">
                                 <p className="text-xs text-slate-400 uppercase tracking-widest">Project</p>
                                 <p className="text-lg font-bold text-[#0f172a]">{projectData?.title}</p>
@@ -322,7 +322,7 @@ export default function ApplicantsProfile() {
                                     </span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-6 flex-wrap">
+                            <div className="grid grid-cols-2 sm:flex sm:items-center gap-4 sm:gap-6">
                                 <div className="flex flex-col gap-1">
                                     <p className="text-[11px] text-slate-400 uppercase tracking-widest">Allowance</p>
                                     <p className="text-sm font-semibold text-[#0f172a]">RM {Number(projectData?.allowance).toLocaleString()}</p>
@@ -331,7 +331,7 @@ export default function ApplicantsProfile() {
                                     <p className="text-[11px] text-slate-400 uppercase tracking-widest">Vacancies</p>
                                     <p className="text-sm font-semibold text-[#0f172a]">{projectData?.vacancies} open</p>
                                 </div>
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-1 col-span-2 sm:col-span-1">
                                     <p className="text-[11px] text-slate-400 uppercase tracking-widest">Skills Required</p>
                                     <div className="flex flex-wrap gap-1">
                                         {projectData?.skills_required.map((skill) => (
@@ -366,8 +366,8 @@ export default function ApplicantsProfile() {
                                     </div>
                                 </div>
 
-                                <CardContent className="px-6 pb-5">
-                                    <div className="flex items-end justify-between flex-wrap gap-4" style={{ marginTop: "-10px" }}>
+                                <CardContent className="px-4 sm:px-6 pb-5">
+                                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4" style={{ marginTop: "-10px" }}>
                                         {/* Left: avatar + info */}
                                         <div className="flex items-end gap-4">
                                             {/* Tier-ringed avatar */}
@@ -415,7 +415,7 @@ export default function ApplicantsProfile() {
                                         </div>
 
                                         {/* Right: status + action */}
-                                        <div className="flex items-center gap-3 pb-0.5">
+                                        <div className="flex items-center gap-3 ml-24 sm:ml-0 pb-0.5">
                                             <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${statusConfig[application?.status ?? ""]?.className ?? "bg-slate-100 text-slate-500 border border-slate-200"}`}>
                                                 {statusConfig[application?.status ?? ""]?.label ?? application?.status}
                                             </span>
@@ -431,7 +431,8 @@ export default function ApplicantsProfile() {
 
                     {/* Tabs */}
                     <Tabs defaultValue="details">
-                        <TabsList className="mb-4" variant="line">
+                        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 pb-0.5">
+                        <TabsList className="mb-4 min-w-max" variant="line">
                             <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:text-[#0f172a] data-[state=active]:shadow-sm text-slate-500 cursor-pointer">
                                 <ListCollapse /> Application Details
                             </TabsTrigger>
@@ -454,6 +455,7 @@ export default function ApplicantsProfile() {
                                 <Badge className="ml-1 text-[11px] bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2 py-0">{meetings.length}</Badge>
                             </TabsTrigger>
                         </TabsList>
+                        </div>
 
                         {/* Tab 1: Application Details */}
                         <TabsContent value="details">
@@ -736,11 +738,11 @@ export default function ApplicantsProfile() {
 
                         {/* Tab 3: Meetings */}
                         <TabsContent value="meetings">
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                                 <p className="text-sm text-slate-500">{meetings.length} meeting{meetings.length !== 1 ? "s" : ""} scheduled</p>
                                 <Button
                                     size="sm"
-                                    className="cursor-pointer gap-1.5 text-xs"
+                                    className="cursor-pointer gap-1.5 text-xs w-full sm:w-auto"
                                     onClick={() => setMeetingDialogOpen(true)}
                                 >
                                     <Plus size={13} /> Schedule New Meeting

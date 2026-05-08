@@ -15,12 +15,14 @@ import { Building2, GraduationCap } from "lucide-react";
 import { DataTable } from "./data-table"
 import { getStudentColumns } from "./student-columns"
 import { getCompanyColumns } from "./company-columns"
+import { FreezeAccountDialog } from "./components/FreezeAccountDialog"
 
 export default function UsersPage() {
     const router = useRouter()
     const [students, setStudents] = useState<Student[]>([])
     const [companies, setCompanies] = useState<CompanyProfile[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [freezeTarget, setFreezeTarget] = useState<{ clerkId: string; name: string; status: number; type: "student" | "company" } | null>(null)
 
     useEffect(() => {
         const fetchAllUsers = async () => {
@@ -43,8 +45,14 @@ export default function UsersPage() {
         fetchAllUsers()
     }, [])
 
-    const studentColumns = getStudentColumns((id) => router.push(`/users/user/${id}`))
-    const companyColumns = getCompanyColumns((id) => router.push(`/users/company/${id}`))
+    const studentColumns = getStudentColumns(
+        (id) => router.push(`/users/user/${id}`),
+        (s) => setFreezeTarget({ clerkId: s.clerk_id, name: `${s.firstName} ${s.lastName}`, status: Number(s.status), type: "student" }),
+    )
+    const companyColumns = getCompanyColumns(
+        (id) => router.push(`/users/company/${id}`),
+        (c) => setFreezeTarget({ clerkId: c.clerk_id, name: c.company_name, status: Number(c.status), type: "company" }),
+    )
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -122,6 +130,23 @@ export default function UsersPage() {
                     </Card>
                 )}
             </div>
+
+            <FreezeAccountDialog
+                open={!!freezeTarget}
+                name={freezeTarget?.name ?? ""}
+                clerkId={freezeTarget?.clerkId ?? ""}
+                isFreezing={freezeTarget?.status === 1}
+                onClose={() => setFreezeTarget(null)}
+                onSuccess={(newStatus) => {
+                    if (!freezeTarget) return
+                    if (freezeTarget.type === "student") {
+                        setStudents((prev) => prev.map((s) => s.clerk_id === freezeTarget.clerkId ? { ...s, status: newStatus } : s))
+                    } else {
+                        setCompanies((prev) => prev.map((c) => c.clerk_id === freezeTarget.clerkId ? { ...c, status: newStatus } : c))
+                    }
+                    setFreezeTarget(null)
+                }}
+            />
         </div>
     )
 }

@@ -1,13 +1,11 @@
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { NextRequest } from "next/server";
-import { addNewUser } from "../user";
+import { addNewUser, deleteUserFromDB } from "../user";
 
 export async function POST(req: NextRequest) {
     try {
         const evt = await verifyWebhook(req);
 
-        // Do something with payload
-        // For this guide, log payload to console
         const user = evt.data;
         const eventType = evt.type;
 
@@ -26,6 +24,20 @@ export async function POST(req: NextRequest) {
                 console.log("User added successfully");
             } catch (err) {
                 console.error("Failed to add user:", err);
+            }
+        }
+
+        if (eventType === "user.deleted") {
+            const userData = user as { id?: string; deleted?: boolean };
+            const clerkId = userData.id || "";
+
+            if (clerkId) {
+                try {
+                    await deleteUserFromDB(clerkId);
+                    console.log("User deleted from DB:", clerkId);
+                } catch (err) {
+                    console.error("Failed to delete user from DB:", err);
+                }
             }
         }
 

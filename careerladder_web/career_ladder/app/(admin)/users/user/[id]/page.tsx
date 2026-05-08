@@ -20,6 +20,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 import { ProfileHeader } from "./components/ProfileHeader"
+import { FreezeAccountDialog } from "../../components/FreezeAccountDialog"
 import { OverviewTab } from "./components/OverviewTab"
 import { BackgroundTab } from "./components/BackgroundTab"
 import { SkillsTab } from "./components/SkillsTab"
@@ -36,6 +37,7 @@ export default function UserDetailPage() {
 
     const [isLoading, setIsLoading] = useState(true)
     const [profile, setProfile] = useState<Student | null>(null)
+    const [freezeDialogOpen, setFreezeDialogOpen] = useState(false)
     const [experiences, setExperiences] = useState<Experience[]>([])
     const [educations, setEducations] = useState<Education[]>([])
     const [skills, setSkills] = useState<Skill[]>([])
@@ -115,7 +117,12 @@ export default function UserDetailPage() {
                     </div>
                 ) : profile ? (
                     <>
-                        <ProfileHeader profile={profile} studentExp={studentExp} />
+                        <ProfileHeader
+                            profile={profile}
+                            studentExp={studentExp}
+                            onFreeze={() => setFreezeDialogOpen(true)}
+                            onUnfreeze={() => setFreezeDialogOpen(true)}
+                        />
 
                         <Card className="rounded-xl border border-slate-200 shadow-sm">
                             <CardContent className="px-6 pt-2 pb-6">
@@ -206,6 +213,17 @@ export default function UserDetailPage() {
                     </Card>
                 )}
             </div>
+
+            {profile && (
+                <FreezeAccountDialog
+                    open={freezeDialogOpen}
+                    name={`${profile.firstName} ${profile.lastName}`}
+                    clerkId={profile.clerk_id}
+                    isFreezing={Number(profile.status) === 1}
+                    onClose={() => setFreezeDialogOpen(false)}
+                    onSuccess={(newStatus) => setProfile((prev) => prev ? { ...prev, status: newStatus } : prev)}
+                />
+            )}
         </div>
     )
 }
