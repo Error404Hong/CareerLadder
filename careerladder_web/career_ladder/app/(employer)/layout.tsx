@@ -149,9 +149,6 @@ export default function DashboardLayout({
                                             ))
                                         )}
                                     </div>
-                                    <div className="px-4 py-2.5 border-t border-slate-100 text-center">
-                                        <Link href="/notifications" className="text-xs text-[#2563eb] hover:underline">View all notifications</Link>
-                                    </div>
                                 </PopoverContent>
                             </Popover>
                             <UserButton showName>

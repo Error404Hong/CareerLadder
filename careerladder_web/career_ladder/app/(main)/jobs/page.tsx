@@ -5,13 +5,22 @@ import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { Briefcase, Search, Sparkles, Loader2 } from "lucide-react"
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Briefcase, Search, Sparkles, Loader2, X } from "lucide-react"
 
 import { getAllJobs } from "@/app/api/job"
 import { JobCard, type Jobs } from "./components/JobCard"
 import { JobCardSkeleton } from "./components/JobCardSkeleton"
 import { useRecommendations } from "@/hooks/useRecommendations"
 
+const ITEMS_PER_PAGE = 6
+
+function buildPageNumbers(current: number, total: number) {
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
+    if (current <= 3) return [1, 2, 3, 4, "...", total]
+    if (current >= total - 2) return [1, "...", total - 3, total - 2, total - 1, total]
+    return [1, "...", current - 1, current, current + 1, "...", total]
+}
 
 function JobsContent() {
     const searchParams = useSearchParams()
@@ -20,13 +29,25 @@ function JobsContent() {
     const [search, setSearch] = useState(searchParams.get("search") ?? "")
     const [employmentFilter, setEmploymentFilter] = useState("all")
     const [remoteFilter, setRemoteFilter] = useState("all")
+    const [currentPage, setCurrentPage] = useState(1)
+    const [showAIPicks, setShowAIPicks] = useState(false)
 
     const { recommendations, isLoading: aiLoading, refresh: refreshAI } = useRecommendations(
         jobList, [], [], { autoFetch: false }
     )
-    const aiJobs = recommendations
+    const aiJobs = (showAIPicks && recommendations)
         ? jobList.filter(j => recommendations.recommendedJobIds.includes(j.id)).slice(0, 3)
         : []
+
+    const hasActiveFilters = search !== "" || employmentFilter !== "all" || remoteFilter !== "all" || showAIPicks
+
+    const clearFilters = () => {
+        setSearch("")
+        setEmploymentFilter("all")
+        setRemoteFilter("all")
+        setShowAIPicks(false)
+        setCurrentPage(1)
+    }
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -54,8 +75,13 @@ function JobsContent() {
         .filter(j => employmentFilter === "all" || j.employment_type === employmentFilter)
         .filter(j => remoteFilter === "all" || (remoteFilter === "remote" ? j.is_remote : !j.is_remote))
 
+    useEffect(() => { setCurrentPage(1) }, [search, employmentFilter, remoteFilter])
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+    const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-slate-50">
             <div className="bg-white border-b border-slate-100">
                 <div className="max-w-7xl mx-auto px-6 py-6">
 
@@ -118,13 +144,23 @@ function JobsContent() {
                                 </SelectContent>
                             </Select>
                             <button
-                                onClick={refreshAI}
+                                onClick={() => { refreshAI(); setShowAIPicks(true) }}
                                 disabled={aiLoading || loading}
                                 className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition-colors disabled:opacity-60"
                             >
                                 {aiLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                                 {aiLoading ? "Thinking..." : "AI Picks"}
                             </button>
+
+                            {hasActiveFilters && (
+                                <button
+                                    onClick={clearFilters}
+                                    className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-red-500 hover:border-red-200 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer"
+                                >
+                                    <X size={13} />
+                                    Clear filters
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -138,9 +174,11 @@ function JobsContent() {
                     </div>
                 ) : aiJobs.length > 0 ? (
                     <>
-                        <div className="flex items-center gap-2 mb-4">
-                            <Sparkles size={13} className="text-indigo-500" />
-                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">AI Picks for You</span>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <Sparkles size={13} className="text-indigo-500" />
+                                <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">AI Picks for You</span>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {aiJobs.map(job => <JobCard key={job.id} job={job} aiPick />)}
@@ -153,9 +191,54 @@ function JobsContent() {
                         <p className="text-sm text-slate-300">Try adjusting your search or filters</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {filtered.map((job) => <JobCard key={job.id} job={job} />)}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {paginated.map((job) => <JobCard key={job.id} job={job} />)}
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div className="mt-8 flex justify-center">
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                href="#"
+                                                onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.max(1, p - 1)) }}
+                                                className={currentPage === 1 ? "pointer-events-none opacity-40" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+
+                                        {buildPageNumbers(currentPage, totalPages).map((page, idx) =>
+                                            page === "..." ? (
+                                                <PaginationItem key={`ellipsis-${idx}`}>
+                                                    <PaginationEllipsis />
+                                                </PaginationItem>
+                                            ) : (
+                                                <PaginationItem key={page}>
+                                                    <PaginationLink
+                                                        href="#"
+                                                        isActive={currentPage === page}
+                                                        onClick={(e) => { e.preventDefault(); setCurrentPage(page as number) }}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {page}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            )
+                                        )}
+
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                href="#"
+                                                onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.min(totalPages, p + 1)) }}
+                                                className={currentPage === totalPages ? "pointer-events-none opacity-40" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div >

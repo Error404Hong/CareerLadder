@@ -73,7 +73,7 @@ export default function ViewProjectApplicationDetails() {
     }, [projectId, user])
 
     if (isLoading) return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-slate-50">
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-5">
                 <Skeleton className="h-4 w-48 rounded" />
                 <Skeleton className="h-20 w-full rounded-xl" />
@@ -95,7 +95,7 @@ export default function ViewProjectApplicationDetails() {
     const statusCfg = statusConfig[status] ?? { label: status, className: "bg-slate-100 text-slate-500 border border-slate-200" }
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-slate-50">
             <div className="bg-white border-b border-slate-100">
                 <div className="max-w-6xl mx-auto px-6 py-6">
                     <Breadcrumb className="mb-4">

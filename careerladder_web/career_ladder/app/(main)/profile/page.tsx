@@ -9,6 +9,7 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -589,7 +590,7 @@ export default function Profile() {
     const jobLabel = jobTypes.find(j => j.value === job_type)?.label || "Not specified";
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-slate-50">
             <div className="bg-white border-b border-slate-100">
                 <div className="max-w-7xl mx-auto px-6 py-6">
                     <Breadcrumb className="mb-4">
@@ -737,7 +738,7 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* Average banner */}
+                                        {/* Overall average only */}
                                         {(() => {
                                             const avg = performances.reduce((sum, p) => sum + p.overall_rating, 0) / performances.length
                                             return (
@@ -757,38 +758,12 @@ export default function Profile() {
                                                 </div>
                                             )
                                         })()}
-
-                                        {/* Per-employer entries */}
-                                        <div className="flex flex-col gap-3">
-                                            {performances.map((p, i) => (
-                                                <div key={i} className="border border-slate-100 rounded-lg p-3 flex flex-col gap-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-xs font-semibold text-[#0f172a] truncate">{p.company_name}</span>
-                                                        <div className="flex items-center gap-1 shrink-0">
-                                                            <Star size={11} className="fill-amber-400 text-amber-400" />
-                                                            <span className="text-xs font-semibold text-[#0f172a]">{p.overall_rating}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-1">
-                                                        {[
-                                                            { label: "Communication", val: p.communication },
-                                                            { label: "Teamwork", val: p.teamwork },
-                                                            { label: "Technical", val: p.technical_skills },
-                                                            { label: "Problem Solving", val: p.problem_solving },
-                                                            { label: "Professionalism", val: p.professionalism },
-                                                        ].map(m => (
-                                                            <div key={m.label} className="flex items-center justify-between bg-slate-50 rounded-lg px-2 py-1">
-                                                                <span className="text-[10px] text-slate-400 truncate">{m.label}</span>
-                                                                <span className="text-[10px] font-semibold text-[#0f172a] ml-1 shrink-0">{m.val}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    {p.comments && (
-                                                        <p className="text-[11px] text-slate-400 italic leading-relaxed">&ldquo;{p.comments}&rdquo;</p>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <Link
+                                            href="/achivements?tab=reviews"
+                                            className="flex items-center justify-center gap-1 text-xs text-[#2563eb] hover:underline py-1"
+                                        >
+                                            View all reviews →
+                                        </Link>
                                     </>
                                 )}
                             </CardContent>

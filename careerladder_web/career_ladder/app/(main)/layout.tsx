@@ -19,6 +19,7 @@ import { getUserById } from "@/app/api/user"
 import { Notification } from "@/types"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { useClerk } from "@clerk/nextjs"
+import { StudentFooter } from "@/components/StudentFooter"
 
 
 const timeAgo = (dateStr: string) => {
@@ -215,9 +216,6 @@ export default function MainLayout({
                       ))
                     )}
                   </div>
-                  <div className="px-4 py-2.5 border-t border-slate-100 text-center">
-                    <Link href="/notifications" className="text-xs text-[#2563eb] hover:underline">View all notifications</Link>
-                  </div>
                 </PopoverContent>
               </Popover>
               <div className="w-px h-5 bg-slate-200" />
@@ -262,6 +260,8 @@ export default function MainLayout({
       </header>
 
       <TooltipProvider>{children}</TooltipProvider>
+
+      <StudentFooter />
 
       <Toaster position="top-left" richColors />
     </>
