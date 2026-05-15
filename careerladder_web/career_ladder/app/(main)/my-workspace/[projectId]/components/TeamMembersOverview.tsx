@@ -50,13 +50,16 @@ export function TeamMembersOverview({ owner, members, currentUserId }: TeamMembe
                     return (
                         <div key={member.clerk_id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 bg-slate-50">
                             {member.profile_image && (
-                                <Image
-                                    src={member.profile_image}
-                                    alt={member.first_name}
-                                    height={40}
-                                    width={40}
-                                    className="rounded-full object-cover"
-                                />
+                                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
+                                    <Image
+                                        src={member.profile_image}
+                                        alt={member.first_name}
+                                        height={40}
+                                        width={40}
+                                        className="object-cover w-full h-full"
+                                    />
+                                </div>
+
                             )}
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-slate-800">
