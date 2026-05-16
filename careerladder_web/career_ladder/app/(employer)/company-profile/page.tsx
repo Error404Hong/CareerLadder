@@ -12,6 +12,9 @@ import { Building2, Globe, MapPin, Pencil, Users, Calendar, Briefcase, TrendingU
 import { ProfileForm } from "./forms/ProfileForm"
 import { DescriptionForm } from "./forms/DescriptionForm"
 import { getCompanyProfile } from "@/app/api/user"
+import { getJobsByCompany, getAllJobAppByCom } from "@/app/api/job"
+import { getCompanyProjects, getProjectAppByCom } from "@/app/api/project"
+import Image from "next/image"
 
 export type CompanyProfile = {
     id: string
@@ -22,7 +25,7 @@ export type CompanyProfile = {
     company_size: string
     founded_year: number
     website: string
-    logo_url: string | null
+    image_url: string | null
     location: string
     created_at: string
     updated_at: string
@@ -34,17 +37,31 @@ export default function CompanyProfilePage() {
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
     const [openDescriptionDialog, setOpenDescriptionDialog] = useState<boolean>(false);
+    const [activeJobs, setActiveJobs] = useState<number>(0)
+    const [activeProjects, setActiveProjects] = useState<number>(0)
+    const [totalApplications, setTotalApplications] = useState<number>(0)
 
     useEffect(() => {
         if (!user) return
         const fetchProfile = async () => {
             try {
-                const result = await getCompanyProfile(user.id)
-                if (result.success) {
-                    setProfile(result.data)
+                const [profileRes, jobRes, projectRes, jobAppRes, projAppRes] = await Promise.all([
+                    getCompanyProfile(user.id),
+                    getJobsByCompany(user.id),
+                    getCompanyProjects(user.id),
+                    getAllJobAppByCom(user.id),
+                    getProjectAppByCom(user.id),
+                ])
+                if (profileRes.success) {
+                    setProfile(profileRes.data)
                 } else {
                     toast.error("Failed to fetch company profile. Please reload page")
                 }
+                if (jobRes.success) setActiveJobs(jobRes.data.filter((j: { status: string }) => j.status === "open").length)
+                if (projectRes.success) setActiveProjects(projectRes.data.filter((p: { status: string }) => p.status === "in_progress").length)
+                const jobAppsCount = jobAppRes.success ? jobAppRes.data.length : 0
+                const projAppsCount = projAppRes.success ? projAppRes.data.length : 0
+                setTotalApplications(jobAppsCount + projAppsCount)
             } catch (error) {
                 toast.error("Failed to fetch company profile")
             } finally {
@@ -108,8 +125,8 @@ export default function CompanyProfilePage() {
                             <div className="flex items-end gap-5 -mt-8 mb-5">
                                 {/* Logo */}
                                 <div className="w-20 h-20 rounded-2xl border-4 border-white bg-slate-100 shadow-lg flex items-center justify-center shrink-0 relative z-10">
-                                    {profile?.logo_url ? (
-                                        <img src={profile.logo_url} alt="logo" className="w-full h-full rounded-xl object-cover z-10" />
+                                    {profile?.image_url ? (
+                                        <Image src={profile.image_url} alt="logo" className="w-full h-full rounded-xl object-cover z-10" width={30} height={30} />
                                     ) : (
                                         <Building2 size={28} className="text-slate-300" />
                                     )}
@@ -163,9 +180,9 @@ export default function CompanyProfilePage() {
                     {/* Stats */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
-                            { label: "Active Job Postings", value: "0", icon: Briefcase, color: "bg-blue-100 text-blue-600" },
-                            { label: "Active Projects", value: "0", icon: TrendingUp, color: "bg-green-100 text-green-600" },
-                            { label: "Total Applications", value: "0", icon: Users, color: "bg-purple-100 text-purple-600" },
+                            { label: "Active Job Postings", value: activeJobs, icon: Briefcase, color: "bg-blue-100 text-blue-600" },
+                            { label: "Active Projects", value: activeProjects, icon: TrendingUp, color: "bg-green-100 text-green-600" },
+                            { label: "Total Applications", value: totalApplications, icon: Users, color: "bg-purple-100 text-purple-600" },
                         ].map((stat) => {
                             const Icon = stat.icon
                             return (
