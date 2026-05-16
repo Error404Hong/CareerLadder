@@ -1,13 +1,7 @@
 import { Code2, Languages } from "lucide-react"
 import { Skill } from "@/types/skill"
 import { Language } from "@/types/language"
-
-const proficiencyConfig: Record<string, { width: string }> = {
-    Native:       { width: "w-full" },
-    Fluent:       { width: "w-4/5" },
-    Intermediate: { width: "w-3/5" },
-    Basic:        { width: "w-2/5" },
-}
+import { proficiencyLevels } from "@/app/(main)/profile/forms/LanguageForm"
 
 export function SkillsTab({ skills, languages }: { skills: Skill[]; languages: Language[] }) {
     return (
@@ -46,7 +40,7 @@ export function SkillsTab({ skills, languages }: { skills: Skill[]; languages: L
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {languages.map((lang) => {
-                            const cfg = proficiencyConfig[lang.proficiency] ?? { width: "w-1/4" }
+                            const pct = proficiencyLevels.find(p => p.value === lang.proficiency.toLowerCase())?.pct ?? 20
                             return (
                                 <div key={lang.id} className="rounded-xl border border-slate-200 bg-white px-4 py-3.5">
                                     <div className="flex items-center justify-between mb-2">
@@ -54,7 +48,7 @@ export function SkillsTab({ skills, languages }: { skills: Skill[]; languages: L
                                         <span className="text-xs text-slate-500">{lang.proficiency}</span>
                                     </div>
                                     <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div className={`h-full rounded-full bg-[#2563eb] ${cfg.width}`} />
+                                        <div className="h-full rounded-full bg-[#2563eb]" style={{ width: `${pct}%` }} />
                                     </div>
                                 </div>
                             )
