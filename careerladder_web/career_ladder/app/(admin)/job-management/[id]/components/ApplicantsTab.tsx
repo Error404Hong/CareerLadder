@@ -20,6 +20,22 @@ export function ApplicantsTab({ applications }: { applications: JobApplication[]
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2 flex-wrap pb-3 mb-1 border-b border-slate-100">
+                            <span className="text-xs font-semibold text-slate-500">{applications.length} total</span>
+                            {(["pending", "accepted", "rejected"] as const).map(s => {
+                                const count = applications.filter(a => a.application_status === s).length
+                                if (!count) return null
+                                const cfg = applicationStatusConfig[s]
+                                const StatusIcon = cfg.icon
+                                return (
+                                    <span key={s} className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full ${cfg.className}`}>
+                                        <StatusIcon size={10} />
+                                        {count} {cfg.label}
+                                    </span>
+                                )
+                            })}
+                        </div>
+
                         {applications.map((app, i) => {
                             const appStatus = applicationStatusConfig[app.application_status] ?? {
                                 label: app.application_status,

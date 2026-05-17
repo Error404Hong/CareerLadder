@@ -21,6 +21,20 @@ export function RegistrantsTab({ registrants }: { registrants: TrainingRegistrat
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2 flex-wrap pb-3 mb-1 border-b border-slate-100">
+                            <span className="text-xs font-semibold text-slate-500">{registrants.length} total</span>
+                            {(["pending", "approved", "rejected", "attended"] as const).map(s => {
+                                const count = registrants.filter(r => r.status === s).length
+                                if (!count) return null
+                                const cfg = registrationStatusConfig[s]
+                                return (
+                                    <span key={s} className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${cfg.className}`}>
+                                        {count} {cfg.label}
+                                    </span>
+                                )
+                            })}
+                        </div>
+
                         {registrants.map((registrant, i) => {
                             const statusCfg = registrationStatusConfig[registrant.status] ?? { label: registrant.status, className: "bg-slate-100 text-slate-500 border border-slate-200" }
                             return (

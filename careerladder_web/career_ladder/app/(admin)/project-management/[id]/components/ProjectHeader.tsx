@@ -14,34 +14,40 @@ export function ProjectHeader({ project }: { project: Project }) {
 
     return (
         <Card className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="h-2 w-full bg-linear-to-r from-violet-500 via-[#2563eb] to-violet-500" />
-            <CardContent className="px-6 py-5">
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div className="flex items-start gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                            <FolderKanban size={20} className="text-violet-600" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-[#0f172a]">{project.title}</h1>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="flex items-center gap-1 text-xs text-slate-400">
-                                    <CalendarDays size={11} />
-                                    Posted {new Date(project.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}
-                                </span>
-                                {project.updated_at !== project.created_at && (
-                                    <span className="text-xs text-slate-300">
-                                        · Updated {new Date(project.updated_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+            {/* Hero — icon + title live inside the dark band */}
+            <div className="bg-[#0f172a] relative overflow-hidden px-6 py-5">
+                <div className="absolute -bottom-8 -right-8 w-40 h-40 rounded-full bg-violet-500/15" />
+                <div className="absolute top-0 right-24 w-32 h-32 rounded-full bg-violet-500/8" />
+
+                <div className="absolute top-4 right-5">
                     <span className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${status.className}`}>
                         {status.label}
                     </span>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mt-4">
+                <div className="flex items-center gap-3 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/20 border border-violet-400/20 flex items-center justify-center shrink-0">
+                        <FolderKanban size={18} className="text-violet-300" />
+                    </div>
+                    <div>
+                        <h1 className="text-lg font-bold text-white">{project.title}</h1>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <span className="flex items-center gap-1 text-xs text-slate-400">
+                                <CalendarDays size={11} />
+                                Posted {new Date(project.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}
+                            </span>
+                            {project.updated_at !== project.created_at && (
+                                <span className="text-xs text-slate-500">
+                                    · Updated {new Date(project.updated_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <CardContent className="px-6 py-4">
+                <div className="flex flex-wrap gap-2">
                     <span className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
                         <Clock size={12} /> {project.duration}
                     </span>

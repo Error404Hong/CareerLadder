@@ -1,6 +1,6 @@
 import { Training } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Target, ListChecks, Building2, Globe } from "lucide-react"
+import { FileText, Target, ListChecks, Building2 } from "lucide-react"
 import Image from "next/image"
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -10,11 +10,11 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     cancelled: { label: "Cancelled", className: "bg-orange-100 text-orange-600 border border-orange-200" },
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoRow({ label, value, index = 0 }: { label: string; value: React.ReactNode; index?: number }) {
     return (
-        <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
-            <span className="text-xs text-slate-400">{label}</span>
-            <span className="text-sm font-medium text-[#0f172a]">{value}</span>
+        <div className={`flex items-center justify-between px-2 py-2.5 rounded-lg ${index % 2 === 0 ? "bg-slate-50/70" : ""}`}>
+            <span className="text-xs font-medium text-slate-500">{label}</span>
+            <span className="text-sm font-semibold text-[#0f172a]">{value}</span>
         </div>
     )
 }
@@ -36,7 +36,7 @@ export function DetailsTab({ program }: { program: Training }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-3">
-                        <div className="rounded-lg border-l-4 border-l-emerald-500 bg-slate-50 border border-slate-100 px-4 py-3">
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-4">
                             <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{program.description}</p>
                         </div>
                     </CardContent>
@@ -51,7 +51,7 @@ export function DetailsTab({ program }: { program: Training }) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-5 py-3">
-                            <div className="rounded-lg border-l-4 border-l-teal-400 bg-slate-50 border border-slate-100 px-4 py-3">
+                            <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-4">
                                 <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{program.prerequisites}</p>
                             </div>
                         </CardContent>
@@ -67,7 +67,7 @@ export function DetailsTab({ program }: { program: Training }) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-5 py-3">
-                            <div className="rounded-lg border-l-4 border-l-emerald-400 bg-slate-50 border border-slate-100 px-4 py-3">
+                            <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-4">
                                 <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{program.expected_outcome}</p>
                             </div>
                         </CardContent>
@@ -102,23 +102,23 @@ export function DetailsTab({ program }: { program: Training }) {
                 )}
 
                 {/* Overview */}
-                <Card className="rounded-xl border border-slate-200 shadow-sm">
+                <Card className="rounded-xl border border-slate-200 shadow-sm border-t-2 border-t-emerald-500">
                     <CardHeader className="px-5 pt-4 pb-0">
                         <CardTitle className="text-sm font-semibold text-[#0f172a]">Overview</CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-2">
-                        <InfoRow label="Status" value={
+                        <InfoRow index={0} label="Status" value={
                             <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${status.className}`}>
                                 {status.label}
                             </span>
                         } />
-                        <InfoRow label="Date" value={new Date(program.date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
-                        <InfoRow label="Time" value={program.time || "—"} />
-                        <InfoRow label="Duration" value={program.duration} />
-                        <InfoRow label="Vacancies" value={program.vacancies} />
-                        <InfoRow label="Registered" value={Number(program.registration_count ?? 0)} />
-                        <InfoRow label="Deadline" value={new Date(program.application_deadline).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
-                        <InfoRow label="Visibility" value={program.is_public ? "Public" : "Private"} />
+                        <InfoRow index={1} label="Date"       value={new Date(program.date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
+                        <InfoRow index={2} label="Time"       value={program.time || "—"} />
+                        <InfoRow index={3} label="Duration"   value={program.duration} />
+                        <InfoRow index={4} label="Vacancies"  value={program.vacancies} />
+                        <InfoRow index={5} label="Registered" value={Number(program.registration_count ?? 0)} />
+                        <InfoRow index={6} label="Deadline"   value={new Date(program.application_deadline).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
+                        <InfoRow index={7} label="Visibility" value={program.is_public ? "Public" : "Private"} />
                     </CardContent>
                 </Card>
             </div>

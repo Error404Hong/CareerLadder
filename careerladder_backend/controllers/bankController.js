@@ -21,8 +21,7 @@ const addBankAccount = async (req, res) => {
     const { studentid } = req.params;
     if (!studentid) return sendResponse(res, 400, "Student ID is required");
 
-    const { bank_name, account_number, account_holder_name, is_default } =
-        req.body;
+    const { bank_name, account_number, account_holder_name } = req.body;
 
     try {
         const result = await Bank.addBankAccount(
@@ -30,7 +29,7 @@ const addBankAccount = async (req, res) => {
             bank_name,
             account_number,
             account_holder_name,
-            is_default,
+            false,
         );
         return sendResponse(res, 200, "Bank added successfully", result);
     } catch (error) {

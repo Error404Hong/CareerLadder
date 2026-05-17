@@ -14,8 +14,16 @@ export function ApplicantsTab({ applicants }: { applicants: ProjectApplicant[] }
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
+                        <div className="pb-3 mb-1 border-b border-slate-100">
+                            <span className="text-xs font-semibold text-slate-500">
+                                {applicants.length} {applicants.length === 1 ? "applicant" : "applicants"}
+                            </span>
+                        </div>
+
                         {applicants.map((applicant, i) => (
                             <div key={applicant.clerk_id ?? i} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3.5 hover:border-slate-300 transition-colors">
+                                <span className="text-xs font-bold text-slate-300 w-5 text-center shrink-0">{i + 1}</span>
+
                                 {applicant.profile_image ? (
                                     <Image
                                         src={applicant.profile_image}

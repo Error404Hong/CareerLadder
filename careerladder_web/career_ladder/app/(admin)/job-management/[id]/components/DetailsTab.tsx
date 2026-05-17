@@ -1,17 +1,17 @@
 import { Job } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, CheckCircle2, Code2 } from "lucide-react"
+import { FileText, CheckCircle2, Code2, DollarSign } from "lucide-react"
 
 const statusConfig = {
     open:   { label: "Open",   className: "bg-green-100 text-green-700 border border-green-200" },
     closed: { label: "Closed", className: "bg-red-100 text-red-600 border border-red-200" },
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoRow({ label, value, index = 0 }: { label: string; value: React.ReactNode; index?: number }) {
     return (
-        <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
-            <span className="text-xs text-slate-400">{label}</span>
-            <span className="text-sm font-medium text-[#0f172a]">{value}</span>
+        <div className={`flex items-center justify-between px-2 py-2.5 rounded-lg ${index % 2 === 0 ? "bg-slate-50/70" : ""}`}>
+            <span className="text-xs font-medium text-slate-500">{label}</span>
+            <span className="text-sm font-semibold text-[#0f172a]">{value}</span>
         </div>
     )
 }
@@ -33,7 +33,7 @@ export function DetailsTab({ job }: { job: Job }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-3">
-                        <div className="rounded-lg border-l-4 border-l-[#2563eb] bg-slate-50 border border-slate-100 px-4 py-3">
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-4">
                             <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{job.description}</p>
                         </div>
                     </CardContent>
@@ -47,7 +47,7 @@ export function DetailsTab({ job }: { job: Job }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-3">
-                        <div className="rounded-lg border-l-4 border-l-violet-400 bg-slate-50 border border-slate-100 px-4 py-3">
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-4">
                             <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{job.requirements}</p>
                         </div>
                     </CardContent>
@@ -78,47 +78,42 @@ export function DetailsTab({ job }: { job: Job }) {
             {/* Right sidebar */}
             <div className="flex flex-col gap-5">
 
-                <Card className="rounded-xl border border-slate-200 shadow-sm">
+                <Card className="rounded-xl border border-slate-200 shadow-sm border-t-2 border-t-[#2563eb]">
                     <CardHeader className="px-5 pt-4 pb-0">
                         <CardTitle className="text-sm font-semibold text-[#0f172a]">Overview</CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-2">
-                        <InfoRow label="Status" value={
+                        <InfoRow index={0} label="Status" value={
                             <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${status?.className ?? "bg-slate-100 text-slate-500"}`}>
                                 {status?.label ?? job.status}
                             </span>
                         } />
-                        <InfoRow label="Type"         value={<span className="capitalize">{job.employment_type}</span>} />
-                        <InfoRow label="Location"     value={job.is_remote ? "Remote" : (job.location || "—")} />
-                        <InfoRow label="Remote"       value={job.is_remote ? "Yes" : "No"} />
-                        <InfoRow label="Vacancies"    value={job.vacancies} />
-                        <InfoRow label="Applications" value={Number(job.application_count)} />
-                        <InfoRow label="Posted"       value={new Date(job.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
+                        <InfoRow index={1} label="Type"         value={<span className="capitalize">{job.employment_type}</span>} />
+                        <InfoRow index={2} label="Location"     value={job.is_remote ? "Remote" : (job.location || "—")} />
+                        <InfoRow index={3} label="Remote"       value={job.is_remote ? "Yes" : "No"} />
+                        <InfoRow index={4} label="Vacancies"    value={job.vacancies} />
+                        <InfoRow index={5} label="Applications" value={Number(job.application_count)} />
+                        <InfoRow index={6} label="Posted"       value={new Date(job.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-xl border border-slate-200 shadow-sm">
+                <Card className="rounded-xl border border-blue-100 shadow-sm bg-blue-50/40">
                     <CardHeader className="px-5 pt-4 pb-0">
-                        <CardTitle className="text-sm font-semibold text-[#0f172a]">Salary Range</CardTitle>
+                        <CardTitle className="text-sm font-semibold text-[#0f172a] flex items-center gap-2">
+                            <DollarSign size={14} className="text-[#2563eb]" /> Salary Range
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-3">
                         <div className="flex items-center justify-between">
-                            <div className="text-center">
-                                <p className="text-xs text-slate-400 mb-1">Min</p>
-                                <p className="text-lg font-bold text-[#0f172a]">RM {Number(job.salary_min).toLocaleString()}</p>
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">Min</p>
+                                <p className="text-xl font-bold text-[#2563eb]">RM {Number(job.salary_min).toLocaleString()}</p>
                             </div>
-                            <div className="flex-1 mx-3 h-px bg-slate-200 relative">
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className="text-xs text-slate-300 bg-white px-1">to</span>
-                                </div>
+                            <div className="text-slate-300 text-sm">—</div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">Max</p>
+                                <p className="text-xl font-bold text-[#0f172a]">RM {Number(job.salary_max).toLocaleString()}</p>
                             </div>
-                            <div className="text-center">
-                                <p className="text-xs text-slate-400 mb-1">Max</p>
-                                <p className="text-lg font-bold text-[#0f172a]">RM {Number(job.salary_max).toLocaleString()}</p>
-                            </div>
-                        </div>
-                        <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-linear-to-r from-[#2563eb] to-violet-500 rounded-full w-full" />
                         </div>
                     </CardContent>
                 </Card>

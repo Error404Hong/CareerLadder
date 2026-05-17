@@ -1,6 +1,6 @@
 import { Project } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Code2, Building2 } from "lucide-react"
+import { FileText, Code2, Building2, DollarSign } from "lucide-react"
 import Image from "next/image"
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -10,11 +10,11 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     completed:   { label: "Completed",   className: "bg-slate-100 text-slate-600 border border-slate-200" },
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoRow({ label, value, index = 0 }: { label: string; value: React.ReactNode; index?: number }) {
     return (
-        <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
-            <span className="text-xs text-slate-400">{label}</span>
-            <span className="text-sm font-medium text-[#0f172a]">{value}</span>
+        <div className={`flex items-center justify-between px-2 py-2.5 rounded-lg ${index % 2 === 0 ? "bg-slate-50/70" : ""}`}>
+            <span className="text-xs font-medium text-slate-500">{label}</span>
+            <span className="text-sm font-semibold text-[#0f172a]">{value}</span>
         </div>
     )
 }
@@ -36,7 +36,7 @@ export function DetailsTab({ project }: { project: Project }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-3">
-                        <div className="rounded-lg border-l-4 border-l-violet-500 bg-slate-50 border border-slate-100 px-4 py-3">
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-4">
                             <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{project.description}</p>
                         </div>
                     </CardContent>
@@ -99,35 +99,35 @@ export function DetailsTab({ project }: { project: Project }) {
                 )}
 
                 {/* Overview */}
-                <Card className="rounded-xl border border-slate-200 shadow-sm">
+                <Card className="rounded-xl border border-slate-200 shadow-sm border-t-2 border-t-violet-500">
                     <CardHeader className="px-5 pt-4 pb-0">
                         <CardTitle className="text-sm font-semibold text-[#0f172a]">Overview</CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 py-2">
-                        <InfoRow label="Status" value={
+                        <InfoRow index={0} label="Status" value={
                             <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${status.className}`}>
                                 {status.label}
                             </span>
                         } />
-                        <InfoRow label="Duration"     value={project.duration} />
-                        <InfoRow label="Vacancies"    value={project.vacancies} />
-                        <InfoRow label="Applications" value={Number(project.application_count)} />
-                        <InfoRow label="Start Date"   value={new Date(project.start_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
-                        <InfoRow label="End Date"     value={new Date(project.end_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
-                        <InfoRow label="Posted"       value={new Date(project.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
+                        <InfoRow index={1} label="Duration"     value={project.duration} />
+                        <InfoRow index={2} label="Vacancies"    value={project.vacancies} />
+                        <InfoRow index={3} label="Applications" value={Number(project.application_count)} />
+                        <InfoRow index={4} label="Start Date"   value={new Date(project.start_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
+                        <InfoRow index={5} label="End Date"     value={new Date(project.end_date).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
+                        <InfoRow index={6} label="Posted"       value={new Date(project.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })} />
                     </CardContent>
                 </Card>
 
-                {/* Allowance */}
-                <Card className="rounded-xl border border-slate-200 shadow-sm">
-                    <CardHeader className="px-5 pt-4 pb-0">
-                        <CardTitle className="text-sm font-semibold text-[#0f172a]">Monthly Allowance</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-5 py-3">
-                        <p className="text-2xl font-bold text-violet-600">RM {Number(project.allowance).toLocaleString()}</p>
-                        <p className="text-xs text-slate-400 mt-1">per month</p>
-                        <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-linear-to-r from-violet-500 to-[#2563eb] rounded-full w-full" />
+                {/* Monthly Allowance */}
+                <Card className="rounded-xl border border-violet-100 shadow-sm bg-violet-50/40">
+                    <CardContent className="px-5 py-4 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+                            <DollarSign size={18} className="text-violet-600" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">Monthly Allowance</p>
+                            <p className="text-2xl font-bold text-violet-600">RM {Number(project.allowance).toLocaleString()}</p>
+                            <p className="text-xs text-slate-400">per month</p>
                         </div>
                     </CardContent>
                 </Card>

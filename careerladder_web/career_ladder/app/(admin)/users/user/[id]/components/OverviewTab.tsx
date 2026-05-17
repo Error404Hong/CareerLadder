@@ -1,12 +1,22 @@
 import { Student } from "@/types/student"
 import { Mail, MapPin, GraduationCap, Briefcase, Globe, Linkedin, ExternalLink } from "lucide-react"
 
+const jobTypes = [
+    { value: "0", label: "Just Exploring" },
+    { value: "1", label: "Freelance" },
+    { value: "2", label: "Part Time" },
+    { value: "3", label: "Full Time" },
+    { value: "4", label: "Internship" },
+]
+
 export function OverviewTab({ profile }: { profile: Student }) {
+    const jobPreferenceLabel = jobTypes.find(t => t.value === String(profile.job_preference))?.label ?? "—"
+
     const infoItems = [
         { icon: <Mail size={14} />,         label: "Email",          value: profile.email },
         { icon: <MapPin size={14} />,        label: "Location",       value: profile.location || "—" },
         { icon: <GraduationCap size={14} />, label: "Major",          value: profile.major || "—" },
-        { icon: <Briefcase size={14} />,     label: "Job Preference", value: profile.job_preference || "—" },
+        { icon: <Briefcase size={14} />,     label: "Job Preference", value: jobPreferenceLabel },
     ]
 
     return (

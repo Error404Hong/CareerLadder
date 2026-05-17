@@ -230,8 +230,8 @@ class Training {
         try {
             const query = `
             SELECT tr.* FROM training_programs tp
-            LEFT JOIN training_registration tr ON tr.training_id = tp.id
-            WHERE tp.id = $1 
+            INNER JOIN training_registration tr ON tr.training_id = tp.id
+            WHERE tp.id = $1
             ORDER BY tr.registered_at DESC
             `;
 
