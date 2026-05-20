@@ -88,7 +88,7 @@ export function TrainingDrawer({ open, onOpenChange, training }: Props) {
                             <div className="flex items-start justify-between mb-6">
                                 <div className="h-10 flex items-center">
                                     {training?.company_logo_url
-                                        ? <Image src={training.company_logo_url} width={100} height={32} alt="Company Logo" className="object-contain object-left" />
+                                        ? <Image src={training.company_logo_url} width={100} height={32} alt="Company Logo" className="object-contain object-left  w-15" />
                                         : <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-300 uppercase">No Logo</span>
                                     }
                                 </div>

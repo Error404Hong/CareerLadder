@@ -412,6 +412,11 @@
     background-color: #1d4ed8 !important;
 }
 
+/* Hide unused channel preview action icons (pin, archive) */
+.str-chat__channel-preview__action-buttons {
+    display: none !important;
+}
+
 /* Empty state */
 .str-chat__channel-list-empty {
     font-size: 12px !important;

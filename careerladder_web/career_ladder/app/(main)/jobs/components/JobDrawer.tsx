@@ -37,7 +37,7 @@ type Props = {
 
 const formSchema = z.object({
     resume: z.union([
-        z.string(),
+        z.string().min(1, "Resume must be uploaded"),
         z.any()
             .refine((file) => file?.length !== 0, "Resume must be uploaded")
             .refine((file) => file?.[0]?.size < MAX_FILE_SIZE, "Max 5MB")
@@ -181,7 +181,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
     return (
         <>
             <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-                <DrawerContent className="h-full min-w-[440px] ml-auto rounded-none flex flex-col border-0 border-l border-slate-200 bg-white">
+                <DrawerContent className="h-full min-w-110 ml-auto rounded-none flex flex-col border-0 border-l border-slate-200 bg-white">
 
                     {/* ── Header ── */}
                     <DrawerHeader className="p-0 border-0 shrink-0">
@@ -191,7 +191,7 @@ export function JobDrawer({ open, onOpenChange, job }: Props) {
                             <div className="flex items-start justify-between mb-6">
                                 <div className="h-10 flex items-center">
                                     {job?.company_logo_url
-                                        ? <Image src={job.company_logo_url} width={100} height={32} alt="Company Logo" className="object-contain object-left" />
+                                        ? <Image src={job.company_logo_url} width={100} height={32} alt="Company Logo" className="object-contain object-left w-15" />
                                         : <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-300 uppercase">No Logo</span>
                                     }
                                 </div>

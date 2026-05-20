@@ -126,7 +126,7 @@ export default function CompanyProfilePage() {
                                 {/* Logo */}
                                 <div className="w-20 h-20 rounded-2xl border-4 border-white bg-slate-100 shadow-lg flex items-center justify-center shrink-0 relative z-10">
                                     {profile?.image_url ? (
-                                        <Image src={profile.image_url} alt="logo" className="w-full h-full rounded-xl object-cover z-10" width={30} height={30} />
+                                        <Image src={profile.image_url} alt="logo" className="w-full h-full rounded-xl object-cover z-10" width={80} height={80} />
                                     ) : (
                                         <Building2 size={28} className="text-slate-300" />
                                     )}

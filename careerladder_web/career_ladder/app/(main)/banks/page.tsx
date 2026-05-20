@@ -4,6 +4,8 @@ import { Bank } from "@/types"
 import { useUser } from "@clerk/nextjs"
 import { useState, useEffect } from "react"
 import { getBankAccounts, addBankAccount, deleteBankAccount, setDefault } from "@/app/api/bank"
+import { getWithdrawalRequestByStudent } from "@/app/api/withdrawal"
+import { Withdrawal } from "@/types"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -42,6 +44,7 @@ export default function BankPage() {
 
     const [isLoading, setIsLoading] = useState(true)
     const [bankAccounts, setBankAccounts] = useState<Bank[]>([])
+    const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([])
     const [dialogOpen, setDialogOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
 
@@ -65,8 +68,12 @@ export default function BankPage() {
         if (!user) return
         const fetch = async () => {
             try {
-                const res = await getBankAccounts(user.id)
-                if (res.success) setBankAccounts(res.data)
+                const [banksRes, withdrawalsRes] = await Promise.all([
+                    getBankAccounts(user.id),
+                    getWithdrawalRequestByStudent(user.id),
+                ])
+                if (banksRes.success) setBankAccounts(banksRes.data)
+                if (withdrawalsRes.success) setWithdrawals(withdrawalsRes.data)
             } catch {
                 toast.error("Something went wrong. Please try again")
             } finally {
@@ -289,34 +296,45 @@ export default function BankPage() {
 
                                         <div className="w-px h-4 bg-slate-200 shrink-0" />
 
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="flex-1 h-8 text-xs gap-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 cursor-pointer"
-                                                >
-                                                    <Trash2 size={12} /> Remove
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Remove Bank Account</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Remove <span className="font-medium text-slate-800">{acc.bank_name}</span> ending in <span className="font-medium text-slate-800">{acc.account_number.slice(-4)}</span>? This cannot be undone.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction
-                                                        onClick={() => handleDelete(acc.id)}
-                                                        className="bg-red-600 hover:bg-red-700"
+                                        {withdrawals.some(w => w.bank_id === acc.id) ? (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="flex-1 h-8 text-xs gap-1.5 text-slate-400 cursor-not-allowed"
+                                                onClick={() => toast.error("Cannot remove a bank account that has withdrawal records")}
+                                            >
+                                                <Trash2 size={12} /> Remove
+                                            </Button>
+                                        ) : (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex-1 h-8 text-xs gap-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 cursor-pointer"
                                                     >
-                                                        Remove
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                                        <Trash2 size={12} /> Remove
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Remove Bank Account</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Remove <span className="font-medium text-slate-800">{acc.bank_name}</span> ending in <span className="font-medium text-slate-800">{acc.account_number.slice(-4)}</span>? This cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => handleDelete(acc.id)}
+                                                            className="bg-red-600 hover:bg-red-700"
+                                                        >
+                                                            Remove
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>

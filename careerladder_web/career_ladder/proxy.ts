@@ -1,9 +1,17 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+const publicPaths = ["/", "/sign-in", "/sign-up", "/register", "/account-frozen"]
+
 export default clerkMiddleware(async (auth, req) => {
     const { userId } = await auth();
     const path = req.nextUrl.pathname;
+
+    const isPublic = publicPaths.some(p => path === p || path.startsWith(p + "/"))
+
+    if (!userId && !isPublic) {
+        return NextResponse.redirect(new URL("/sign-in", req.url))
+    }
 
     // only check role when navigating between role-specific landing pages
     if (userId && (path === "/home" || path === "/dashboard" || path === "/admin-dashboard")) {
