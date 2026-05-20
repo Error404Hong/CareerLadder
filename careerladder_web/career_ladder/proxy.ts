@@ -1,20 +1,34 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const publicPaths = ["/", "/sign-in", "/sign-up", "/register", "/account-frozen"]
+const publicPaths = [
+    "/",
+    "/sign-in",
+    "/sign-up",
+    "/register",
+    "/account-frozen",
+    "/api/webhooks",
+];
 
 export default clerkMiddleware(async (auth, req) => {
     const { userId } = await auth();
     const path = req.nextUrl.pathname;
 
-    const isPublic = publicPaths.some(p => path === p || path.startsWith(p + "/"))
+    const isPublic = publicPaths.some(
+        (p) => path === p || path.startsWith(p + "/"),
+    );
 
     if (!userId && !isPublic) {
-        return NextResponse.redirect(new URL("/sign-in", req.url))
+        return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
     // only check role when navigating between role-specific landing pages
-    if (userId && (path === "/home" || path === "/dashboard" || path === "/admin-dashboard")) {
+    if (
+        userId &&
+        (path === "/home" ||
+            path === "/dashboard" ||
+            path === "/admin-dashboard")
+    ) {
         try {
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/getUser/${userId}`,
@@ -27,7 +41,9 @@ export default clerkMiddleware(async (auth, req) => {
 
             if (role === 3) {
                 if (path !== "/admin-dashboard") {
-                    return NextResponse.redirect(new URL("/admin-dashboard", req.url));
+                    return NextResponse.redirect(
+                        new URL("/admin-dashboard", req.url),
+                    );
                 }
                 return NextResponse.next();
             }
@@ -43,7 +59,9 @@ export default clerkMiddleware(async (auth, req) => {
             }
 
             if (path === "/admin-dashboard") {
-                return NextResponse.redirect(new URL(isEmployer ? "/dashboard" : "/home", req.url));
+                return NextResponse.redirect(
+                    new URL(isEmployer ? "/dashboard" : "/home", req.url),
+                );
             }
         } catch (error) {
             // if fetch fails just let them through

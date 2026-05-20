@@ -20,7 +20,7 @@ class Users {
 
     static async createStudentProfile(clerkid) {
         try {
-            const query = "INSERT INTO student_profiles(clerk_id) VALUES($1)";
+            const query = "INSERT INTO student_profiles(clerk_id) VALUES($1) RETURNING *";
             const values = [clerkid];
             const result = await pool.query(query, values);
             return result.rows[0] ? result.rows[0] : null;
